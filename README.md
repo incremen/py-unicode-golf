@@ -18,7 +18,7 @@ ord(min(str(not())))  →  84
 
 From 84, two operations let us reach other numbers:
 
-- **Decrement**: `next(reversed(range(n)))` = `n - 1`
+- **Decrement**: `max(range(n))` = `n - 1` (2 parens per step)
 - **Triangular jump**: `sum(range(k))` = `k * (k-1) / 2`
 
 We also mine "anchors" — numbers we can construct cheaply from other builtins (e.g. `ord(max(str(bytes())))` = 98, because `str(bytes())` = `"b''"` and `max("b''"`) = `'b'`). To reach any target number, we find the nearest anchor above it and decrement down.
@@ -32,7 +32,7 @@ $ python3 write_char_as_pyfuncs.py
 Enter a character: a
 
 Expression for 'a' (code point 97):
-chr(next(reversed(range(ord(max(str(bytes())))))))
+chr(max(range(ord(max(str(bytes()))))))
 
 Verify: eval gives 'a'
 ```
@@ -43,28 +43,36 @@ Verify: eval gives 'a'
 - `write_char_as_pyfuncs.py` — CLI wrapper
 - `funcs_that_take_one_arg.txt` — exhaustive list of Python builtins that accept a single argument
 
-## Problems and goals
+## Constraints
 
-### Python has a 200-paren nesting limit
+- Python has a **200 nested parentheses limit**
+- `chr()` wrapper costs 1 paren
+- Each decrement (`max(range(...))`) costs **2 parens**
+- Cheapest anchors cost 2-4 parens
+- **Max ~98 decrements** per expression → anchors must be within ~98 of every target
 
-Each decrement (`next(reversed(range(...)))`) costs 3 parentheses. With `chr()` taking 1, and the cheapest anchors costing 2-4, we can afford **~65 decrements** before hitting the limit. That means every target code point must have an anchor within 65 of it.
+## Coverage (current)
 
-### ASCII is covered, Unicode is not
+| Range | Coverage |
+|---|---|
+| 0-127 (ASCII) | 100% |
+| 128-1000 | 100% |
+| 1000-5000 | 99% |
+| 5000-10000 | 79% |
+| 10000-50000 | 40% |
+| 50000-100000 | 23% |
+| 100000-150000 | 18% |
 
-The current anchor set (32 base + ~30 expanded via triangular numbers = 62 total) covers ASCII fine. But Unicode has ~150,000 characters. We'd need roughly **one anchor per 65 code points**, or ~2,300 anchors, to cover all of Unicode.
+Full ASCII works. Unicode coverage is ~30% of 0-150k.
 
-The triangular expansion helps but creates sparse, exponentially growing jumps (84 → 3486 → 6,078,705) with huge gaps in between.
+## The bottleneck
 
-### We need more operations
+`sum(range())` (triangular) is our only "growing" operation — it jumps quadratically. To cover 0-150k, we'd need every integer ~2 to ~548 reachable at low paren depth (since T(548) = 149,878). But reaching k=300 by decrementing from our highest base anchor (125) already blows the budget.
 
-Right now we only go *down* (decrement) and *up* (triangular jump). To fill the gaps densely, we probably need:
+The core need: **cheap ways to produce numbers in the 100-550 range**, so their triangulars land densely across 0-150k.
 
-- More ways to combine existing numbers (multiplication? exponentiation via `pow()`?)
-- More base anchors mined from unexplored builtins
-- Possibly chaining operations in new ways (e.g. `sum(range(sum(range(k))))` for nested triangulars)
+## Open questions
 
-### Open questions
-
-- What's the most efficient set of operations to cover the full Unicode range within the 200-paren budget?
-- Can we find builtins that produce useful intermediate values we haven't discovered yet?
-- Is there a smarter search strategy than "nearest anchor above + decrement"?
+- What single-arg builtin compositions can cheaply produce numbers in the 100-550 range?
+- Are there other "growing" operations besides triangular that we're missing?
+- Can chaining operations like `len(str(bytes(range(n))))` (~4n, linear growth) help fill gaps?

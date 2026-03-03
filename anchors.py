@@ -4,7 +4,7 @@ Approach:
   1. Base anchors: numbers directly constructible (e.g., ord(min(str(not()))) = 84)
   2. Expand via sum(range(k)) = k*(k-1)/2  (triangular numbers)
   3. Reach any target by decrementing from the nearest anchor above it,
-     using next(reversed(range(n))) = n - 1
+     using max(range(n)) = n - 1
 """
 
 # ── Base anchors ─────────────────────────────────────────────────────────
@@ -53,9 +53,9 @@ BASE_ANCHORS = {
 # ── Operations ───────────────────────────────────────────────────────────
 
 def decrement(expr, times):
-    """Apply next(reversed(range(expr))) `times` times — each subtracts 1."""
+    """Apply max(range(expr)) `times` times — each subtracts 1."""
     for _ in range(times):
-        expr = f'next(reversed(range({expr})))'
+        expr = f'max(range({expr}))'
     return expr
 
 
@@ -114,16 +114,16 @@ def build_n(n):
         return memo[n]
 
     direct = nearest_anchor_above(n)
-    triangular = nearest_triangular_above(n)
+    tri = nearest_triangular_above(n)
 
     direct_gap = direct[0] if direct else float('inf')
-    tri_gap = triangular[1] if triangular else float('inf')
+    tri_gap = tri[1] if tri else float('inf')
 
     # Pick whichever needs fewer decrements at this level
     if direct_gap <= tri_gap:
         result = decrement(direct[1], direct_gap)
     else:
-        k, gap = triangular
+        k, gap = tri
         result = decrement(triangular(build_n(k)), gap)
 
     memo[n] = result
