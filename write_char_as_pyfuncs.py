@@ -11,3 +11,4 @@ if __name__ == '__main__':
     print(f"\nExpression for '{char}' (code point {ord(char)}):")
     print(expr)
     print(f"\nVerify: eval gives '{eval(expr)}'")
+
