@@ -199,3 +199,83 @@ def triple_tuple(expr):
 # reaching large numbers. The zip chain gives exact clean multipliers.
 # The current build algorithm uses base-3 (triple + decrement) which
 # gives 100% Unicode coverage at max depth 114.
+
+
+# =============================================================================
+# DICT ENUMERATOR (exact 6n for small n)
+# =============================================================================
+# len(str(dict(enumerate(bytearray(n))))) = 6n   (for n < 10)
+#
+# How: bytearray(n) → n zeroes. enumerate() pairs with indices:
+#      (0,0), (1,0), ... dict() → {0: 0, 1: 0, ...}
+#      str → "{0: 0, 1: 0, ...}" — each entry is 6 chars.
+#
+# Formula:  f(n) = 6n          (n < 10, single-digit indices)
+#           grows faster for n >= 10 as indices gain digits
+# Parens:   5
+# Domain:   n >= 1
+#
+# Same multiplier as zip chain k=1, but with dict repr instead of tuples.
+# Breaks exactness at n=10 when indices become 2 digits.
+
+def dict_enum(expr):
+    return f'len(str(dict(enumerate(bytearray({expr})))))'
+
+
+# =============================================================================
+# SUB-QUADRATIC STRINGIFICATION (O(n log n))
+# =============================================================================
+# len(str(list(range(n)))) ≈ n · (3 + log₁₀(n))
+#
+# How: list(range(n)) → [0, 1, 2, ..., n-1]. Stringified, each number takes
+#      its digit count plus ", " separator. Grows slightly faster than linear
+#      because larger numbers have more digits.
+#
+# Formula:  approximately n · log₁₀(n)  (not exact — depends on digit distribution)
+#           n=100   → 390
+#           n=1000  → 3890
+#           n=10000 → 48890
+# Parens:   4
+# Domain:   n >= 1
+#
+# Useful for controlled growth into the tens of thousands without the
+# wild overshooting of sum(range(n)).
+
+def list_range_repr_len(expr):
+    return f'len(str(list(range({expr}))))'
+
+
+# =============================================================================
+# LOGARITHMIC STEP-DOWN
+# =============================================================================
+# len(str(n)) = floor(log₁₀(n)) + 1
+#
+# How: Counts the number of decimal digits.
+#
+# Formula:  f(n) = floor(log₁₀(n)) + 1
+# Parens:   2
+# Domain:   n >= 0
+#
+# A "reset switch" — collapses any huge number down to a small one.
+# Useful if you overshoot: len(str(1_500_000_000)) = 10.
+
+def log_step_down(expr):
+    return f'len(str({expr}))'
+
+
+# =============================================================================
+# BOOLEAN COLLAPSE (reset to 1)
+# =============================================================================
+# int(bool(n)) = 1   (for any n > 0)
+#
+# How: Any non-zero int is truthy. bool(n) → True. int(True) → 1.
+#
+# Formula:  f(n) = 1 for n > 0,  f(0) = 0
+# Parens:   2
+# Domain:   n >= 0
+#
+# Instantly collapse any garbage number to 1 without needing a long
+# decrement chain. Same cost as the int(not()) base anchor for 1.
+
+def bool_collapse(expr):
+    return f'int(bool({expr}))'
