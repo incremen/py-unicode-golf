@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pyfuncs to chars</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    background: #0a0a0a;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  h1 { color: #fff; font-size: 1.6rem; margin-bottom: 0.3rem; }
+  h2 { color: #888; font-size: 1rem; margin-bottom: 1.5rem; font-weight: normal; }
+  h3 { color: #fff; font-size: 1.1rem; margin: 2rem 0 1rem; }
+
+  .input-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  input[type="text"] {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 0.7rem 1rem;
+    font-family: inherit;
+    font-size: 1.2rem;
+    width: 4rem;
+    text-align: center;
+    border-radius: 4px;
+  }
+  input:focus { outline: none; border-color: #666; }
+  .toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #888;
+    font-size: 0.85rem;
+    margin-left: 1rem;
+  }
+  .toggle input { accent-color: #666; }
+
+  .result {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 6px;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .result-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.8rem;
+    color: #888;
+    font-size: 0.85rem;
+  }
+  .result-expr {
+    background: #0d0d0d;
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    word-break: break-all;
+    line-height: 1.5;
+    font-size: 0.85rem;
+    color: #c8e6c9;
+    cursor: pointer;
+    border: 1px solid #1a1a1a;
+  }
+  .result-expr:hover { border-color: #333; }
+  .copied { color: #666; font-size: 0.75rem; margin-top: 0.4rem; }
+
+  .section {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 6px;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+  }
+  .section p { color: #aaa; line-height: 1.6; font-size: 0.85rem; margin-bottom: 0.8rem; }
+  code {
+    background: #1a1a1a;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    color: #c8e6c9;
+    font-size: 0.85rem;
+  }
+  .chain { color: #888; font-size: 0.85rem; }
+  .chain span { color: #c8e6c9; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  th { text-align: left; color: #888; padding: 0.4rem 0.8rem; border-bottom: 1px solid #222; }
+  td { padding: 0.4rem 0.8rem; border-bottom: 1px solid #1a1a1a; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .strategies { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.8rem; }
+  .strategy-tag {
+    background: #1a1a1a;
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    color: #888;
+  }
+  .strategy-tag .count { color: #e0e0e0; }
+</style>
+</head>
+<body>
+
+<h1>pyfuncs_to_chars</h1>
+<h2>any character as python builtins — no numbers, no strings, no operators</h2>
+
+<!-- ── Input ── -->
+<div class="input-row">
+  <input type="text" id="charInput" maxlength="2" placeholder="a" autofocus>
+  <div class="toggle">
+    <input type="checkbox" id="useDb" checked>
+    <label for="useDb">use optimized database</label>
+  </div>
+</div>
+
+<div class="result" id="result">
+  <div class="result-header">
+    <span id="resultChar"></span>
+    <span id="resultMeta"></span>
+  </div>
+  <div class="result-expr" id="resultExpr" onclick="copyExpr()"></div>
+  <div class="copied" id="copiedMsg"></div>
+</div>
+
+<!-- ── How it works ── -->
+<h3>how it works</h3>
+<div class="section">
+  <p>
+    Start from <code>not() → True</code>. Through <code>str()</code>, <code>min()</code>,
+    <code>ord()</code> and friends, we extract integers from Python's own string representations.
+    These are our <strong>base anchors</strong> — about 40 numbers from 0 to 125.
+  </p>
+  <p>The key insight: <code>len(str(list(bytes(n))))</code> = <strong>exactly 3n</strong>.</p>
+  <p>
+    Combined with <code>max(range(n))</code> = n−1, any number can be built in <strong>base 3</strong>.
+    Recursively build ceil(n/3), triple it, then decrement 0–2 times:
+  </p>
+  <div class="chain">
+    <span>97</span> = 3 × <span>33</span> − 2 = 3 × (3 × <span>11</span>) − 2
+    = 3 × (3 × <span>len(str(frozenset()))</span>) − 2
+  </div>
+  <p style="margin-top: 0.8rem;">
+    Then wrap in <code>chr()</code>. Max depth for any Unicode character: ~114 parens out of Python's 200 limit.
+  </p>
+  <p>
+    The optimizer tries faster strategies — <code>4n+3</code>, <code>5n+5</code>,
+    zip chains (<code>6n</code>, <code>9n</code>), and the ascii exponential
+    (<code>(2^k+3)n</code>) — to find shorter expressions.
+  </p>
+</div>
+
+<!-- ── Optimization history ── -->
+<h3>optimization history</h3>
+<div class="section" id="historySection">
+  <table>
+    <thead>
+      <tr><th>pass</th><th>improvements</th><th class="num">avg depth</th><th class="num">max depth</th><th class="num">avg len</th></tr>
+    </thead>
+    <tbody id="historyBody"></tbody>
+  </table>
+</div>
+
+<!-- ── Current stats ── -->
+<h3>database</h3>
+<div class="section" id="statsSection">
+  <p id="statsText"></p>
+  <div class="strategies" id="strategiesList"></div>
+</div>
+
+<script>
+const charInput = document.getElementById('charInput');
+const useDb = document.getElementById('useDb');
+const result = document.getElementById('result');
+const resultChar = document.getElementById('resultChar');
+const resultMeta = document.getElementById('resultMeta');
+const resultExpr = document.getElementById('resultExpr');
+const copiedMsg = document.getElementById('copiedMsg');
+
+let lastExpr = '';
+
+charInput.addEventListener('input', async () => {
+  const char = charInput.value;
+  if (!char || char.length === 0) { result.classList.remove('visible'); return; }
+
+  // Take the last character typed (handles multi-byte)
+  const c = [...char].pop();
+  charInput.value = c;
+
+  try {
+    const res = await fetch(`/api/char/${encodeURIComponent(c)}`);
+    const data = await res.json();
+    if (data.error) return;
+
+    const useOptimized = useDb.checked && data.db;
+    const src = useOptimized ? data.db : data.formula;
+    const label = useOptimized ? 'db' : 'formula';
+
+    resultChar.textContent = `'${data.char}' — U+${data.code_point.toString(16).toUpperCase().padStart(4, '0')}`;
+    resultMeta.textContent = `${src.depth} calls · ${src.len} chars · ${label}`;
+    resultExpr.textContent = src.expr;
+    lastExpr = src.expr;
+    copiedMsg.textContent = '';
+    result.classList.add('visible');
+  } catch (e) {
+    console.error(e);
+  }
+});
+
+useDb.addEventListener('change', () => {
+  charInput.dispatchEvent(new Event('input'));
+});
+
+function copyExpr() {
+  navigator.clipboard.writeText(lastExpr);
+  copiedMsg.textContent = 'copied';
+  setTimeout(() => copiedMsg.textContent = '', 1500);
+}
+
+// Load history
+async function loadHistory() {
+  const res = await fetch('/api/log');
+  const log = await res.json();
+  const tbody = document.getElementById('historyBody');
+  tbody.innerHTML = log.map(e => `
+    <tr>
+      <td>${e.label}</td>
+      <td class="num">${e.improvements.toLocaleString()}</td>
+      <td class="num">${e.avg_depth}</td>
+      <td class="num">${e.max_depth}</td>
+      <td class="num">${e.avg_len.toLocaleString()}</td>
+    </tr>
+  `).join('');
+}
+
+// Load stats
+async function loadStats() {
+  const res = await fetch('/api/stats');
+  const s = await res.json();
+  document.getElementById('statsText').textContent =
+    `${s.total.toLocaleString()} entries · avg depth ${s.avg_depth} · max depth ${s.max_depth} · avg length ${s.avg_len}`;
+  document.getElementById('strategiesList').innerHTML =
+    s.strategies.map(st =>
+      `<span class="strategy-tag">${st.name} <span class="count">${st.count.toLocaleString()}</span></span>`
+    ).join('');
+}
+
+loadHistory();
+loadStats();
+</script>
+</body>
+</html>
