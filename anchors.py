@@ -8,36 +8,41 @@ Approach:
 """
 
 # ── Base anchors ─────────────────────────────────────────────────────────
-# Numbers we can construct with short, direct expressions.
+# Numbers we can construct directly from zero-arg builtins.
+# Grouped by technique, comments show the derivation.
 
 # fmt: off
 BASE_ANCHORS = {
-    # not()/not(not()) → True/False, then type conversions
-    0:   'int(not(not()))',                          # False       → 0
-    1:   'int(not())',                               # True        → 1
+    # ── Booleans → ints ──
+    0:   'int(not(not()))',                          # int(False)
+    1:   'int(not())',                               # int(True)
 
-    # len() on string representations
-    2:   'len(str(ord(min(str(not())))))',            # "84"        → 2
-    3:   'len(bin(int(not())))',                      # "0b1"       → 3
-    4:   'len(str(not()))',                           # "True"      → 4
-    5:   'len(bin(len(str(not()))))',                 # "0b100"     → 5
-    6:   'sum(range(len(str(not()))))',               # range(4)    → 6
-    11:  'len(str(frozenset()))',                     # "frozenset()" → 11
-    13:  'len(str(type(int())))',                     # "<class 'int'>"   → 13
-    14:  'len(str(type(not())))',                     # "<class 'bool'>"  → 14
-    15:  'len(str(type(float())))',                   # "<class 'float'>" → 15
-    17:  'len(str(type(complex())))',                 # "<class 'complex'>" → 17
-    18:  'len(str(type(reversed(str()))))',           # "<class 'reversed'>" → 18
-    19:  'len(str(type(frozenset())))',               # "<class 'frozenset'>" → 19
-    22:  'len(str(type(iter(set()))))',               # "<class 'set_iterator'>" → 22
-    23:  'len(str(type(iter(list()))))',              # "<class 'list_iterator'>" → 23
-    24:  'len(str(type(iter(bytes()))))',             # "<class 'bytes_iterator'>" → 24
-    26:  'len(str(type(iter(dict()))))',              # "<class 'dict_keyiterator'>" → 26
-    28:  'len(str(type(iter(str()))))',               # "<class 'str_ascii_iterator'>" → 28
-    30:  'len(str(type(reversed(list()))))',          # "<class 'list_reverseiterator'>" → 30
-    33:  'len(str(type(reversed(dict()))))',          # "<class 'dict_reversekeyiterator'>" → 33
+    # ── len() on string reprs ──
+    2:   'len(str(ord(min(str(not())))))',            # len("84")
+    3:   'len(bin(int(not())))',                      # len("0b1")
+    4:   'len(str(not()))',                           # len("True")
+    5:   'len(bin(len(str(not()))))',                 # len("0b100")
+    6:   'sum(range(len(str(not()))))',               # sum(range(4))
+    11:  'len(str(frozenset()))',                     # len("frozenset()")
 
-    # ord() on characters from string representations
+    # ── len() on type name strings ──
+    13:  'len(str(type(int())))',                     # "<class 'int'>"
+    14:  'len(str(type(not())))',                     # "<class 'bool'>"
+    15:  'len(str(type(float())))',                   # "<class 'float'>"
+    17:  'len(str(type(complex())))',                 # "<class 'complex'>"
+    18:  'len(str(type(reversed(str()))))',           # "<class 'reversed'>"
+    19:  'len(str(type(frozenset())))',               # "<class 'frozenset'>"
+
+    # ── len() on iterator/reversed type name strings ──
+    22:  'len(str(type(iter(set()))))',               # "<class 'set_iterator'>"
+    23:  'len(str(type(iter(list()))))',              # "<class 'list_iterator'>"
+    24:  'len(str(type(iter(bytes()))))',             # "<class 'bytes_iterator'>"
+    26:  'len(str(type(iter(dict()))))',              # "<class 'dict_keyiterator'>"
+    28:  'len(str(type(iter(str()))))',               # "<class 'str_ascii_iterator'>"
+    30:  'len(str(type(reversed(list()))))',          # "<class 'list_reverseiterator'>"
+    33:  'len(str(type(reversed(dict()))))',          # "<class 'dict_reversekeyiterator'>"
+
+    # ── ord(min/max(repr)) — pick chars from string reprs ──
     32:  'ord(min(str(type(not()))))',                # ' ' in "<class 'bool'>"
     39:  'ord(min(str(bytes())))',                    # "'" in "b''"
     40:  'ord(min(str(tuple())))',                    # '(' in "()"
@@ -64,29 +69,43 @@ BASE_ANCHORS = {
 
 
 # ── Operations ───────────────────────────────────────────────────────────
+# Each takes an expression string and returns a new expression string.
 
 def decrement(expr, times):
-    """Apply max(range(expr)) `times` times — each subtracts 1."""
+    """max(range(n)) = n - 1. Costs 2 parens per step."""
     for _ in range(times):
         expr = f'max(range({expr}))'
     return expr
 
 
 def triangular(expr):
-    """Apply sum(range(expr)) — gives the triangular number T(n) = n*(n-1)/2."""
+    """sum(range(n)) = n*(n-1)/2. Costs 2 parens."""
     return f'sum(range({expr}))'
+
+
+def list_repr_len(expr):
+    """len(str(list(range(n)))) ≈ 4n. Costs 4 parens."""
+    return f'len(str(list(range({expr}))))'
+
+
+def bytes_repr_len(expr):
+    """len(str(bytes(range(n)))) ≈ 2n. Costs 4 parens. Only valid for n ≤ 256."""
+    return f'len(str(bytes(range({expr}))))'
+
+
+def bytearray_repr_len(expr):
+    """len(str(bytearray(range(n)))) ≈ 2n. Costs 4 parens. Only valid for n ≤ 256."""
+    return f'len(str(bytearray(range({expr}))))'
 
 
 # ── Anchor expansion ─────────────────────────────────────────────────────
 
 def expand_anchors(base, max_val=200_000):
-    """Grow anchor set by applying growing operations to existing anchors.
+    """Grow the anchor set by repeatedly applying growing operations.
 
-    Operations applied:
-      - sum(range(n))           = T(n) = n*(n-1)/2  (triangular)
-      - len(str(list(range(n)))) ≈ 4n               (list repr length)
-      - len(str(bytes(range(n)))) ≈ 2n              (bytes repr length, n ≤ 256)
-      - len(str(bytearray(range(n)))) ≈ 2n          (bytearray repr length, n ≤ 256)
+    Each iteration applies every operation to every anchor and keeps
+    results that are new or cheaper (fewer parens) than existing entries.
+    Loops until no new anchors are found.
     """
     anchors = dict(base)
     changed = True
@@ -96,34 +115,34 @@ def expand_anchors(base, max_val=200_000):
             if n < 2:
                 continue
 
-            new_entries = []
+            candidates = []
 
-            # Triangular: sum(range(n)) = n*(n-1)/2
+            # Triangular: n → n*(n-1)/2
             tri = n * (n - 1) // 2
             if 0 < tri <= max_val:
-                new_entries.append((tri, triangular(expr)))
+                candidates.append((tri, triangular(expr)))
 
-            # List repr length: len(str(list(range(n)))) ≈ 4n
+            # List repr: n → ~4n
             try:
-                list_len = len(str(list(range(n))))
-                if 0 < list_len <= max_val:
-                    new_entries.append((list_len, f'len(str(list(range({expr}))))'))
+                val = len(str(list(range(n))))
+                if 0 < val <= max_val:
+                    candidates.append((val, list_repr_len(expr)))
             except (OverflowError, MemoryError):
                 pass
 
-            # Bytes repr length: len(str(bytes(range(n)))) ≈ 2n  (n ≤ 256)
+            # Bytes repr: n → ~2n (n ≤ 256 only)
             if n <= 256:
-                bytes_len = len(str(bytes(range(n))))
-                if 0 < bytes_len <= max_val:
-                    new_entries.append((bytes_len, f'len(str(bytes(range({expr}))))'))
+                val = len(str(bytes(range(n))))
+                if 0 < val <= max_val:
+                    candidates.append((val, bytes_repr_len(expr)))
 
-            # Bytearray repr length: len(str(bytearray(range(n)))) ≈ 2n  (n ≤ 256)
+            # Bytearray repr: n → ~2n (n ≤ 256 only)
             if n <= 256:
-                ba_len = len(str(bytearray(range(n))))
-                if 0 < ba_len <= max_val:
-                    new_entries.append((ba_len, f'len(str(bytearray(range({expr}))))'))
+                val = len(str(bytearray(range(n))))
+                if 0 < val <= max_val:
+                    candidates.append((val, bytearray_repr_len(expr)))
 
-            for val, new_expr in new_entries:
+            for val, new_expr in candidates:
                 if val not in anchors or new_expr.count('(') < anchors[val].count('('):
                     anchors[val] = new_expr
                     changed = True
@@ -168,7 +187,6 @@ def build_n(n):
     direct_gap = direct[0] if direct else float('inf')
     tri_gap = tri[1] if tri else float('inf')
 
-    # Pick whichever needs fewer decrements at this level
     if direct_gap <= tri_gap:
         result = decrement(direct[1], direct_gap)
     else:
