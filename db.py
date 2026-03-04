@@ -45,6 +45,12 @@ def apply_strategy(strategy, parent_expr, offset):
         expr = f'len(str(list({inner})))'
     elif strategy == 'triangular':
         expr = f'sum(range({parent_expr}))'
+    elif strategy == 'enum_list_8x':
+        expr = f'len(str(list(enumerate(bytes({parent_expr})))))'
+    elif strategy == 'slice_offset':
+        expr = f'len(str(slice({parent_expr})))'
+    elif strategy == 'complex_offset':
+        expr = f'len(str(complex({parent_expr})))'
     else:
         raise ValueError(f"Unknown strategy: {strategy}")
 

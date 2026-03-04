@@ -192,41 +192,37 @@
     The optimizer tries all of them on every number and keeps the best result.
   </p>
 
-  <p style="margin-top: 1rem;"><strong>Multipliers</strong></p>
-  <p>Different ways to grow a number, each with a different parenthesis cost:</p>
+  <p style="margin-top: 1rem;"><strong>Exact multipliers</strong></p>
+  <p>All based on stringifying bytes objects in different ways:</p>
   <table class="op-table">
     <tr><td>len(str(list(bytes(n))))</td><td>= 3n</td><td>4 parens</td></tr>
     <tr><td>len(str(bytes(n)))</td><td>= 4n + 3</td><td>3 parens</td></tr>
     <tr><td>len(ascii(str(bytes(n))))</td><td>= 5n + 5</td><td>4 parens</td></tr>
   </table>
   <p style="color:#666; font-size:0.8rem;">
-    4n+3 costs only 3 parens (cheaper than 3x at 4), so it's often better
+    4n+3 costs only 3 parens (cheaper than 3x), so it's often better
     when you can land on the right value with the +3 offset.
   </p>
 
   <div class="divider"></div>
 
-  <p><strong>Zip chain</strong></p>
-  <p>
-    Each zip() wrapper adds 3n to the string length.
-    Formula: <code>len(str(list(zip...zip(bytes(n))...))) = 3(k+1)n</code>
+  <p><strong>Zip chain</strong> &mdash; higher exact multiples via nested tuples</p>
+  <p style="color:#666; font-size:0.8rem;">
+    Each zip() wrapper turns each element into a deeper tuple,
+    adding exactly 3n to the string length.
   </p>
   <table class="op-table">
-    <tr><td>k=1</td><td>6n</td><td>5 parens</td></tr>
-    <tr><td>k=2</td><td>9n</td><td>6 parens</td></tr>
-    <tr><td>k=3</td><td>12n</td><td>7 parens</td></tr>
-    <tr><td>k=4</td><td>15n</td><td>8 parens</td></tr>
+    <tr><td>len(str(list(zip(bytes(n)))))</td><td>= 6n</td><td>5 parens</td></tr>
+    <tr><td>len(str(list(zip(zip(bytes(n))))))</td><td>= 9n</td><td>6 parens</td></tr>
+    <tr><td>...k zips...</td><td>= 3(k+1)n</td><td>4+k parens</td></tr>
   </table>
-  <p style="color:#666; font-size:0.8rem;">
-    Exact multipliers with no offset. Good for hitting exact multiples of 6, 9, etc.
-  </p>
 
   <div class="divider"></div>
 
-  <p><strong>Ascii exponential</strong></p>
-  <p>
+  <p><strong>Ascii exponential</strong> &mdash; exponential multiplier for linear paren cost</p>
+  <p style="color:#666; font-size:0.8rem;">
     ascii() escapes backslashes, roughly doubling them each time.
-    Formula: <code>f(n) = (2^k + 3)n + (2^(k+1) + 1)</code>
+    Stacking k calls gives: <code>f(n) = (2^k + 3)n + (2^(k+1) + 1)</code>
   </p>
   <table class="op-table">
     <tr><td>k=1</td><td>5n + 5</td><td>4 parens</td></tr>
@@ -237,16 +233,11 @@
     <tr><td>k=6</td><td>67n + 129</td><td>9 parens</td></tr>
     <tr><td>k=10</td><td>1027n + 2049</td><td>13 parens</td></tr>
   </table>
-  <p style="color:#666; font-size:0.8rem;">
-    Exponential multiplier for linear paren cost. A 1027x multiplier in 13 parens.
-  </p>
 
   <div class="divider"></div>
 
-  <p><strong>Other</strong></p>
-  <p><code>sum(range(n))</code> = n(n-1)/2 &mdash; quadratic jump, 2 parens.</p>
-  <p><code>len(str(n))</code> = digit count &mdash; collapses big numbers back down, 2 parens.</p>
-  <p><code>int(bool(n))</code> = 1 for n&gt;0 &mdash; reset to 1, 2 parens.</p>
+  <p><strong>Triangular jump</strong> &mdash; quadratic growth for 2 parens</p>
+  <p><code>sum(range(n))</code> = n(n-1)/2</p>
 </div>
 
 <!-- ── Database ── -->
@@ -288,16 +279,15 @@
 
   <div class="divider"></div>
 
-  <p><strong>Optimization history</strong></p>
+  <p><strong>Before &amp; after optimization</strong></p>
   <p style="color:#666; font-size:0.8rem; margin-bottom:0.5rem;">
-    Each row is one pass of the optimizer. It tries every strategy on every number
-    and keeps any improvement.
+    The base-3 formula gives a correct expression for every number.
+    The optimizer then tries all strategies above and keeps any improvement.
   </p>
   <table>
     <thead>
       <tr>
-        <th>pass</th>
-        <th class="tip">improvements<span class="tiptext">numbers that got a shorter expression</span></th>
+        <th></th>
         <th class="num tip">avg depth<span class="tiptext">average function calls across all numbers</span></th>
         <th class="num tip">max depth<span class="tiptext">worst-case function calls for any number</span></th>
         <th class="num tip">avg len<span class="tiptext">average expression string length</span></th>
@@ -377,7 +367,6 @@ async function loadHistory() {
   document.getElementById('historyBody').innerHTML = log.map(e => `
     <tr>
       <td>${e.label}</td>
-      <td class="num">${e.improvements.toLocaleString()}</td>
       <td class="num">${e.avg_depth}</td>
       <td class="num">${e.max_depth}</td>
       <td class="num">${e.avg_len.toLocaleString()}</td>

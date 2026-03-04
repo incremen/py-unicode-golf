@@ -64,6 +64,49 @@ for k in range(1, 12):
 # triangular: n*(n-1)/2
 STRATEGIES.append(('triangular', _inverse_triangular))
 
+# enumerate list: 8n (exact for n <= 10)
+def _inverse_enum_list(target):
+    for offset in range(MAX_OFFSET + 1):
+        val = target + offset
+        if val > 0 and val % 8 == 0:
+            parent = val // 8
+            if 1 <= parent <= 10:
+                return parent, offset
+    return None
+STRATEGIES.append(('enum_list_8x', _inverse_enum_list))
+
+# slice offset: digits(n) + 19
+def _inverse_slice(target):
+    for offset in range(MAX_OFFSET + 1):
+        val = target + offset
+        # val = digits(n) + 19, so digits(n) = val - 19
+        d = val - 19
+        if d < 1 or d > 6:
+            continue
+        # n must have exactly d digits: 10^(d-1) <= n < 10^d
+        # pick smallest: n = 10^(d-1) (or 1 if d=1)
+        n = 1 if d == 1 else 10 ** (d - 1)
+        if len(str(n)) == d and len(str(slice(n))) == val - offset:
+            return n, offset
+    return None
+STRATEGIES.append(('slice_offset', _inverse_slice))
+
+# complex offset: digits(n) + 5
+def _inverse_complex(target):
+    for offset in range(MAX_OFFSET + 1):
+        val = target + offset
+        d = val - 5
+        if d < 1 or d > 6:
+            continue
+        n = 1 if d == 1 else 10 ** (d - 1)
+        try:
+            if len(str(n)) == d and len(str(complex(n))) == val - offset:
+                return n, offset
+        except (OverflowError, ValueError):
+            continue
+    return None
+STRATEGIES.append(('complex_offset', _inverse_complex))
+
 
 # ── Optimization pass ────────────────────────────────────────────────────
 
