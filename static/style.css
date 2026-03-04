@@ -55,6 +55,7 @@ h2 a:hover { color: #FFD43B; }
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
+  align-items: center;
 }
 input[type="text"] {
   background: #1a1e28;
@@ -80,14 +81,23 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
 }
 .btn:hover { color: #FFD43B; border-color: #306998; }
 .toggle {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: #888;
+  color: #2a2a2a;
   font-size: 0.85rem;
   margin-left: 1rem;
+  padding: 0 0.5rem; /* remove vertical padding */
+  height: 36px; /* constrain box height so it's shorter */
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.6);
+  line-height: 1; /* tighten line-height */
+  box-sizing: border-box;
 }
-.toggle input { accent-color: #306998; }
+.toggle input { accent-color: #306998; margin: 0; width: 16px; height: 16px; transform: scale(0.95); }
+.toggle label { cursor: pointer; }
+.toggle input:checked + label { color: #306998; font-weight: 600; }
 
 .result {
   background: #12151e;
@@ -167,7 +177,7 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .main-tab {
   padding: 0.6rem 1.2rem;
   font-size: 0.9rem;
-  color: #555;
+  color: #222; /* darker so labels stand out */
   cursor: pointer;
   border: 1px solid transparent;
   border-bottom: none;
