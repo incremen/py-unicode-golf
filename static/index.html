@@ -341,7 +341,13 @@ charInput.addEventListener('input', async () => {
     lastExpr = src.expr;
     copiedMsg.textContent = '';
     result.classList.add('visible');
-  } catch (e) { console.error(e); }
+  } catch (e) {
+    console.error(e);
+    resultChar.textContent = 'error';
+    resultMeta.textContent = e.message;
+    resultExpr.textContent = '';
+    result.classList.add('visible');
+  }
 });
 
 useDb.addEventListener('change', () => charInput.dispatchEvent(new Event('input')));
