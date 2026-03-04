@@ -2,7 +2,7 @@
 
 import os
 import json
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, request
 from anchors import build_n, build_char, BASE_ANCHORS
 
 app = Flask(__name__, static_folder='static')
@@ -41,9 +41,12 @@ def index():
 
 
 @app.route('/api/char/<path:char>')
-def api_char(char):
+@app.route('/api/char')
+def api_char(char=None):
+    if char is None:
+        char = request.args.get('c', '')
     if len(char) != 1:
-        return jsonify({'error': 'Expected exactly one character'}), 400
+        return jsonify({'error': f'Expected exactly one character, got {len(char)} ({repr(char)})'}), 400
 
     code_point = ord(char)
     formula_expr = build_char(char)

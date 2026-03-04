@@ -329,7 +329,7 @@ charInput.addEventListener('input', async () => {
   const c = [...char].pop();
   charInput.value = c;
   try {
-    const res = await fetch(`/api/char/${encodeURIComponent(c)}`);
+    const res = await fetch(`/api/char?c=${encodeURIComponent(c)}`);
     const data = await res.json();
     if (data.error) return;
     const useOptimized = useDb.checked && data.db;
