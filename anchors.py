@@ -108,12 +108,8 @@ def build_n(n):
 
     # Base-3 decomposition: n = 3 * (n // 3) + (n % 3)
     # Build n//3 recursively, then apply 3x, then decrement by (n%3) if needed.
-    # But we actually need to go the other way: find q,r such that n = 3q + r.
-    # We build q, triple it to get 3q, then... we need to ADD r, but we can
-    # only subtract. So instead: n = 3q - r where r ∈ {0, 1, 2}.
-    # This means q = ceil(n/3), r = 3q - n.
-    q = -(-n // 3)  # ceiling division
-    r = 3 * q - n   # r ∈ {0, 1, 2}
+    q = -(-n // 3)  
+    r = 3 * q - n  
 
     result = decrement(triple(build_n(q)), r)
     memo[n] = result
@@ -124,34 +120,3 @@ def build_char(char):
     """Build a chr(...) expression for a single character."""
     return f'chr({build_n(ord(char))})'
 
-
-# ── Self-test ────────────────────────────────────────────────────────────
-
-if __name__ == '__main__':
-    print("Base anchors:")
-    for val in sorted(BASE_ANCHORS):
-        expr = BASE_ANCHORS[val]
-        ok = "✓" if eval(expr) == val else "✗"
-        print(f"  {ok} {val:>5} = {expr}")
-
-    # Test coverage
-    print("\nTesting all printable ASCII...")
-    for i in range(32, 127):
-        expr = build_char(chr(i))
-        assert eval(expr) == chr(i), f"FAIL at {i}"
-    print("  All passed.")
-
-    print("\nSample expressions:")
-    for c in ['a', 'Z', '0', '~']:
-        expr = build_char(c)
-        depth = expr.count('(')
-        print(f"  {c!r} ({ord(c):>3}): depth={depth:>3}  {expr}")
-
-    # Test a big Unicode char
-    expr = build_char(chr(3486))  # ඞ
-    depth = expr.count('(')
-    print(f"  ඞ (3486): depth={depth:>3}  verified={eval(expr) == chr(3486)}")
-
-    expr = build_char(chr(128512))  # 😀
-    depth = expr.count('(')
-    print(f"  😀 (128512): depth={depth:>3}  verified={eval(expr) == chr(128512)}")
