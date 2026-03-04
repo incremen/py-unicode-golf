@@ -285,14 +285,6 @@ ascii(ascii(that))    = ...                      len = 23</pre>
     </div>
   </div>
 
-  <p><strong>Strategy breakdown</strong></p>
-  <p style="color:#666; font-size:0.8rem; margin-bottom:0.5rem;">
-    How many numbers use each strategy as their shortest path.
-  </p>
-  <div class="strategies" id="strategiesList"></div>
-
-  <div class="divider"></div>
-
   <p><strong>Optimization history</strong></p>
   <p style="color:#666; font-size:0.8rem; margin-bottom:0.5rem;">
     Each row shows the state of the database after a round of improvements.
@@ -326,7 +318,6 @@ const copiedMsg = document.getElementById('copiedMsg');
 
 let lastExpr = '';
 
-charInput.classList.add('wide');
 charInput.size = 11; // fit the placeholder 'insert char'
 
 charInput.addEventListener('input', async () => {
@@ -352,7 +343,7 @@ charInput.addEventListener('input', async () => {
   }
 });
 
-useDb.addEventListener('change', () => showResult(lastData));
+useDb.addEventListener('change', () => { if (lastData) showResult(lastData); });
 
 function copyExpr() {
   navigator.clipboard.writeText(lastExpr);
@@ -395,11 +386,6 @@ async function loadDbStats() {
   document.getElementById('dAvgDepth').textContent = s.avg_depth;
   document.getElementById('dMaxDepth').textContent = s.max_depth;
   document.getElementById('dAvgLen').textContent = s.avg_len;
-  document.getElementById('strategiesList').innerHTML =
-    s.strategies.map(st =>
-      `<span class="strategy-tag">${st.name} <span class="count">${st.count.toLocaleString()}</span>` +
-      `<span class="tiptext">${st.count.toLocaleString()} numbers use ${st.name} as their shortest formula (avg depth ${st.avg_depth})</span></span>`
-    ).join('');
 }
 
 async function loadFormulaStats() {
@@ -411,11 +397,7 @@ async function loadFormulaStats() {
   document.getElementById('fMaxLen').textContent = s.max_len;
 }
 
-// Init
-// Pre-fill ඞ — both versions cached so toggling is instant
-const INIT_DB = { expr: 'chr(sum(range(ord(min(str(not()))))))', depth: 7, len: 37 };
-const INIT_FORMULA = { expr: 'chr(len(str(list(bytes(max(range(max(range(len(str(list(bytes(max(range(max(range(len(str(list(bytes(max(range(max(range(len(str(list(bytes(max(range(len(str(list(bytes(len(str(type(float()))))))))))))))))))))))))))))))))))))))', depth: 39, len: 227 };
-let lastData = { char: '\u0D9E', code_point: 3486, formula: INIT_FORMULA, db: INIT_DB };
+let lastData = null;
 
 function showResult(data) {
   const useOptimized = useDb.checked && data.db;
@@ -429,9 +411,6 @@ function showResult(data) {
   result.classList.add('visible');
 }
 
-// leave the input empty (placeholder shows the character)
-// do not show the example result on load — wait for user input or random
-// showResult(lastData);
 loadHistory();
 loadDbStats();
 loadFormulaStats();

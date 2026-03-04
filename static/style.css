@@ -67,6 +67,7 @@ input[type="text"] {
   width: 4rem;
   text-align: center;
   border-radius: 6px;
+  transition: width 180ms ease, padding 180ms ease, text-align 180ms ease, font-size 140ms ease;
 }
 /* wide placeholder state: larger to show helper text, collapses after first char */
 input[type="text"].wide {
@@ -79,9 +80,6 @@ input[type="text"].wide {
 input[type="text"].wide::placeholder { font-size: 0.75rem; color: #bfbfbf; }
 /* make placeholder text greyer for initial state */
 input[type="text"]::placeholder { color: #9e9e9e; }
-input[type="text"] {
-  transition: width 180ms ease, padding 180ms ease, text-align 180ms ease, font-size 140ms ease;
-}
 input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(48,105,152,0.2); }
 .btn {
   background: #1a1e28;
@@ -93,7 +91,7 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
   border-radius: 6px;
   cursor: pointer;
 }
-.btn:hover { color: #FFD43B; border-color: #306998; }
+.btn:hover { border-color: #306998; }
 .toggle {
   display: inline-flex;
   align-items: center;
@@ -253,8 +251,6 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 .tip:hover .tiptext { display: block; }
 
-/* Strategy tags */
-.strategies { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.8rem; }
 
 /* Responsive adjustments */
 @media (max-width: 900px) {
@@ -274,8 +270,7 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 
   /* keep the char input and random button on the same line */
   .input-row { flex-direction: row; align-items: center; gap: 0.5rem; }
-  input[type="text"] { width: 4.5rem; min-width: 3.6rem; font-size: 1.05rem; }
-  input[type="text"] { border: 2px solid #2a3040; box-shadow: 0 1px 0 rgba(0,0,0,0.3) inset; }
+  input[type="text"] { width: 4.5rem; min-width: 3.6rem; font-size: 1.05rem; border: 2px solid #2a3040; box-shadow: 0 1px 0 rgba(0,0,0,0.3) inset; }
   .btn { width: auto; padding: 0.6rem 0.9rem; }
 
   /* place toggle below the input-row but keep it visually compact */
@@ -301,32 +296,6 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
     -webkit-overflow-scrolling: touch;
   }
 }
-.strategy-tag {
-  position: relative;
-  background: #1a1e28;
-  padding: 0.2rem 0.6rem;
-  border-radius: 3px;
-  font-size: 0.75rem;
-  color: #8a94a8;
-  cursor: help;
-}
-.strategy-tag .count { color: #FFD43B; font-weight: bold; }
-.strategy-tag .tiptext {
-  display: none;
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #12151e;
-  color: #d0d4dc;
-  padding: 0.4rem 0.7rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  z-index: 10;
-  margin-bottom: 4px;
-}
-.strategy-tag:hover .tiptext { display: block; }
 
 /* Stats grid */
 .stats-grid {

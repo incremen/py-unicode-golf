@@ -11,7 +11,7 @@ import json
 import os
 from datetime import datetime
 
-from anchors import BASE_ANCHORS
+from anchors import BASE_ANCHORS, build_n
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'expressions.db')
 MAX_N = 200_000
@@ -169,11 +169,9 @@ def get_log():
 def stats():
     """Print current stats and history."""
     with get_conn() as conn:
-        total = conn.execute('SELECT COUNT(*) FROM numbers').fetchone()[0]
-        avg_depth = conn.execute('SELECT AVG(depth) FROM numbers').fetchone()[0]
-        max_depth = conn.execute('SELECT MAX(depth) FROM numbers').fetchone()[0]
-        avg_len = conn.execute('SELECT AVG(len) FROM numbers').fetchone()[0]
-        max_len = conn.execute('SELECT MAX(len) FROM numbers').fetchone()[0]
+        total, avg_depth, max_depth, avg_len, max_len = conn.execute(
+            'SELECT COUNT(*), AVG(depth), MAX(depth), AVG(len), MAX(len) FROM numbers'
+        ).fetchone()
 
     print(f"Entries: {total}")
     print(f"Depth:  avg={avg_depth:.1f}  max={max_depth}")
@@ -222,28 +220,13 @@ def populate(max_n=MAX_N):
 
         # Everything above max anchor via base-3
         max_anchor = max(sorted_anchors)
-        memo = {}
-        for n_val, expr_val in BASE_ANCHORS.items():
-            memo[n_val] = expr_val
-
-        def build(n):
-            if n in memo:
-                return memo[n]
-            q = -(-n // 3)
-            r = 3 * q - n
-            parent_expr = build(q)
-            expr = f'len(str(list(bytes({parent_expr}))))'
-            for _ in range(r):
-                expr = f'max(range({expr}))'
-            memo[n] = expr
-            return expr
 
         for n in range(max_anchor + 1, max_n + 1):
             if n in BASE_ANCHORS:
                 continue
             q = -(-n // 3)
             r = 3 * q - n
-            expr = build(n)
+            expr = build_n(n)
             conn.execute(
                 'INSERT OR IGNORE INTO numbers (n, expr, depth, len, strategy, parent, offset) '
                 'VALUES (?, ?, ?, ?, ?, ?, ?)',
