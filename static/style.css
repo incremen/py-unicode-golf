@@ -258,13 +258,14 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
   h2 { display: block; font-size: 0.95rem; margin-bottom: 0.8rem; }
   .github-link { margin-left: 0; margin-top: 0.25rem; display: inline-block; }
 
-  /* stack inputs vertically */
-  .input-row { flex-direction: column; align-items: stretch; gap: 0.6rem; }
-  input[type="text"] { width: 100%; font-size: 1.05rem; }
-  .btn { width: 100%; }
+  /* keep the char input and random button on the same line */
+  .input-row { flex-direction: row; align-items: center; gap: 0.5rem; }
+  input[type="text"] { width: 4.5rem; min-width: 3.6rem; font-size: 1.05rem; }
+  input[type="text"] { border: 2px solid #2a3040; box-shadow: 0 1px 0 rgba(0,0,0,0.3) inset; }
+  .btn { width: auto; padding: 0.6rem 0.9rem; }
 
-  /* make toggle compact and left-aligned inside the stacked flow */
-  .toggle { width: auto; align-self: flex-start; height: 32px; padding: 0 0.5rem; }
+  /* place toggle below the input-row but keep it visually compact */
+  .toggle { flex-basis: 100%; margin-top: 0.4rem; height: 32px; padding: 0 0.5rem; }
   .toggle input { width: 14px; height: 14px; }
 
   /* allow tabs to scroll horizontally on narrow screens */
