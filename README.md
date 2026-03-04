@@ -1,68 +1,94 @@
-ai wrote this readme for now sorry i couldnt be bothered
-
 # pyfuncs_to_chars
 
-Write any character as a Python expression using **only builtin function calls** — no numeric literals, no string literals, no operators.
-Each function must take in only one argument - pow(a,b) isn't allowed
+Represent any character using only Python builtin function calls. No numeric literals, no string literals, no operators. Each function takes exactly one argument.
 
-## How it works
+## Why?
 
-Everything starts from one trick:
+Right around the whole Among Us time, it was gaining traction that `chr(sum(range(ord(min(str(not()))))))` in Python evaluates to "ඞ". I immediately tried to generalize it. Could any Unicode character (~160,000) be represented like this?
 
-```
-not()  →  True
-str(not())  →  "True"
-min(str(not()))  →  "T"
-ord(min(str(not())))  →  84
-```
+The rules:
+- The final function must take in no parameters, like `not()`.
+- Each function can only take in one parameter; `pow(a,b)` isn't allowed.
+- Represent each Unicode character as a composition of these functions.
 
-Two key operations let us reach any number:
+Since we only aim to find the Unicode value of the character and then apply `chr()` to it, the struggle is essentially to find a neat representation for each number 1–160,000. And the representation MUST be neat, since Python won't let you have more than 200 nested parentheses.
 
-- **3x multiplier**: `len(str(list(bytes(n))))` = `3n` exactly (4 parens)
-- **Decrement**: `max(range(n))` = `n - 1` (2 parens)
+## The formula
 
-With 3x and decrement, any number can be built in **base 3**: recursively build `ceil(n/3)`, triple it, then decrement 0-2 times. Base anchors (numbers constructible directly from builtins) serve as the recursion base cases.
+Two operations are enough to build any number:
 
-Finally, wrap in `chr()` to get the character.
+**Subtract 1:** `max(range(n))` returns n - 1. Costs 2 parentheses.
 
-## Coverage
+**Multiply by 3:** `len(str(list(bytes(n))))` returns exactly 3n. bytes(n) creates n zero-bytes, list() turns it into [0, 0, ..., 0], str() gives "[0, 0, ..., 0]" — always exactly 3n characters. Costs 4 parentheses.
 
-**100% of Unicode.** All 1,114,112 code points.
-
-Max paren depth: 114 out of 200 limit.
-
-| Code point | Depth |
-|---|---|
-| `a` (97) | 7 |
-| ඞ (3,486) | 37 |
-| BMP max (65,535) | 41 |
-| 😀 (128,512) | 70 |
-| Max Unicode (1,114,111) | 88 |
-
-## Usage
+**The algorithm:** decompose n in base 3. At each step, build ceil(n/3), triple it, then subtract the remainder (0, 1, or 2). Stop when you reach a base anchor — a small number you can construct directly. The only base anchors you actually need are `1 = int(not())` and `0 = int(not(not()))`.
 
 ```
-$ python3 write_char_as_pyfuncs.py
-Enter a character: a
+function build(n):
+    if n is a base anchor:
+        return the anchor expression
 
-Expression for 'a' (code point 97):
-chr(max(range(ord(max(str(bytes()))))))
+    q = ceil(n / 3)
+    r = 3 * q - n              // r is 0, 1, or 2
 
-Verify: eval gives 'a'
+    expr = triple(build(q))    // multiply by 3
+    expr = subtract(expr, r)   // subtract 0, 1, or 2
+    return expr
 ```
 
-## Files
+**Example: build(13)**
 
-- `anchors.py` — base anchors, operations, and `build_char()`
-- `write_char_as_pyfuncs.py` — CLI wrapper
-- `funcs_that_take_one_arg.txt` — exhaustive list of Python builtins that accept a single argument
+13 = 15-2 = 5\*3-2 = (3\*2-1)\*3-2
 
-## Operations
+```
+build(13):  q = ceil(13/3) = 5,  r = 2  →  13 = triple(build(5)) - 2
+build(5):   q = ceil(5/3) = 2,   r = 1  →   5 = triple(build(2)) - 1
+build(2):   base anchor  →  len(str(ord(min(str(not())))))
+```
 
-| Operation | Formula | Parens | Purpose |
+## Optimizations
+
+The base-3 formula works for everything but isn't always the shortest. The optimizer tries all of these on every number and keeps the best.
+
+**Exact multipliers** — stringifying bytes objects in different ways:
+
+| Expression | Formula | Parens |
+|---|---|---|
+| `len(str(list(bytes(n))))` | 3n | 4 |
+| `len(str(bytes(n)))` | 4n + 3 | 3 |
+| `len(ascii(str(bytes(n))))` | 5n + 5 | 4 |
+
+**Zip chain** — each zip() wrapper adds 3n to the string length:
+
+| Expression | Formula | Parens |
+|---|---|---|
+| `len(str(list(zip(bytes(n)))))` | 6n | 5 |
+| `len(str(list(zip(zip(bytes(n))))))` | 9n | 6 |
+| ...k zips... | 3(k+1)n | 4+k |
+
+**Ascii exponential** — `ascii()` escapes backslashes, doubling them each time. `f(n) = (2^k + 3)n + (2^(k+1) + 1)`:
+
+| k | Formula | Parens |
+|---|---|---|
+| 1 | 5n + 5 | 4 |
+| 2 | 7n + 9 | 5 |
+| 3 | 11n + 17 | 6 |
+| 4 | 19n + 33 | 7 |
+| 5 | 35n + 65 | 8 |
+| 6 | 67n + 129 | 9 |
+| 10 | 1027n + 2049 | 13 |
+
+**Triangular jump** — `sum(range(n))` = n(n-1)/2. Quadratic growth, 2 parens.
+
+## Database
+
+The database stores the shortest known expression for each number from 0 to 200,000. Each entry records which strategy produced it and which smaller number it depends on.
+
+| Stage | Avg depth | Max depth | Avg length |
 |---|---|---|---|
-| `len(str(list(bytes(n))))` | 3n | 4 | exact 3x multiplier |
-| `len(str(bytes(n)))` | 4n + 3 | 3 | exact 4x multiplier |
-| `len(ascii(str(bytes(n))))` | 5n + 5 | 4 | exact 5x multiplier |
-| `sum(range(n))` | n(n-1)/2 | 2 | quadratic jump |
-| `max(range(n))` | n - 1 | 2 | decrement |
+| minimal formula (seeds: 0, 1) | 66.6 | 93 | 386 |
+| full formula (44 base anchors) | 55.5 | 102 | 322 |
+| optimizer (offset ≤ 2) | 22.4 | 35 | 131 |
+| deep search (offset ≤ 10) | 22.3 | 32 | 131 |
+
+
