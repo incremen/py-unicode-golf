@@ -80,6 +80,27 @@ def api_stats():
     })
 
 
+@app.route('/api/formula-stats')
+def api_formula_stats():
+    """Stats for the base-3 formula across a sample of code points."""
+    import random
+    random.seed(0)
+    sample = list(range(0, 200_001, 10))  # every 10th
+    depths = []
+    lengths = []
+    for n in sample:
+        expr = f'chr({build_n(n)})'
+        depths.append(expr.count('('))
+        lengths.append(len(expr))
+    return jsonify({
+        'sample_size': len(sample),
+        'avg_depth': round(sum(depths) / len(depths), 1),
+        'max_depth': max(depths),
+        'avg_len': round(sum(lengths) / len(lengths), 1),
+        'max_len': max(lengths),
+    })
+
+
 @app.route('/api/anchors')
 def api_anchors():
     """Get base anchors."""
