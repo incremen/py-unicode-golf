@@ -82,26 +82,35 @@ def api_log():
     return jsonify([])
 
 
+_stats_cache = None
+
+def _compute_stats():
+    global _stats_cache
+    if not DB_AVAILABLE:
+        _stats_cache = {'total': 0, 'avg_depth': 0, 'max_depth': 0, 'avg_len': 0, 'max_len': 0}
+    else:
+        exprs = list(DB_EXPRS.values())
+        depths = [e.count('(') for e in exprs]
+        lengths = [len(e) for e in exprs]
+        _stats_cache = {
+            'total': len(exprs),
+            'avg_depth': round(sum(depths) / len(depths), 2),
+            'max_depth': max(depths),
+            'avg_len': round(sum(lengths) / len(lengths), 1),
+            'max_len': max(lengths),
+        }
+
+_compute_stats()
+
 @app.route('/api/stats')
 def api_stats():
-    if not DB_AVAILABLE:
-        return jsonify({'total': 0, 'avg_depth': 0, 'max_depth': 0, 'avg_len': 0, 'max_len': 0, 'strategies': []})
-
-    exprs = list(DB_EXPRS.values())
-    depths = [e.count('(') for e in exprs]
-    lengths = [len(e) for e in exprs]
-    return jsonify({
-        'total': len(exprs),
-        'avg_depth': round(sum(depths) / len(depths), 2),
-        'max_depth': max(depths),
-        'avg_len': round(sum(lengths) / len(lengths), 1),
-        'max_len': max(lengths),
-        'strategies': [],  # not available from JSON
-    })
+    return jsonify(_stats_cache)
 
 
-@app.route('/api/formula-stats')
-def api_formula_stats():
+_formula_stats_cache = None
+
+def _compute_formula_stats():
+    global _formula_stats_cache
     sample = list(range(0, 200_001, 10))
     depths = []
     lengths = []
@@ -109,13 +118,19 @@ def api_formula_stats():
         expr = f'chr({build_n(n)})'
         depths.append(expr.count('('))
         lengths.append(len(expr))
-    return jsonify({
+    _formula_stats_cache = {
         'sample_size': len(sample),
         'avg_depth': round(sum(depths) / len(depths), 1),
         'max_depth': max(depths),
         'avg_len': round(sum(lengths) / len(lengths), 1),
         'max_len': max(lengths),
-    })
+    }
+
+_compute_formula_stats()
+
+@app.route('/api/formula-stats')
+def api_formula_stats():
+    return jsonify(_formula_stats_cache)
 
 
 @app.route('/api/anchors')

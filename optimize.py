@@ -110,7 +110,7 @@ STRATEGIES.append(('complex_offset', _inverse_complex))
 
 # ── Optimization pass ────────────────────────────────────────────────────
 
-def run_pass(max_n=MAX_N, verbose=True):
+def run_pass(max_n=MAX_N):
     """Try all strategies on all numbers in memory, write back improvements."""
     conn = get_conn()
     rows = conn.execute('SELECT n, expr, depth, len FROM numbers').fetchall()
