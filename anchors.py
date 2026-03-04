@@ -101,18 +101,10 @@ def build_n(n):
     if n in memo:
         return memo[n]
 
-    # Try base anchors first (cheapest for small/known numbers)
+    # Use base anchor if it's an exact hit
     if n in BASE_ANCHORS:
         memo[n] = BASE_ANCHORS[n]
         return memo[n]
-
-    # For small n, find nearest anchor above and decrement
-    for anchor_val in sorted(BASE_ANCHORS):
-        if anchor_val >= n:
-            gap = anchor_val - n
-            result = decrement(BASE_ANCHORS[anchor_val], gap)
-            memo[n] = result
-            return result
 
     # Base-3 decomposition: n = 3 * (n // 3) + (n % 3)
     # Build n//3 recursively, then apply 3x, then decrement by (n%3) if needed.

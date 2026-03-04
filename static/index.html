@@ -155,33 +155,6 @@
 
   <div class="divider"></div>
 
-  <p><strong>A subtlety with base anchors</strong></p>
-  <p>
-    Adding more base anchors (small numbers you can construct directly) usually helps,
-    because the recursion can stop earlier. But the greedy algorithm always stops at the
-    first anchor it hits &mdash; it doesn't check whether a different path would be shorter.
-  </p>
-  <p>
-    For example, 49 with the full formula: the nearest anchor above is 70
-    (<code>ord(min(str(not(not()))))</code>, depth 5), so it decrements 21 times &mdash;
-    total depth 47. But the minimal formula, which only has seed 1, finds a much shorter path:
-  </p>
-<pre>full formula:    49 = 70 - 21    (depth 47)
-                 21 decrements from anchor 70
-
-minimal formula: 49 = triple(17) - 2
-                 17 = triple(6) - 1
-                  6 = triple(2)
-                  2 = triple(1) - 1
-                  1 = seed         (depth 26)</pre>
-  <p style="color:#666; font-size:0.8rem;">
-    The base-3 path through seed 1 is half the depth. This is why the full formula has
-    a lower average (more anchors help most numbers) but a higher worst case (a few numbers
-    get trapped in a bad decrement chain). The optimizer fixes this anyway.
-  </p>
-
-  <div class="divider"></div>
-
   <p><strong>Formula stats</strong> (base-3 only, no optimizations)</p>
   <div class="stats-grid" id="formulaStats">
     <div class="stat-card">
@@ -308,11 +281,11 @@ minimal formula: 49 = triple(17) - 2
 
   <p><strong>Optimization history</strong></p>
   <p style="color:#666; font-size:0.8rem; margin-bottom:0.5rem;">
-    Each row shows the database after a round of optimization.
-    The <em>minimal formula</em> uses only 0 and 1 as seeds.
-    The <em>full formula</em> adds 44 base anchors for shorter paths to small numbers.
-    The <em>optimizer</em> tries all strategies from the optimizations tab on every number &mdash;
-    first with up to 2 decrements per step, then a deeper pass with up to 10.
+    Each row shows the state of the database after a round of improvements.
+    <em>Minimal formula</em> uses only seeds 0 and 1.
+    <em>Full formula</em> adds 44 base anchors.
+    <em>Optimizer</em> tries all strategies from the optimizations tab on every number,
+    with up to 2 or 10 decrements per step.
   </p>
   <table>
     <thead>
