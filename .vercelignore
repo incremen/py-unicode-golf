@@ -1,0 +1,4 @@
+expressions.db
+__pycache__
+reference/
+*.pyc

@@ -1,10 +1,34 @@
 """Flask web app for pyfuncs_to_chars."""
 
+import os
+import json
 from flask import Flask, jsonify, send_from_directory
 from anchors import build_n, build_char, BASE_ANCHORS
-from db import get, get_log, get_conn, init_db
 
 app = Flask(__name__, static_folder='static')
+
+# Load optimized expressions from JSON (works on Vercel) or SQLite (local dev)
+DB_EXPRS = None
+DB_AVAILABLE = False
+
+def _load_db():
+    global DB_EXPRS, DB_AVAILABLE
+    json_path = os.path.join(os.path.dirname(__file__), 'expressions.json')
+    db_path = os.path.join(os.path.dirname(__file__), 'expressions.db')
+
+    if os.path.exists(json_path):
+        with open(json_path) as f:
+            DB_EXPRS = json.load(f)
+        DB_AVAILABLE = True
+    elif os.path.exists(db_path):
+        from db import get_conn
+        conn = get_conn()
+        rows = conn.execute('SELECT n, expr FROM numbers').fetchall()
+        conn.close()
+        DB_EXPRS = {str(r[0]): r[1] for r in rows}
+        DB_AVAILABLE = True
+
+_load_db()
 
 
 @app.route('/')
@@ -14,35 +38,29 @@ def index():
 
 @app.route('/api/char/<path:char>')
 def api_char(char):
-    """Get expression for a character. Uses formula by default, db if requested."""
     if len(char) != 1:
         return jsonify({'error': 'Expected exactly one character'}), 400
 
     code_point = ord(char)
-
-    # Formula result (always available)
     formula_expr = build_char(char)
-    formula_depth = formula_expr.count('(')
 
     result = {
         'char': char,
         'code_point': code_point,
         'formula': {
             'expr': formula_expr,
-            'depth': formula_depth,
+            'depth': formula_expr.count('('),
             'len': len(formula_expr),
         },
     }
 
-    # DB result (if available)
-    db_entry = get(code_point)
-    if db_entry:
+    if DB_AVAILABLE and str(code_point) in DB_EXPRS:
+        inner = DB_EXPRS[str(code_point)]
+        expr = f"chr({inner})"
         result['db'] = {
-            'expr': f"chr({db_entry['expr']})",
-            'depth': db_entry['depth'] + 1,  # +1 for chr()
-            'len': db_entry['len'] + 5,       # chr( + )
-            'strategy': db_entry['strategy'],
-            'parent': db_entry['parent'],
+            'expr': expr,
+            'depth': expr.count('('),
+            'len': len(expr),
         }
 
     return jsonify(result)
@@ -50,42 +68,34 @@ def api_char(char):
 
 @app.route('/api/log')
 def api_log():
-    """Get optimization history."""
-    return jsonify(get_log())
+    db_path = os.path.join(os.path.dirname(__file__), 'expressions.db')
+    if os.path.exists(db_path):
+        from db import get_log
+        return jsonify(get_log())
+    return jsonify([])
 
 
 @app.route('/api/stats')
 def api_stats():
-    """Get current database stats."""
-    conn = get_conn()
-    row = conn.execute('''
-        SELECT COUNT(*), AVG(depth), MAX(depth), AVG(len), MAX(len)
-        FROM numbers
-    ''').fetchone()
-    strategies = conn.execute(
-        'SELECT strategy, COUNT(*), AVG(depth) FROM numbers GROUP BY strategy ORDER BY COUNT(*) DESC'
-    ).fetchall()
-    conn.close()
+    if not DB_AVAILABLE:
+        return jsonify({'total': 0, 'avg_depth': 0, 'max_depth': 0, 'avg_len': 0, 'max_len': 0, 'strategies': []})
 
+    exprs = list(DB_EXPRS.values())
+    depths = [e.count('(') for e in exprs]
+    lengths = [len(e) for e in exprs]
     return jsonify({
-        'total': row[0],
-        'avg_depth': round(row[1], 2) if row[1] else 0,
-        'max_depth': row[2] or 0,
-        'avg_len': round(row[3], 1) if row[3] else 0,
-        'max_len': row[4] or 0,
-        'strategies': [
-            {'name': s[0], 'count': s[1], 'avg_depth': round(s[2], 1)}
-            for s in strategies
-        ],
+        'total': len(exprs),
+        'avg_depth': round(sum(depths) / len(depths), 2),
+        'max_depth': max(depths),
+        'avg_len': round(sum(lengths) / len(lengths), 1),
+        'max_len': max(lengths),
+        'strategies': [],  # not available from JSON
     })
 
 
 @app.route('/api/formula-stats')
 def api_formula_stats():
-    """Stats for the base-3 formula across a sample of code points."""
-    import random
-    random.seed(0)
-    sample = list(range(0, 200_001, 10))  # every 10th
+    sample = list(range(0, 200_001, 10))
     depths = []
     lengths = []
     for n in sample:
@@ -103,10 +113,8 @@ def api_formula_stats():
 
 @app.route('/api/anchors')
 def api_anchors():
-    """Get base anchors."""
     return jsonify({str(k): v for k, v in sorted(BASE_ANCHORS.items())})
 
 
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True, port=5000)
