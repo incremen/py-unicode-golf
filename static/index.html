@@ -188,9 +188,10 @@
 <!-- ── Optimizations ── -->
 <div class="main-panel" id="panel-optimizations">
   <p>
-    The base-3 formula works for everything but isn't always the shortest.
+
+    The base-3 formula works for everything but isn't always the shortest. <br>
     These strategies produce shorter expressions for specific numbers.
-    The optimizer tries all of them on every number and keeps the best result.
+    The optimizer tries all of them on every number and keeps the best result in the database (see next tab).
   </p>
 
   <p style="margin-top: 1rem;"><strong>Exact multipliers</strong></p>
@@ -251,8 +252,10 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 <!-- ── Database ── -->
 <div class="main-panel" id="panel-db">
   <p>
-    The database stores the shortest known expression for each number from 0 to 200,000.
+    A simple sqllite database stores the shortest known expression for each number from 0 to 200,000.
     Each entry records which strategy produced it and which smaller number it depends on.
+    So, for example, if we did formula_5(20) = 50, and we found a smaller formula for 20, we automatically plug that in,
+    and get a smaller representation for 50.
   </p>
 
   <p style="margin-top: 1rem;"><strong>Current stats</strong></p>
