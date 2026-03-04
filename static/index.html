@@ -6,6 +6,7 @@
 <title>pyfuncs to chars</title>
 <link rel="stylesheet" href="/static/style.css">
 <script src="/static/unicode_ranges.js"></script>
+<script src="/static/history.js"></script>
 </head>
 <body>
 
@@ -375,10 +376,8 @@ function randomChar() {
   charInput.dispatchEvent(new Event('input'));
 }
 
-async function loadHistory() {
-  const res = await fetch('/api/log');
-  const log = await res.json();
-  document.getElementById('historyBody').innerHTML = log.map(e => `
+function loadHistory() {
+  document.getElementById('historyBody').innerHTML = OPTIMIZATION_HISTORY.map(e => `
     <tr>
       <td>${e.label}</td>
       <td class="num">${e.avg_depth}</td>
