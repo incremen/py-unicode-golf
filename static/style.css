@@ -68,11 +68,25 @@ input[type="text"] {
   text-align: center;
   border-radius: 6px;
 }
+/* wide placeholder state: larger to show helper text, collapses after first char */
+input[type="text"].wide {
+  /* use the input 'size' attribute to precisely fit the placeholder; allow width to be governed by it */
+  font-size: 0.75rem; /* smaller than the random button */
+  width: auto !important;
+  text-align: left;
+  padding-left: 0.6rem;
+}
+input[type="text"].wide::placeholder { font-size: 0.75rem; color: #bfbfbf; }
+/* make placeholder text greyer for initial state */
+input[type="text"]::placeholder { color: #9e9e9e; }
+input[type="text"] {
+  transition: width 180ms ease, padding 180ms ease, text-align 180ms ease, font-size 140ms ease;
+}
 input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(48,105,152,0.2); }
 .btn {
   background: #1a1e28;
   border: 2px solid #2a3040;
-  color: #8a94a8;
+  color: #FFD43B; /* brighter button text */
   padding: 0.7rem 1rem;
   font-family: inherit;
   font-size: 0.85rem;

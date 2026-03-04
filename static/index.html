@@ -17,7 +17,7 @@
 
 <!-- ── Input ── -->
 <div class="input-row">
-  <input type="text" id="charInput" maxlength="2" placeholder="a" autofocus>
+  <input type="text" id="charInput" class="wide" maxlength="2" placeholder="insert char" autofocus>
   <button class="btn" onclick="randomChar()">random</button>
   <div class="toggle">
     <input type="checkbox" id="useDb" checked>
@@ -326,11 +326,17 @@ const copiedMsg = document.getElementById('copiedMsg');
 
 let lastExpr = '';
 
+charInput.classList.add('wide');
+charInput.size = 11; // fit the placeholder 'insert char'
+
 charInput.addEventListener('input', async () => {
   const char = charInput.value;
-  if (!char || char.length === 0) { result.classList.remove('visible'); return; }
+  // when empty, show the wider placeholder state; collapse to single-char size when there's input
+  if (!char || char.length === 0) { charInput.classList.add('wide'); charInput.size = 11; result.classList.remove('visible'); return; }
   const c = [...char].pop();
   charInput.value = c;
+  charInput.classList.remove('wide');
+  charInput.size = 1;
   try {
     const res = await fetch(`/api/char?c=${encodeURIComponent(c)}`);
     const data = await res.json();
@@ -423,8 +429,9 @@ function showResult(data) {
   result.classList.add('visible');
 }
 
-charInput.value = '\u0D9E';
-showResult(lastData);
+// leave the input empty (placeholder shows the character)
+// do not show the example result on load — wait for user input or random
+// showResult(lastData);
 loadHistory();
 loadDbStats();
 loadFormulaStats();
