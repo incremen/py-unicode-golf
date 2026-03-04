@@ -84,11 +84,11 @@ The base-3 formula works for everything but isn't always the shortest. The optim
 
 The database stores the shortest known expression for each number from 0 to 200,000. Each entry records which strategy produced it and which smaller number it depends on.
 
-| Stage | Avg depth | Max depth | Avg length |
-|---|---|---|---|
-| minimal formula (seeds: 0, 1) | 66.6 | 93 | 386 |
-| full formula (44 base anchors) | 55.5 | 102 | 322 |
-| optimizer (offset ≤ 2) | 22.4 | 35 | 131 |
-| deep search (offset ≤ 10) | 22.3 | 32 | 131 |
+| Stage | Avg depth | Max depth |
+|---|---|---|
+| minimal formula (seeds: 0, 1) | 65.6 | 92 |
+| full formula (44 base anchors) | 49.9 | 79 |
+| optimizer (offset ≤ 2) | 22.4 | 35 |
+| deep search (offset ≤ 10) | 22.3 | 32 |
 
 
