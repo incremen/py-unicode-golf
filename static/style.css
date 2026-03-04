@@ -151,6 +151,13 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .main-panel.active { display: block; }
 .main-panel p { color: #aaa; line-height: 1.7; font-size: 0.85rem; margin-bottom: 0.8rem; }
 .main-panel p:last-child { margin-bottom: 0; }
+.main-panel ul {
+  color: #aaa;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  margin: 0 0 0.8rem 1.2rem;
+}
+.main-panel li { margin-bottom: 0.3rem; }
 
 /* Tooltip */
 .tip {
