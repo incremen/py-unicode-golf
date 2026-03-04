@@ -41,19 +41,30 @@
 <!-- ── Why? ── -->
 <div class="main-panel" id="panel-why">
   <p>
-    The constraint: write a Python expression that evaluates to any character,
-    using only builtin function calls. No numeric literals, no string literals,
-    no operators. Each function takes exactly one argument.
+    Right around the whole Among Us time, it was gaining traction that
+    <code>chr(sum(range(ord(min(str(not()))))))</code> in Python evaluates to
+    "ඞ". This was an amazing discovery. But (unfortunately), I immediately
+    tried to generalize it. Could any Unicode character (there's ~160,000)
+    be represented like this?
+  </p>
+
+  <p>The rules are, to be clear:</p>
+  <ul>
+    <li>The final function must take in no parameters, like <code>not()</code>.</li>
+    <li>Each function can only take in one parameter; <code>pow(a,b)</code> isn't allowed.</li>
+    <li>Represent each Unicode character as a composition of these functions.</li>
+  </ul>
+
+  <p>
+    Since we only aim to find the Unicode value of the character and then
+    apply <code>chr()</code> to it, the struggle is essentially to find a
+    neat representation for each number 1&ndash;160,000.
   </p>
   <p>
-    So <code>chr(97)</code> is out (uses a number). <code>ord('a')</code> is out
-    (uses a string). But <code>ord(max(str(bytes())))</code> is fine &mdash;
-    it evaluates to 98 using only function calls on function calls.
+    And the representation MUST be neat, in a sense, since Python won't let
+    you have more than 200 nested parentheses. It seemed like a cool challenge idk
   </p>
-  <p>
-    The question is: can you reach every Unicode character this way?
-    And if so, how short can the expression be?
-  </p>
+
 </div>
 
 <!-- ── The formula ── -->
