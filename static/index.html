@@ -353,11 +353,51 @@ function showMain(btn, id) {
 
 function randomChar() {
   const ranges = [
-    [33, 126], [161, 879], [913, 969], [1040, 1103],
-    [3456, 3572], [4352, 4607], [8448, 8527],
-    [9472, 9599], [9632, 9727], [9728, 9983],
-    [12353, 12447], [12448, 12543], [19968, 20200],
-    [128512, 128591],
+    [33, 126],        // ASCII printable
+    [161, 591],       // Latin extended
+    [880, 1023],      // Greek + Coptic
+    [1024, 1279],     // Cyrillic
+    [1280, 1327],     // Armenian
+    [1328, 1423],     // Hebrew
+    [1424, 1535],     // Arabic (basic)
+    [2304, 2431],     // Devanagari
+    [3456, 3583],     // Sinhala (among us zone)
+    [3584, 3711],     // Thai
+    [4096, 4255],     // Myanmar
+    [4352, 4607],     // Hangul Jamo
+    [5024, 5119],     // Cherokee
+    [5792, 5887],     // Runic
+    [6016, 6143],     // Khmer
+    [7680, 7935],     // Latin extended additional
+    [8192, 8303],     // General punctuation
+    [8352, 8399],     // Currency symbols
+    [8448, 8527],     // Letterlike symbols
+    [8592, 8703],     // Arrows
+    [8704, 8959],     // Math operators
+    [9472, 9599],     // Box drawing
+    [9600, 9631],     // Block elements
+    [9632, 9727],     // Geometric shapes
+    [9728, 9983],     // Misc symbols
+    [9984, 10175],    // Dingbats
+    [10240, 10495],   // Braille
+    [11264, 11359],   // Glagolitic
+    [12353, 12447],   // Hiragana
+    [12448, 12543],   // Katakana
+    [12549, 12591],   // Bopomofo
+    [13312, 13470],   // CJK ext A (small slice)
+    [19968, 20500],   // CJK unified (small slice)
+    [40960, 42127],   // Yi syllables
+    [44032, 44500],   // Hangul syllables (small slice)
+    [65536, 65663],   // Linear B syllabary
+    [66304, 66351],   // Old Italic
+    [66560, 66639],   // Deseret
+    [118784, 119029], // Musical symbols
+    [119296, 119365], // Greek musical notation
+    [126976, 127231], // Alchemical + misc symbols
+    [127744, 128511], // Misc symbols + pictographs
+    [128512, 128591], // Emoticons
+    [128640, 128767], // Transport + map symbols
+    [129280, 129535], // Supplemental symbols
   ];
   const range = ranges[Math.floor(Math.random() * ranges.length)];
   const cp = range[0] + Math.floor(Math.random() * (range[1] - range[0] + 1));
