@@ -282,10 +282,11 @@
   <p><strong>Optimization history</strong></p>
   <p style="color:#666; font-size:0.8rem; margin-bottom:0.5rem;">
     Each row shows the state of the database after a round of improvements.
-    <em>Minimal formula</em> uses only seeds 0 and 1.
-    <em>Full formula</em> adds 44 base anchors.
-    <em>Optimizer</em> tries all strategies from the optimizations tab on every number,
-    with up to 2 or 10 decrements per step.
+    <em>Minimal</em> = only seeds 0 and 1.
+    <em>Full formula</em> = adds 44 base anchors.
+    <em>Optimizer</em> = tries every strategy on every number and keeps the shortest.
+    <em>Deep search</em> = same, but allows up to 10 extra decrements to bridge gaps
+    (instead of 2).
   </p>
   <table>
     <thead>
