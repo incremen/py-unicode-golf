@@ -80,18 +80,27 @@
     then decrement back down with <code>max(range())</code>.
   </p>
   <p>For example, to get to 6:</p>
-<pre>5= len(bin(len(str(not()))))
-  `10 = max(range(10)) = max(range(len(bin(len(str(not()))))))`
-  `8 = max(range(9)) = max(range(max(range(10)))) = max(range(max(range(max(range(len(bin(len(str(not()))))))))))`
-  
-</pre>
-This algorithm works, but for bigger numbers it eventually can't fit pythons 200 paranthases limit.
-In this example, to reach 100, you'd have to use the first formula thrice on 5 to get 990, and then do 890 decrements!
-Even if you have many initial seeds, the quadratic growth of the formula to get an arbitrarily large number is much too sparce,
-considering you have 160,000 numbers to find.
+<pre>5 = len(bin(len(str(not()))))
+10 = sum(range(5)) = sum(range(len(bin(len(str(not()))))))
+6 = max(range(max(range(max(range(max(range(10))))))))</pre>
+
   <p>
-    The fix: instead of overshooting and decrementing, use a <strong>3x multiplier</strong>
-    and build the number in base 3. Two operations are enough:
+    This algorithm works, but for bigger numbers it eventually can't fit Python's
+    200 parentheses limit. In this example, to reach 100, you'd have to use the
+    first formula thrice on 5 to get 990, and then do 890 decrements!
+    Even if you have many initial seeds, the quadratic growth of the formula to
+    get an arbitrarily large number is much too sparse, considering you have
+    160,000 numbers to find.
+  </p>
+  <p>
+    I went looking for many formulas to get from a number n to f(n), and found many,
+    but credit to Gemini for finding the key! A direct function that turns n into 3n.
+    This is incredibly useful, because it means we can represent each number n in
+    "O(log n)" parentheses. Basically, it's kind of like the algorithm to find a
+    number in base 3, except the opposite direction, since we can only subtract and not add.
+  </p>
+  <p>
+    Two operations are enough:
   </p>
 
   <p><strong>Subtract 1:</strong> <code>max(range(n))</code> returns n - 1.</p>
