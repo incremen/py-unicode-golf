@@ -119,7 +119,7 @@
     At each step, build ceil(n/3), triple it, then subtract the remainder (0, 1, or 2).
     Stop when you reach a base anchor &mdash; a small number you can construct
     directly (like <code>len(str(not()))</code> = 4).
-    *note: The only base anchor you actually need is <code>1 = int(not())</code>.
+    *note: The only base anchors you actually need is <code>1 = int(not()), 0 = int(not(not()))</code>.
   </p>
 
 <pre>function build(n):
@@ -152,6 +152,33 @@
     build(13) = triple(that) - 2</pre>
 
   <p style="margin-top: 0.5rem;">Then wrap the whole thing in <code>chr()</code> to get the character.</p>
+
+  <div class="divider"></div>
+
+  <p><strong>A subtlety with base anchors</strong></p>
+  <p>
+    Adding more base anchors (small numbers you can construct directly) usually helps,
+    because the recursion can stop earlier. But the greedy algorithm always stops at the
+    first anchor it hits &mdash; it doesn't check whether a different path would be shorter.
+  </p>
+  <p>
+    For example, 49 with the full formula: the nearest anchor above is 70
+    (<code>ord(min(str(not(not()))))</code>, depth 5), so it decrements 21 times &mdash;
+    total depth 47. But the minimal formula, which only has seed 1, finds a much shorter path:
+  </p>
+<pre>full formula:    49 = 70 - 21    (depth 47)
+                 21 decrements from anchor 70
+
+minimal formula: 49 = triple(17) - 2
+                 17 = triple(6) - 1
+                  6 = triple(2)
+                  2 = triple(1) - 1
+                  1 = seed         (depth 26)</pre>
+  <p style="color:#666; font-size:0.8rem;">
+    The base-3 path through seed 1 is half the depth. This is why the full formula has
+    a lower average (more anchors help most numbers) but a higher worst case (a few numbers
+    get trapped in a bad decrement chain). The optimizer fixes this anyway.
+  </p>
 
   <div class="divider"></div>
 
@@ -279,10 +306,13 @@
 
   <div class="divider"></div>
 
-  <p><strong>Before &amp; after optimization</strong></p>
+  <p><strong>Optimization history</strong></p>
   <p style="color:#666; font-size:0.8rem; margin-bottom:0.5rem;">
-    The base-3 formula gives a correct expression for every number.
-    The optimizer then tries all strategies above and keeps any improvement.
+    Each row shows the database after a round of optimization.
+    The <em>minimal formula</em> uses only 0 and 1 as seeds.
+    The <em>full formula</em> adds 44 base anchors for shorter paths to small numbers.
+    The <em>optimizer</em> tries all strategies from the optimizations tab on every number &mdash;
+    first with up to 2 decrements per step, then a deeper pass with up to 10.
   </p>
   <table>
     <thead>
