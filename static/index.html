@@ -82,9 +82,10 @@
     border: 1px solid #222;
     border-radius: 6px;
     padding: 1.2rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
   }
-  .section p { color: #aaa; line-height: 1.6; font-size: 0.85rem; margin-bottom: 0.8rem; }
+  .section p { color: #aaa; line-height: 1.7; font-size: 0.85rem; margin-bottom: 0.8rem; }
+  .section p:last-child { margin-bottom: 0; }
   code {
     background: #1a1a1a;
     padding: 0.15rem 0.4rem;
@@ -92,8 +93,20 @@
     color: #c8e6c9;
     font-size: 0.85rem;
   }
-  .chain { color: #888; font-size: 0.85rem; }
-  .chain span { color: #c8e6c9; }
+  pre {
+    background: #0d0d0d;
+    border: 1px solid #1a1a1a;
+    border-radius: 4px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: #aaa;
+    margin: 0.8rem 0;
+  }
+  pre .comment { color: #555; }
+  pre .val { color: #c8e6c9; }
+  pre .fn { color: #90caf9; }
 
   table {
     width: 100%;
@@ -113,12 +126,56 @@
     color: #888;
   }
   .strategy-tag .count { color: #e0e0e0; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 0;
+    margin-top: 1rem;
+    border-bottom: 1px solid #222;
+  }
+  .tab {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    color: #666;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    background: none;
+    font-family: inherit;
+  }
+  .tab:hover { color: #aaa; }
+  .tab.active {
+    color: #e0e0e0;
+    background: #111;
+    border-color: #222;
+    margin-bottom: -1px;
+  }
+  .tab-content {
+    display: none;
+    background: #111;
+    border: 1px solid #222;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+  }
+  .tab-content.active { display: block; }
+  .tab-content p { color: #aaa; line-height: 1.7; font-size: 0.85rem; margin-bottom: 0.8rem; }
+  .tab-content p:last-child { margin-bottom: 0; }
+
+  .op-table { margin: 0.5rem 0; }
+  .op-table td { padding: 0.3rem 0.8rem; font-size: 0.8rem; }
+  .op-table td:first-child { color: #c8e6c9; }
+  .op-table td:nth-child(2) { color: #888; }
+  .op-table td:nth-child(3) { color: #666; font-size: 0.75rem; }
 </style>
 </head>
 <body>
 
 <h1>pyfuncs_to_chars</h1>
-<h2>any character as python builtins — no numbers, no strings, no operators</h2>
+<h2>represent any character using only python builtin function calls</h2>
 
 <!-- ── Input ── -->
 <div class="input-row">
@@ -142,27 +199,141 @@
 <h3>how it works</h3>
 <div class="section">
   <p>
-    Start from <code>not() → True</code>. Through <code>str()</code>, <code>min()</code>,
-    <code>ord()</code> and friends, we extract integers from Python's own string representations.
-    These are our <strong>base anchors</strong> — about 40 numbers from 0 to 125.
+    The constraint: write a Python expression that evaluates to any character,
+    using only builtin function calls. No numeric literals, no string literals,
+    no operators. Each function takes exactly one argument.
   </p>
-  <p>The key insight: <code>len(str(list(bytes(n))))</code> = <strong>exactly 3n</strong>.</p>
   <p>
-    Combined with <code>max(range(n))</code> = n−1, any number can be built in <strong>base 3</strong>.
-    Recursively build ceil(n/3), triple it, then decrement 0–2 times:
+    We need two things: a way to multiply by 3, and a way to subtract 1.
+    Together they let us build any number in base 3.
   </p>
-  <div class="chain">
-    <span>97</span> = 3 × <span>33</span> − 2 = 3 × (3 × <span>11</span>) − 2
-    = 3 × (3 × <span>len(str(frozenset()))</span>) − 2
-  </div>
+</div>
+
+<div class="section">
+  <p><strong>Subtract 1:</strong> <code>max(range(n))</code> returns n-1.</p>
+  <p style="color: #666; font-size: 0.8rem;">
+    range(n) produces 0, 1, ..., n-1. max() picks the last one.
+  </p>
+</div>
+
+<div class="section">
+  <p><strong>Multiply by 3:</strong> <code>len(str(list(bytes(n))))</code> returns exactly 3n.</p>
+  <p style="color: #666; font-size: 0.8rem;">
+    bytes(n) creates n zero-bytes. list() turns it into [0, 0, ..., 0].
+    str() gives "[0, 0, ..., 0]" which is always exactly 3n characters long.
+  </p>
+</div>
+
+<div class="section">
+  <p><strong>The algorithm:</strong> to build any number n, express it in base 3.
+    At each step, recursively build ceil(n/3), triple it, then subtract 0, 1, or 2.
+    The recursion bottoms out at a base anchor &mdash; a small number we can construct
+    directly from builtins (like <code>len(str(not()))</code> = 4).
+  </p>
+
+<pre><span class="comment"># example: build 13</span>
+<span class="comment"># 13 in base 3 is 111 (1*9 + 1*3 + 1)</span>
+<span class="comment"># but we work top-down:</span>
+
+<span class="fn">build</span>(<span class="val">13</span>):
+  ceil(13/3) = <span class="val">5</span>,  remainder = 3*5 - 13 = <span class="val">2</span>
+  so 13 = 3 * <span class="fn">build</span>(<span class="val">5</span>) - 2
+
+<span class="fn">build</span>(<span class="val">5</span>):
+  ceil(5/3) = <span class="val">2</span>,  remainder = 3*2 - 5 = <span class="val">1</span>
+  so 5 = 3 * <span class="fn">build</span>(<span class="val">2</span>) - 1
+
+<span class="fn">build</span>(<span class="val">2</span>):
+  base anchor: <span class="val">len(str(ord(min(str(not())))))</span>
+
+<span class="comment"># result for 13:</span>
+<span class="comment"># triple(triple(anchor_2) - 1) - 2</span>
+<span class="comment"># = len(str(list(bytes(max(range(len(str(list(bytes(</span>
+<span class="comment">#     len(str(ord(min(str(not())))))</span>
+<span class="comment">#   ))))))))))  ...and so on</span></pre>
+
+  <p>
+    Python has a 200 nested parentheses limit. The base-3 approach uses at most
+    ~114 for the largest Unicode code point (1,114,111), so it fits.
+  </p>
+</div>
+
+<!-- ── Optimizations (tabs) ── -->
+<h3>optimizations</h3>
+<p style="color: #666; font-size: 0.8rem; margin-bottom: 0.5rem;">
+  The base-3 approach works but isn't always the shortest. These strategies can produce
+  shorter expressions for specific numbers.
+</p>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('tab-multipliers')">multipliers</button>
+  <button class="tab" onclick="showTab('tab-ascii')">ascii exponential</button>
+  <button class="tab" onclick="showTab('tab-zip')">zip chain</button>
+  <button class="tab" onclick="showTab('tab-other')">other</button>
+</div>
+
+<div class="tab-content active" id="tab-multipliers">
+  <p>Different ways to multiply, each with a different cost in parentheses:</p>
+  <table class="op-table">
+    <tr><td>len(str(list(bytes(n))))</td><td>= 3n</td><td>4 parens</td></tr>
+    <tr><td>len(str(bytes(n)))</td><td>= 4n + 3</td><td>3 parens</td></tr>
+    <tr><td>len(ascii(str(bytes(n))))</td><td>= 5n + 5</td><td>4 parens</td></tr>
+  </table>
   <p style="margin-top: 0.8rem;">
-    Then wrap in <code>chr()</code>. Max depth for any Unicode character: ~114 parens out of Python's 200 limit.
+    The 4n+3 multiplier costs only 3 parens (cheaper than 3x at 4 parens),
+    so it's often better when you can land on the right value with the +3 offset.
   </p>
+</div>
+
+<div class="tab-content" id="tab-ascii">
   <p>
-    The optimizer tries faster strategies — <code>4n+3</code>, <code>5n+5</code>,
-    zip chains (<code>6n</code>, <code>9n</code>), and the ascii exponential
-    (<code>(2^k+3)n</code>) — to find shorter expressions.
+    <code>ascii()</code> escapes backslashes, roughly doubling them each time.
+    Stacking k calls of ascii() on str(bytes(n)) gives:
   </p>
+  <p><code>f(n) = (2^k + 3) * n + (2^(k+1) + 1)</code></p>
+  <table class="op-table">
+    <tr><td>k=1</td><td>5n + 5</td><td>4 parens</td></tr>
+    <tr><td>k=2</td><td>7n + 9</td><td>5 parens</td></tr>
+    <tr><td>k=3</td><td>11n + 17</td><td>6 parens</td></tr>
+    <tr><td>k=4</td><td>19n + 33</td><td>7 parens</td></tr>
+    <tr><td>k=5</td><td>35n + 65</td><td>8 parens</td></tr>
+    <tr><td>k=6</td><td>67n + 129</td><td>9 parens</td></tr>
+    <tr><td>k=10</td><td>1027n + 2049</td><td>13 parens</td></tr>
+  </table>
+  <p style="margin-top: 0.8rem;">
+    Exponential multipliers for linear paren cost. A 1027x multiplier in 13 parens
+    means reaching large numbers quickly.
+  </p>
+</div>
+
+<div class="tab-content" id="tab-zip">
+  <p>
+    Wrapping bytes(n) in zip() creates nested tuples, making the string
+    representation longer. Each zip adds exactly 3n to the length:
+  </p>
+  <p><code>len(str(list(zip^k(bytes(n))))) = 3(k+1) * n</code></p>
+  <table class="op-table">
+    <tr><td>k=0</td><td>3n</td><td>4 parens (same as triple)</td></tr>
+    <tr><td>k=1</td><td>6n</td><td>5 parens</td></tr>
+    <tr><td>k=2</td><td>9n</td><td>6 parens</td></tr>
+    <tr><td>k=3</td><td>12n</td><td>7 parens</td></tr>
+    <tr><td>k=4</td><td>15n</td><td>8 parens</td></tr>
+  </table>
+  <p style="margin-top: 0.8rem;">
+    Clean exact multipliers with no offset terms. Useful when you need to hit a
+    number that's an exact multiple of 6, 9, 12, etc.
+  </p>
+</div>
+
+<div class="tab-content" id="tab-other">
+  <p><strong>Triangular:</strong> <code>sum(range(n))</code> = n(n-1)/2. Quadratic jump, 2 parens.
+    Good for getting from small seeds to medium numbers quickly.</p>
+  <p><strong>Log step-down:</strong> <code>len(str(n))</code> = number of digits.
+    Collapses a huge number back to something small. 2 parens.</p>
+  <p><strong>Boolean collapse:</strong> <code>int(bool(n))</code> = 1 for any n > 0.
+    Instant reset to 1. 2 parens.</p>
+  <p><strong>List range repr:</strong> <code>len(str(list(range(n))))</code> grows as ~n*log(n).
+    Sub-quadratic, useful for controlled jumps into the tens of thousands. 4 parens.</p>
 </div>
 
 <!-- ── Optimization history ── -->
@@ -198,7 +369,6 @@ charInput.addEventListener('input', async () => {
   const char = charInput.value;
   if (!char || char.length === 0) { result.classList.remove('visible'); return; }
 
-  // Take the last character typed (handles multi-byte)
   const c = [...char].pop();
   charInput.value = c;
 
@@ -211,8 +381,8 @@ charInput.addEventListener('input', async () => {
     const src = useOptimized ? data.db : data.formula;
     const label = useOptimized ? 'db' : 'formula';
 
-    resultChar.textContent = `'${data.char}' — U+${data.code_point.toString(16).toUpperCase().padStart(4, '0')}`;
-    resultMeta.textContent = `${src.depth} calls · ${src.len} chars · ${label}`;
+    resultChar.textContent = `'${data.char}' \u2014 U+${data.code_point.toString(16).toUpperCase().padStart(4, '0')}`;
+    resultMeta.textContent = `${src.depth} calls \xb7 ${src.len} chars \xb7 ${label}`;
     resultExpr.textContent = src.expr;
     lastExpr = src.expr;
     copiedMsg.textContent = '';
@@ -232,12 +402,19 @@ function copyExpr() {
   setTimeout(() => copiedMsg.textContent = '', 1500);
 }
 
+// Tabs
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
 // Load history
 async function loadHistory() {
   const res = await fetch('/api/log');
   const log = await res.json();
-  const tbody = document.getElementById('historyBody');
-  tbody.innerHTML = log.map(e => `
+  document.getElementById('historyBody').innerHTML = log.map(e => `
     <tr>
       <td>${e.label}</td>
       <td class="num">${e.improvements.toLocaleString()}</td>
@@ -253,7 +430,7 @@ async function loadStats() {
   const res = await fetch('/api/stats');
   const s = await res.json();
   document.getElementById('statsText').textContent =
-    `${s.total.toLocaleString()} entries · avg depth ${s.avg_depth} · max depth ${s.max_depth} · avg length ${s.avg_len}`;
+    `${s.total.toLocaleString()} entries \xb7 avg depth ${s.avg_depth} \xb7 max depth ${s.max_depth} \xb7 avg length ${s.avg_len}`;
   document.getElementById('strategiesList').innerHTML =
     s.strategies.map(st =>
       `<span class="strategy-tag">${st.name} <span class="count">${st.count.toLocaleString()}</span></span>`
