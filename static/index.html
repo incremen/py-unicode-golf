@@ -17,7 +17,6 @@
   }
   h1 { color: #fff; font-size: 1.6rem; margin-bottom: 0.3rem; }
   h2 { color: #888; font-size: 1rem; margin-bottom: 1.5rem; font-weight: normal; }
-  h3 { color: #fff; font-size: 1.1rem; margin: 2rem 0 1rem; }
 
   .input-row {
     display: flex;
@@ -44,6 +43,17 @@
     font-size: 0.85rem;
     margin-left: 1rem;
   }
+  .random-btn {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #888;
+    padding: 0.7rem 1rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .random-btn:hover { color: #e0e0e0; border-color: #666; }
   .toggle input { accent-color: #666; }
 
   .result {
@@ -51,7 +61,7 @@
     border: 1px solid #222;
     border-radius: 6px;
     padding: 1.2rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
     display: none;
   }
   .result.visible { display: block; }
@@ -77,15 +87,6 @@
   .result-expr:hover { border-color: #333; }
   .copied { color: #666; font-size: 0.75rem; margin-top: 0.4rem; }
 
-  .section {
-    background: #111;
-    border: 1px solid #222;
-    border-radius: 6px;
-    padding: 1.2rem;
-    margin-bottom: 0.5rem;
-  }
-  .section p { color: #aaa; line-height: 1.7; font-size: 0.85rem; margin-bottom: 0.8rem; }
-  .section p:last-child { margin-bottom: 0; }
   code {
     background: #1a1a1a;
     padding: 0.15rem 0.4rem;
@@ -127,17 +128,61 @@
   }
   .strategy-tag .count { color: #e0e0e0; }
 
-  /* Tabs */
-  .tabs {
+  .op-table { margin: 0.5rem 0; }
+  .op-table td { padding: 0.3rem 0.8rem; font-size: 0.8rem; }
+  .op-table td:first-child { color: #c8e6c9; }
+  .op-table td:nth-child(2) { color: #888; }
+  .op-table td:nth-child(3) { color: #666; font-size: 0.75rem; }
+
+  /* Top-level tabs */
+  .main-tabs {
     display: flex;
     gap: 0;
-    margin-top: 1rem;
-    border-bottom: 1px solid #222;
+    border-bottom: 1px solid #333;
+    margin-bottom: 0;
   }
-  .tab {
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
+  .main-tab {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
     color: #666;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    background: none;
+    font-family: inherit;
+  }
+  .main-tab:hover { color: #aaa; }
+  .main-tab.active {
+    color: #e0e0e0;
+    background: #111;
+    border-color: #333;
+    margin-bottom: -1px;
+  }
+  .main-panel {
+    display: none;
+    background: #111;
+    border: 1px solid #333;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .main-panel.active { display: block; }
+  .main-panel p { color: #aaa; line-height: 1.7; font-size: 0.85rem; margin-bottom: 0.8rem; }
+  .main-panel p:last-child { margin-bottom: 0; }
+
+  /* Sub-tabs within optimizations */
+  .sub-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #222;
+    margin: 1rem 0 0;
+  }
+  .sub-tab {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    color: #555;
     cursor: pointer;
     border: 1px solid transparent;
     border-bottom: none;
@@ -145,31 +190,34 @@
     background: none;
     font-family: inherit;
   }
-  .tab:hover { color: #aaa; }
-  .tab.active {
-    color: #e0e0e0;
-    background: #111;
+  .sub-tab:hover { color: #888; }
+  .sub-tab.active {
+    color: #ccc;
+    background: #1a1a1a;
     border-color: #222;
     margin-bottom: -1px;
   }
-  .tab-content {
+  .sub-content {
     display: none;
-    background: #111;
+    background: #1a1a1a;
     border: 1px solid #222;
     border-top: none;
-    border-radius: 0 0 6px 6px;
-    padding: 1.2rem;
-    margin-bottom: 1.5rem;
+    border-radius: 0 0 4px 4px;
+    padding: 1rem;
   }
-  .tab-content.active { display: block; }
-  .tab-content p { color: #aaa; line-height: 1.7; font-size: 0.85rem; margin-bottom: 0.8rem; }
-  .tab-content p:last-child { margin-bottom: 0; }
+  .sub-content.active { display: block; }
+  .sub-content p { color: #aaa; line-height: 1.7; font-size: 0.85rem; margin-bottom: 0.8rem; }
+  .sub-content p:last-child { margin-bottom: 0; }
 
-  .op-table { margin: 0.5rem 0; }
-  .op-table td { padding: 0.3rem 0.8rem; font-size: 0.8rem; }
-  .op-table td:first-child { color: #c8e6c9; }
-  .op-table td:nth-child(2) { color: #888; }
-  .op-table td:nth-child(3) { color: #666; font-size: 0.75rem; }
+  .section {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 6px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  .section p { color: #aaa; line-height: 1.7; font-size: 0.85rem; margin-bottom: 0.8rem; }
+  .section p:last-child { margin-bottom: 0; }
 </style>
 </head>
 <body>
@@ -180,6 +228,7 @@
 <!-- ── Input ── -->
 <div class="input-row">
   <input type="text" id="charInput" maxlength="2" placeholder="a" autofocus>
+  <button class="random-btn" onclick="randomChar()">random</button>
   <div class="toggle">
     <input type="checkbox" id="useDb" checked>
     <label for="useDb">use optimized database</label>
@@ -195,163 +244,163 @@
   <div class="copied" id="copiedMsg"></div>
 </div>
 
-<!-- ── How it works ── -->
-<h3>how it works</h3>
-<div class="section">
+<!-- ── Main tabs ── -->
+<div class="main-tabs">
+  <button class="main-tab" onclick="showMain('panel-why')">why?</button>
+  <button class="main-tab" onclick="showMain('panel-formula')">the formula</button>
+  <button class="main-tab" onclick="showMain('panel-optimizations')">optimizations</button>
+  <button class="main-tab" onclick="showMain('panel-db')">database</button>
+</div>
+
+<!-- ── Why? ── -->
+<div class="main-panel" id="panel-why">
   <p>
     The constraint: write a Python expression that evaluates to any character,
     using only builtin function calls. No numeric literals, no string literals,
     no operators. Each function takes exactly one argument.
   </p>
   <p>
-    We need two things: a way to multiply by 3, and a way to subtract 1.
-    Together they let us build any number in base 3.
+    So <code>chr(97)</code> is out (uses a number). <code>ord('a')</code> is out
+    (uses a string). But <code>ord(max(str(bytes())))</code> is fine &mdash;
+    it evaluates to 98 using only function calls on function calls.
+  </p>
+  <p>
+    The question is: can you reach every Unicode character this way?
+    And if so, how short can the expression be?
   </p>
 </div>
 
-<div class="section">
+<!-- ── The formula ── -->
+<div class="main-panel" id="panel-formula">
+  <p>
+    We need two operations. Together they let us build any number.
+  </p>
+
   <p><strong>Subtract 1:</strong> <code>max(range(n))</code> returns n-1.</p>
-  <p style="color: #666; font-size: 0.8rem;">
-    range(n) produces 0, 1, ..., n-1. max() picks the last one.
+  <p style="color: #666; font-size: 0.8rem; margin-bottom: 1.2rem;">
+    range(n) produces 0, 1, ..., n-1. max() picks the last one. Costs 2 parentheses.
   </p>
-</div>
 
-<div class="section">
   <p><strong>Multiply by 3:</strong> <code>len(str(list(bytes(n))))</code> returns exactly 3n.</p>
-  <p style="color: #666; font-size: 0.8rem;">
+  <p style="color: #666; font-size: 0.8rem; margin-bottom: 1.2rem;">
     bytes(n) creates n zero-bytes. list() turns it into [0, 0, ..., 0].
-    str() gives "[0, 0, ..., 0]" which is always exactly 3n characters long.
+    str() gives "[0, 0, ..., 0]" &mdash; always exactly 3n characters. Costs 4 parentheses.
   </p>
-</div>
 
-<div class="section">
-  <p><strong>The algorithm:</strong> to build any number n, express it in base 3.
-    At each step, recursively build ceil(n/3), triple it, then subtract 0, 1, or 2.
-    The recursion bottoms out at a base anchor &mdash; a small number we can construct
+  <p><strong>The algorithm:</strong> to build n, recursively build ceil(n/3),
+    triple it, then subtract 0, 1, or 2. This is base-3 decomposition.
+    The recursion stops at a base anchor &mdash; a small number constructible
     directly from builtins (like <code>len(str(not()))</code> = 4).
   </p>
 
 <pre><span class="comment"># example: build 13</span>
 <span class="comment"># 13 in base 3 is 111 (1*9 + 1*3 + 1)</span>
-<span class="comment"># but we work top-down:</span>
 
 <span class="fn">build</span>(<span class="val">13</span>):
   ceil(13/3) = <span class="val">5</span>,  remainder = 3*5 - 13 = <span class="val">2</span>
-  so 13 = 3 * <span class="fn">build</span>(<span class="val">5</span>) - 2
+  13 = 3 * <span class="fn">build</span>(<span class="val">5</span>) - 2
 
 <span class="fn">build</span>(<span class="val">5</span>):
   ceil(5/3) = <span class="val">2</span>,  remainder = 3*2 - 5 = <span class="val">1</span>
-  so 5 = 3 * <span class="fn">build</span>(<span class="val">2</span>) - 1
+  5 = 3 * <span class="fn">build</span>(<span class="val">2</span>) - 1
 
 <span class="fn">build</span>(<span class="val">2</span>):
   base anchor: <span class="val">len(str(ord(min(str(not())))))</span>
 
-<span class="comment"># result for 13:</span>
-<span class="comment"># triple(triple(anchor_2) - 1) - 2</span>
-<span class="comment"># = len(str(list(bytes(max(range(len(str(list(bytes(</span>
-<span class="comment">#     len(str(ord(min(str(not())))))</span>
-<span class="comment">#   ))))))))))  ...and so on</span></pre>
+<span class="comment"># assembling: 13 = triple(triple(anchor) - 1) - 2</span></pre>
 
   <p>
-    Python has a 200 nested parentheses limit. The base-3 approach uses at most
-    ~114 for the largest Unicode code point (1,114,111), so it fits.
+    Python has a 200 nested parentheses limit. The base-3 approach uses
+    at most ~114 for the largest Unicode code point (1,114,111), so it fits.
   </p>
 </div>
 
-<!-- ── Optimizations (tabs) ── -->
-<h3>optimizations</h3>
-<p style="color: #666; font-size: 0.8rem; margin-bottom: 0.5rem;">
-  The base-3 approach works but isn't always the shortest. These strategies can produce
-  shorter expressions for specific numbers.
-</p>
-
-<div class="tabs">
-  <button class="tab active" onclick="showTab('tab-multipliers')">multipliers</button>
-  <button class="tab" onclick="showTab('tab-ascii')">ascii exponential</button>
-  <button class="tab" onclick="showTab('tab-zip')">zip chain</button>
-  <button class="tab" onclick="showTab('tab-other')">other</button>
-</div>
-
-<div class="tab-content active" id="tab-multipliers">
-  <p>Different ways to multiply, each with a different cost in parentheses:</p>
-  <table class="op-table">
-    <tr><td>len(str(list(bytes(n))))</td><td>= 3n</td><td>4 parens</td></tr>
-    <tr><td>len(str(bytes(n)))</td><td>= 4n + 3</td><td>3 parens</td></tr>
-    <tr><td>len(ascii(str(bytes(n))))</td><td>= 5n + 5</td><td>4 parens</td></tr>
-  </table>
-  <p style="margin-top: 0.8rem;">
-    The 4n+3 multiplier costs only 3 parens (cheaper than 3x at 4 parens),
-    so it's often better when you can land on the right value with the +3 offset.
-  </p>
-</div>
-
-<div class="tab-content" id="tab-ascii">
+<!-- ── Optimizations ── -->
+<div class="main-panel" id="panel-optimizations">
   <p>
-    <code>ascii()</code> escapes backslashes, roughly doubling them each time.
-    Stacking k calls of ascii() on str(bytes(n)) gives:
+    The base-3 formula works for everything, but isn't always the shortest.
+    Other strategies can produce shorter expressions for specific numbers.
+    The optimizer tries all of them and keeps the best.
   </p>
-  <p><code>f(n) = (2^k + 3) * n + (2^(k+1) + 1)</code></p>
-  <table class="op-table">
-    <tr><td>k=1</td><td>5n + 5</td><td>4 parens</td></tr>
-    <tr><td>k=2</td><td>7n + 9</td><td>5 parens</td></tr>
-    <tr><td>k=3</td><td>11n + 17</td><td>6 parens</td></tr>
-    <tr><td>k=4</td><td>19n + 33</td><td>7 parens</td></tr>
-    <tr><td>k=5</td><td>35n + 65</td><td>8 parens</td></tr>
-    <tr><td>k=6</td><td>67n + 129</td><td>9 parens</td></tr>
-    <tr><td>k=10</td><td>1027n + 2049</td><td>13 parens</td></tr>
-  </table>
-  <p style="margin-top: 0.8rem;">
-    Exponential multipliers for linear paren cost. A 1027x multiplier in 13 parens
-    means reaching large numbers quickly.
-  </p>
+
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="showSub('sub-multipliers')">multipliers</button>
+    <button class="sub-tab" onclick="showSub('sub-ascii')">ascii exponential</button>
+    <button class="sub-tab" onclick="showSub('sub-zip')">zip chain</button>
+    <button class="sub-tab" onclick="showSub('sub-other')">other</button>
+  </div>
+
+  <div class="sub-content active" id="sub-multipliers">
+    <p>Different ways to multiply, each with a different paren cost:</p>
+    <table class="op-table">
+      <tr><td>len(str(list(bytes(n))))</td><td>= 3n</td><td>4 parens</td></tr>
+      <tr><td>len(str(bytes(n)))</td><td>= 4n + 3</td><td>3 parens</td></tr>
+      <tr><td>len(ascii(str(bytes(n))))</td><td>= 5n + 5</td><td>4 parens</td></tr>
+    </table>
+    <p style="margin-top: 0.8rem;">
+      4n+3 costs only 3 parens (cheaper than 3x at 4), so it's often better
+      when you can land on the right value with the +3 offset.
+    </p>
+  </div>
+
+  <div class="sub-content" id="sub-ascii">
+    <p>
+      <code>ascii()</code> escapes backslashes. Stacking k calls on str(bytes(n)) gives:
+    </p>
+    <p><code>f(n) = (2^k + 3) * n + (2^(k+1) + 1)</code></p>
+    <table class="op-table">
+      <tr><td>k=1</td><td>5n + 5</td><td>4 parens</td></tr>
+      <tr><td>k=2</td><td>7n + 9</td><td>5 parens</td></tr>
+      <tr><td>k=3</td><td>11n + 17</td><td>6 parens</td></tr>
+      <tr><td>k=4</td><td>19n + 33</td><td>7 parens</td></tr>
+      <tr><td>k=5</td><td>35n + 65</td><td>8 parens</td></tr>
+      <tr><td>k=6</td><td>67n + 129</td><td>9 parens</td></tr>
+      <tr><td>k=10</td><td>1027n + 2049</td><td>13 parens</td></tr>
+    </table>
+    <p style="margin-top: 0.8rem;">
+      Exponential multiplier for linear paren cost.
+    </p>
+  </div>
+
+  <div class="sub-content" id="sub-zip">
+    <p>
+      zip() wrapping creates nested tuples, growing the string repr by 3n each time:
+    </p>
+    <p><code>len(str(list(zip^k(bytes(n))))) = 3(k+1) * n</code></p>
+    <table class="op-table">
+      <tr><td>k=1</td><td>6n</td><td>5 parens</td></tr>
+      <tr><td>k=2</td><td>9n</td><td>6 parens</td></tr>
+      <tr><td>k=3</td><td>12n</td><td>7 parens</td></tr>
+      <tr><td>k=4</td><td>15n</td><td>8 parens</td></tr>
+    </table>
+    <p style="margin-top: 0.8rem;">
+      Clean exact multipliers with no offset. Useful when you need an exact
+      multiple of 6, 9, 12, etc.
+    </p>
+  </div>
+
+  <div class="sub-content" id="sub-other">
+    <p><strong>Triangular:</strong> <code>sum(range(n))</code> = n(n-1)/2.
+      Quadratic growth, 2 parens.</p>
+    <p><strong>Log step-down:</strong> <code>len(str(n))</code> = digit count.
+      Collapses a big number to something small. 2 parens.</p>
+    <p><strong>Boolean collapse:</strong> <code>int(bool(n))</code> = 1 for any n&gt;0.
+      Reset to 1. 2 parens.</p>
+  </div>
 </div>
 
-<div class="tab-content" id="tab-zip">
-  <p>
-    Wrapping bytes(n) in zip() creates nested tuples, making the string
-    representation longer. Each zip adds exactly 3n to the length:
-  </p>
-  <p><code>len(str(list(zip^k(bytes(n))))) = 3(k+1) * n</code></p>
-  <table class="op-table">
-    <tr><td>k=0</td><td>3n</td><td>4 parens (same as triple)</td></tr>
-    <tr><td>k=1</td><td>6n</td><td>5 parens</td></tr>
-    <tr><td>k=2</td><td>9n</td><td>6 parens</td></tr>
-    <tr><td>k=3</td><td>12n</td><td>7 parens</td></tr>
-    <tr><td>k=4</td><td>15n</td><td>8 parens</td></tr>
-  </table>
-  <p style="margin-top: 0.8rem;">
-    Clean exact multipliers with no offset terms. Useful when you need to hit a
-    number that's an exact multiple of 6, 9, 12, etc.
-  </p>
-</div>
+<!-- ── Database ── -->
+<div class="main-panel" id="panel-db">
+  <p id="statsText"></p>
+  <div class="strategies" id="strategiesList"></div>
 
-<div class="tab-content" id="tab-other">
-  <p><strong>Triangular:</strong> <code>sum(range(n))</code> = n(n-1)/2. Quadratic jump, 2 parens.
-    Good for getting from small seeds to medium numbers quickly.</p>
-  <p><strong>Log step-down:</strong> <code>len(str(n))</code> = number of digits.
-    Collapses a huge number back to something small. 2 parens.</p>
-  <p><strong>Boolean collapse:</strong> <code>int(bool(n))</code> = 1 for any n > 0.
-    Instant reset to 1. 2 parens.</p>
-  <p><strong>List range repr:</strong> <code>len(str(list(range(n))))</code> grows as ~n*log(n).
-    Sub-quadratic, useful for controlled jumps into the tens of thousands. 4 parens.</p>
-</div>
-
-<!-- ── Optimization history ── -->
-<h3>optimization history</h3>
-<div class="section" id="historySection">
+  <p style="margin-top: 1.5rem; margin-bottom: 0.5rem;"><strong>optimization history</strong></p>
   <table>
     <thead>
       <tr><th>pass</th><th>improvements</th><th class="num">avg depth</th><th class="num">max depth</th><th class="num">avg len</th></tr>
     </thead>
     <tbody id="historyBody"></tbody>
   </table>
-</div>
-
-<!-- ── Current stats ── -->
-<h3>database</h3>
-<div class="section" id="statsSection">
-  <p id="statsText"></p>
-  <div class="strategies" id="strategiesList"></div>
 </div>
 
 <script>
@@ -402,15 +451,26 @@ function copyExpr() {
   setTimeout(() => copiedMsg.textContent = '', 1500);
 }
 
-// Tabs
-function showTab(id) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+// Main tabs
+function showMain(id) {
+  const wasActive = document.getElementById(id).classList.contains('active');
+  document.querySelectorAll('.main-panel').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.main-tab').forEach(el => el.classList.remove('active'));
+  if (!wasActive) {
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+  }
+}
+
+// Sub-tabs (within optimizations)
+function showSub(id) {
+  document.querySelectorAll('.sub-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.sub-tab').forEach(el => el.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   event.target.classList.add('active');
 }
 
-// Load history
+// Load data
 async function loadHistory() {
   const res = await fetch('/api/log');
   const log = await res.json();
@@ -425,7 +485,6 @@ async function loadHistory() {
   `).join('');
 }
 
-// Load stats
 async function loadStats() {
   const res = await fetch('/api/stats');
   const s = await res.json();
@@ -436,6 +495,35 @@ async function loadStats() {
       `<span class="strategy-tag">${st.name} <span class="count">${st.count.toLocaleString()}</span></span>`
     ).join('');
 }
+
+function randomChar() {
+  // Pick from interesting Unicode ranges
+  const ranges = [
+    [33, 126],      // printable ASCII
+    [161, 879],     // Latin extended
+    [913, 969],     // Greek
+    [1040, 1103],   // Cyrillic
+    [3456, 3572],   // Sinhala (among us territory)
+    [4352, 4607],   // Hangul Jamo
+    [8192, 8303],   // General punctuation
+    [8448, 8527],   // Letterlike symbols
+    [9472, 9599],   // Box drawing
+    [9632, 9727],   // Geometric shapes
+    [9728, 9983],   // Misc symbols
+    [12353, 12447],  // Hiragana
+    [12448, 12543],  // Katakana
+    [19968, 20200],  // CJK (small slice)
+    [128512, 128591], // Emoticons
+  ];
+  const range = ranges[Math.floor(Math.random() * ranges.length)];
+  const cp = range[0] + Math.floor(Math.random() * (range[1] - range[0] + 1));
+  charInput.value = String.fromCodePoint(cp);
+  charInput.dispatchEvent(new Event('input'));
+}
+
+// Start with ඞ
+charInput.value = '\u0D9E';
+charInput.dispatchEvent(new Event('input'));
 
 loadHistory();
 loadStats();
