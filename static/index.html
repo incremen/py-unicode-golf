@@ -333,15 +333,8 @@ charInput.addEventListener('input', async () => {
     const res = await fetch(`/api/char?c=${encodeURIComponent(c)}`);
     const data = await res.json();
     if (data.error) return;
-    const useOptimized = useDb.checked && data.db;
-    const src = useOptimized ? data.db : data.formula;
-    const label = useOptimized ? 'db' : 'formula';
-    resultChar.textContent = `'${data.char}' \u2014 U+${data.code_point.toString(16).toUpperCase().padStart(4, '0')}`;
-    resultMeta.textContent = `${src.depth} calls \xb7 ${src.len} chars \xb7 ${label}`;
-    resultExpr.textContent = src.expr;
-    lastExpr = src.expr;
-    copiedMsg.textContent = '';
-    result.classList.add('visible');
+    lastData = data;
+    showResult(data);
   } catch (e) {
     console.error(e);
     resultChar.textContent = 'error';
@@ -351,7 +344,7 @@ charInput.addEventListener('input', async () => {
   }
 });
 
-useDb.addEventListener('change', () => charInput.dispatchEvent(new Event('input')));
+useDb.addEventListener('change', () => showResult(lastData));
 
 function copyExpr() {
   navigator.clipboard.writeText(lastExpr);
@@ -411,8 +404,25 @@ async function loadFormulaStats() {
 }
 
 // Init
+// Pre-fill ඞ — both versions cached so toggling is instant
+const INIT_DB = { expr: 'chr(sum(range(ord(min(str(not()))))))', depth: 7, len: 37 };
+const INIT_FORMULA = { expr: 'chr(len(str(list(bytes(max(range(max(range(len(str(list(bytes(max(range(max(range(len(str(list(bytes(max(range(max(range(len(str(list(bytes(max(range(len(str(list(bytes(len(str(type(float()))))))))))))))))))))))))))))))))))))))', depth: 39, len: 227 };
+let lastData = { char: '\u0D9E', code_point: 3486, formula: INIT_FORMULA, db: INIT_DB };
+
+function showResult(data) {
+  const useOptimized = useDb.checked && data.db;
+  const src = useOptimized ? data.db : data.formula;
+  const label = useOptimized ? 'db' : 'formula';
+  resultChar.textContent = `'${data.char}' \u2014 U+${data.code_point.toString(16).toUpperCase().padStart(4, '0')}`;
+  resultMeta.textContent = `${src.depth} calls \xb7 ${src.len} chars \xb7 ${label}`;
+  resultExpr.textContent = src.expr;
+  lastExpr = src.expr;
+  copiedMsg.textContent = '';
+  result.classList.add('visible');
+}
+
 charInput.value = '\u0D9E';
-charInput.dispatchEvent(new Event('input'));
+showResult(lastData);
 loadHistory();
 loadDbStats();
 loadFormulaStats();
