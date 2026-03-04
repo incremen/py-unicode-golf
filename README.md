@@ -1,10 +1,12 @@
 # pyfuncs_to_chars
 
+
+
 Represent any character using only Python builtin function calls. No numeric literals, no string literals, no operators. Each function takes exactly one argument.
 
 ## Why?
 
-Right around the whole Among Us time, it was gaining traction that `chr(sum(range(ord(min(str(not()))))))` in Python evaluates to "ඞ". I immediately tried to generalize it. Could any Unicode character (~160,000) be represented like this?
+Right around the whole among us era, it was gaining traction that `chr(sum(range(ord(min(str(not()))))))` in Python evaluates to "ඞ". I immediately tried to generalize it. Could any Unicode character (~160,000) be represented like this?
 
 The rules:
 - The final function must take in no parameters, like `not()`.
