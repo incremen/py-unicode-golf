@@ -222,12 +222,19 @@
 
   <p><strong>Ascii exponential</strong> &mdash; exponential multiplier for linear paren cost</p>
   <p style="color:#666; font-size:0.8rem;">
-    ascii() escapes backslashes, roughly doubling them each time.
-    Stacking k calls gives: <code>f(n) = (2^k + 3)n + (2^(k+1) + 1)</code>
+    <code>str(bytes(n))</code> produces backslash escapes like <code>\x00</code>.
+    Each <code>ascii()</code> call escapes those backslashes again, doubling them.
+    So the string roughly doubles in length with each wrap:
+  </p>
+<pre>str(bytes(2))         = "b'\x00\x00'"          len = 11
+ascii(that)           = "\"b'\\x00\\x00'\""     len = 15
+ascii(ascii(that))    = ...                      len = 23</pre>
+  <p style="color:#666; font-size:0.8rem;">
+    General formula with k layers of <code>ascii()</code>: <code>f(n) = (2^k + 3)n + (2^(k+1) + 1)</code>
   </p>
   <table class="op-table">
-    <tr><td>k=1</td><td>5n + 5</td><td>4 parens</td></tr>
-    <tr><td>k=2</td><td>7n + 9</td><td>5 parens</td></tr>
+    <tr><td>k=1 &nbsp;(one ascii)</td><td>5n + 5</td><td>4 parens</td></tr>
+    <tr><td>k=2 &nbsp;(two ascii)</td><td>7n + 9</td><td>5 parens</td></tr>
     <tr><td>k=3</td><td>11n + 17</td><td>6 parens</td></tr>
     <tr><td>k=4</td><td>19n + 33</td><td>7 parens</td></tr>
     <tr><td>k=5</td><td>35n + 65</td><td>8 parens</td></tr>
