@@ -1,11 +1,17 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-  background: #f0efe8;
+  /* blue from the left, yellow from the right, both fading to transparent toward the center */
+  background:
+    linear-gradient(to right, rgba(48,105,152,1) 0%, rgba(48,105,152,0) 50%),
+    linear-gradient(to left, rgba(255,212,59,1) 0%, rgba(255,212,59,0) 50%),
+    #f0efe8;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: #2a2a2a;
   min-height: 100vh;
   padding: 2rem;
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
   position: relative;
 }
@@ -18,16 +24,32 @@ body::before {
   width: 600px;
   height: 600px;
   background: url('/static/python_logo.png') center/contain no-repeat;
-  opacity: 0.09;
+  opacity: 0.2;
   pointer-events: none;
   z-index: 0;
 }
 body > * { position: relative; z-index: 1; }
 
 h1 { color: #306998; font-size: 1.6rem; margin-bottom: 0.3rem; }
-h2 { color: #888; font-size: 1rem; margin-bottom: 1.5rem; font-weight: normal; }
+/* headings: slightly darker so they stand out against the background */
+h2 { color: #444; font-size: 1rem; margin-bottom: 1.5rem; font-weight: normal; display: inline-flex; align-items: center; gap: 0.6rem; }
 h2 a { color: #306998; text-decoration: none; }
 h2 a:hover { color: #FFD43B; }
+
+/* GitHub link inside the header: outlined button-style so it doesn't read like sentence continuation */
+.github-link {
+  display: inline-block;
+  margin-left: 0.9rem;
+  padding: 0.12rem 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  color: #2a2a2a;
+  text-decoration: none;
+  font-size: 0.85rem;
+  background: rgba(255,255,255,0.6);
+  white-space: nowrap;
+}
+.github-link:hover { border-color: #306998; color: #306998; }
 
 .input-row {
   display: flex;
@@ -145,7 +167,7 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .main-tab {
   padding: 0.6rem 1.2rem;
   font-size: 0.9rem;
-  color: #999;
+  color: #555;
   cursor: pointer;
   border: 1px solid transparent;
   border-bottom: none;
