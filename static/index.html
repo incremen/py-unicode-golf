@@ -435,6 +435,8 @@ function showResult(data) {
 loadHistory();
 loadDbStats();
 loadFormulaStats();
+// focus the input so the typing cursor is ready on load
+try { charInput.focus(); } catch (e) { /* ignore */ }
 </script>
 </body>
 </html>
