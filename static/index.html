@@ -69,7 +69,29 @@
 
 <!-- ── The formula ── -->
 <div class="main-panel" id="panel-formula">
-  <p>We need two operations. Together they can build any number.</p>
+  <p>My initial attempt used three tools:</p>
+  <ul>
+    <li>A few initial seeds, like <code>len(bin(len(str(not()))))</code> = 5</li>
+    <li><code>sum(range(n))</code> = n(n-1)/2 &mdash; to jump up quickly</li>
+    <li><code>max(range(n))</code> = n-1 &mdash; to step back down</li>
+  </ul>
+  <p>
+    The idea: apply <code>sum(range())</code> a few times to overshoot your target,
+    then decrement back down with <code>max(range())</code>.
+  </p>
+  <p>For example, to get to 6:</p>
+<pre>5= len(bin(len(str(not()))))
+  `10 = max(range(10)) = max(range(len(bin(len(str(not()))))))`
+  `8 = max(range(9)) = max(range(max(range(10)))) = max(range(max(range(max(range(len(bin(len(str(not()))))))))))`
+  
+</pre>
+This algorithm works, but for bigger numbers it eventually can't fit pythons 200 paranthases limit.
+In this example, to reach 20, you'd have to use the first formula twice on 5 to get 45, and then do 25 decrements!
+
+  <p>
+    The fix: instead of overshooting and decrementing, use a <strong>3x multiplier</strong>
+    and build the number in base 3. Two operations are enough:
+  </p>
 
   <p><strong>Subtract 1:</strong> <code>max(range(n))</code> returns n - 1.</p>
   <p style="color:#666; font-size:0.8rem; margin-bottom:1.2rem;">
