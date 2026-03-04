@@ -86,8 +86,9 @@
   
 </pre>
 This algorithm works, but for bigger numbers it eventually can't fit pythons 200 paranthases limit.
-In this example, to reach 20, you'd have to use the first formula twice on 5 to get 45, and then do 25 decrements!
-
+In this example, to reach 100, you'd have to use the first formula thrice on 5 to get 990, and then do 890 decrements!
+Even if you have many initial seeds, the quadratic growth of the formula to get an arbitrarily large number is much too sparce,
+considering you have 160,000 numbers to find.
   <p>
     The fix: instead of overshooting and decrementing, use a <strong>3x multiplier</strong>
     and build the number in base 3. Two operations are enough:
