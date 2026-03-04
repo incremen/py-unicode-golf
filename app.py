@@ -13,20 +13,24 @@ DB_AVAILABLE = False
 
 def _load_db():
     global DB_EXPRS, DB_AVAILABLE
-    json_path = os.path.join(os.path.dirname(__file__), 'expressions.json')
-    db_path = os.path.join(os.path.dirname(__file__), 'expressions.db')
+    try:
+        base = os.path.dirname(os.path.abspath(__file__))
+        json_path = os.path.join(base, 'expressions.json')
+        db_path = os.path.join(base, 'expressions.db')
 
-    if os.path.exists(json_path):
-        with open(json_path) as f:
-            DB_EXPRS = json.load(f)
-        DB_AVAILABLE = True
-    elif os.path.exists(db_path):
-        from db import get_conn
-        conn = get_conn()
-        rows = conn.execute('SELECT n, expr FROM numbers').fetchall()
-        conn.close()
-        DB_EXPRS = {str(r[0]): r[1] for r in rows}
-        DB_AVAILABLE = True
+        if os.path.exists(json_path):
+            with open(json_path) as f:
+                DB_EXPRS = json.load(f)
+            DB_AVAILABLE = True
+        elif os.path.exists(db_path):
+            from db import get_conn
+            conn = get_conn()
+            rows = conn.execute('SELECT n, expr FROM numbers').fetchall()
+            conn.close()
+            DB_EXPRS = {str(r[0]): r[1] for r in rows}
+            DB_AVAILABLE = True
+    except Exception as e:
+        print(f"Warning: could not load db: {e}")
 
 _load_db()
 
