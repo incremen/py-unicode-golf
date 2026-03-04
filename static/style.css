@@ -290,6 +290,16 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
   .result { padding: 0.9rem; }
   .result-expr { font-size: 0.8rem; }
   pre { font-size: 0.75rem; }
+
+  /* Keep decorative gradients unchanged on small screens */
+
+  /* Allow tables to scroll horizontally to avoid layout breakage */
+  .main-panel table, .op-table, table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 .strategy-tag {
   position: relative;
