@@ -12,13 +12,26 @@ Used Claude Opus for basically the entire frontend, I really couldn't be bothere
 
 ## API (if you need that for some reason):
 
+
+### `GET /api/expr/<char>` or `GET /api/expr?c=<char>`
+Returns just the expression as plain text (no JSON). Uses the optimized db expression if available, otherwise falls back to the formula.
+for example:
+```
+curl https://py-unicode-golf.vercel.app/api/expr/A
+```
+returns
+```
+chr(len(ascii(str(bytes(max(range(len(str(type(int()))))))))))
+```
+
+
 ### `GET /api/char/<char>` or `GET /api/char?c=<char>`
 will return json data.
 For example:
 ```
 curl https://py-unicode-golf.vercel.app/api/char/A
 ```
-will return the json:
+returns
 ```json
 {"char":"A",
 "code_point":65,
@@ -28,11 +41,4 @@ will return the json:
 
 `formula` is generated on-the-fly. `db` (if present) is the pre-optimized expression from the database.
 
-### `GET /api/expr/<char>` or `GET /api/expr?c=<char>`
-Returns just the expression as plain text (no JSON). Uses the optimized db expression if available, otherwise falls back to the formula.
-```
-curl https://py-unicode-golf.vercel.app/api/expr/A
-```
-```
-chr(len(ascii(str(bytes(max(range(len(str(type(int()))))))))))
-```
+
