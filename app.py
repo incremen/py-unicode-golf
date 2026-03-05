@@ -111,6 +111,14 @@ formula_stats_cache = None
 
 def compute_formula_stats():
     global formula_stats_cache
+    base = os.path.dirname(os.path.abspath(__file__))
+    cache_path = os.path.join(base, 'formula_stats.json')
+
+    if os.path.exists(cache_path):
+        with open(cache_path) as f:
+            formula_stats_cache = json.load(f)
+        return
+
     sample = list(range(0, 200_001, 10))
     depths = []
     lengths = []
@@ -125,6 +133,9 @@ def compute_formula_stats():
         'avg_len': round(sum(lengths) / len(lengths), 1),
         'max_len': max(lengths),
     }
+
+    with open(cache_path, 'w') as f:
+        json.dump(formula_stats_cache, f)
 
 compute_formula_stats()
 
