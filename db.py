@@ -193,54 +193,53 @@ def stats():
 
 # ── Populate ─────────────────────────────────────────────────────────────
 
+INSERT_SQL = (
+    'INSERT OR IGNORE INTO numbers (n, expr, depth, len, strategy, parent, offset) '
+    'VALUES (?, ?, ?, ?, ?, ?, ?)'
+)
+
+
+def _insert(conn, n, expr, strategy, parent=None, offset=0):
+    conn.execute(INSERT_SQL, (n, expr, expr.count('('), len(expr), strategy, parent, offset))
+
+
+def populate_anchors(conn):
+    for n, expr in BASE_ANCHORS.items():
+        _insert(conn, n, expr, 'base')
+
+
+def populate_gaps(conn):
+    sorted_anchors = sorted(BASE_ANCHORS.keys())
+    for i, anchor in enumerate(sorted_anchors):
+        prev = sorted_anchors[i - 1] + 1 if i > 0 else 0
+        for n in range(prev, anchor):
+            if n in BASE_ANCHORS:
+                continue
+            gap = anchor - n
+            expr = apply_strategy('decrement', BASE_ANCHORS[anchor], gap)
+            _insert(conn, n, expr, 'decrement', parent=anchor, offset=gap)
+
+
+def populate_base3(conn, max_n):
+    max_anchor = max(BASE_ANCHORS.keys())
+    for n in range(max_anchor + 1, max_n + 1):
+        if n in BASE_ANCHORS:
+            continue
+        q = -(-n // 3)
+        r = 3 * q - n
+        _insert(conn, n, build_n(n), 'triple', parent=q, offset=r)
+
+
 def populate(max_n=MAX_N):
     """Fill the database with the base-3 algorithm."""
     init_db()
 
     with get_conn() as conn:
-        # Base anchors
-        for n, expr in BASE_ANCHORS.items():
-            conn.execute(
-                'INSERT OR IGNORE INTO numbers (n, expr, depth, len, strategy, parent, offset) '
-                'VALUES (?, ?, ?, ?, ?, ?, ?)',
-                (n, expr, expr.count('('), len(expr), 'base', None, 0)
-            )
-
-        # Fill gaps between anchors by decrementing
-        sorted_anchors = sorted(BASE_ANCHORS.keys())
-        for i, anchor in enumerate(sorted_anchors):
-            prev = sorted_anchors[i - 1] + 1 if i > 0 else 0
-            for n in range(prev, anchor):
-                if n in BASE_ANCHORS:
-                    continue
-                gap = anchor - n
-                expr = BASE_ANCHORS[anchor]
-                for _ in range(gap):
-                    expr = f'max(range({expr}))'
-                conn.execute(
-                    'INSERT OR IGNORE INTO numbers (n, expr, depth, len, strategy, parent, offset) '
-                    'VALUES (?, ?, ?, ?, ?, ?, ?)',
-                    (n, expr, expr.count('('), len(expr), 'decrement', anchor, gap)
-                )
-
-        # Everything above max anchor via base-3
-        max_anchor = max(sorted_anchors)
-
-        for n in range(max_anchor + 1, max_n + 1):
-            if n in BASE_ANCHORS:
-                continue
-            q = -(-n // 3)
-            r = 3 * q - n
-            expr = build_n(n)
-            conn.execute(
-                'INSERT OR IGNORE INTO numbers (n, expr, depth, len, strategy, parent, offset) '
-                'VALUES (?, ?, ?, ?, ?, ?, ?)',
-                (n, expr, expr.count('('), len(expr), 'triple', q, r)
-            )
-
+        populate_anchors(conn)
+        populate_gaps(conn)
+        populate_base3(conn, max_n)
         conn.commit()
 
-    count = 0
     with get_conn() as conn:
         count = conn.execute('SELECT COUNT(*) FROM numbers').fetchone()[0]
     print(f"Populated {count} entries (0 to {max_n})")
