@@ -11,7 +11,7 @@ app = Flask(__name__, static_folder='static')
 DB_EXPRS = None
 DB_AVAILABLE = False
 
-def _load_db():
+def load_db():
     global DB_EXPRS, DB_AVAILABLE
     try:
         base = os.path.dirname(os.path.abspath(__file__))
@@ -32,7 +32,7 @@ def _load_db():
     except Exception as e:
         print(f"Warning: could not load db: {e}")
 
-_load_db()
+load_db()
 
 
 @app.route('/')
@@ -82,17 +82,17 @@ def api_log():
     return jsonify([])
 
 
-_stats_cache = None
+stats_cache = None
 
-def _compute_stats():
-    global _stats_cache
+def compute_stats():
+    global stats_cache
     if not DB_AVAILABLE:
-        _stats_cache = {'total': 0, 'avg_depth': 0, 'max_depth': 0, 'avg_len': 0, 'max_len': 0}
+        stats_cache = {'total': 0, 'avg_depth': 0, 'max_depth': 0, 'avg_len': 0, 'max_len': 0}
     else:
         exprs = list(DB_EXPRS.values())
         depths = [e.count('(') for e in exprs]
         lengths = [len(e) for e in exprs]
-        _stats_cache = {
+        stats_cache = {
             'total': len(exprs),
             'avg_depth': round(sum(depths) / len(depths), 2),
             'max_depth': max(depths),
@@ -100,17 +100,17 @@ def _compute_stats():
             'max_len': max(lengths),
         }
 
-_compute_stats()
+compute_stats()
 
 @app.route('/api/stats')
 def api_stats():
-    return jsonify(_stats_cache)
+    return jsonify(stats_cache)
 
 
-_formula_stats_cache = None
+formula_stats_cache = None
 
-def _compute_formula_stats():
-    global _formula_stats_cache
+def compute_formula_stats():
+    global formula_stats_cache
     sample = list(range(0, 200_001, 10))
     depths = []
     lengths = []
@@ -118,7 +118,7 @@ def _compute_formula_stats():
         expr = f'chr({build_n(n)})'
         depths.append(expr.count('('))
         lengths.append(len(expr))
-    _formula_stats_cache = {
+    formula_stats_cache = {
         'sample_size': len(sample),
         'avg_depth': round(sum(depths) / len(depths), 1),
         'max_depth': max(depths),
@@ -126,11 +126,11 @@ def _compute_formula_stats():
         'max_len': max(lengths),
     }
 
-_compute_formula_stats()
+compute_formula_stats()
 
 @app.route('/api/formula-stats')
 def api_formula_stats():
-    return jsonify(_formula_stats_cache)
+    return jsonify(formula_stats_cache)
 
 
 @app.route('/api/anchors')
