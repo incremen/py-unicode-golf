@@ -1,4 +1,4 @@
-"""Flask web app for pyfuncs_to_chars."""
+"""Flask web app for py-unicode-golf"""
 
 import os
 import json
