@@ -19,40 +19,44 @@ MAX_N = 200_000
 
 # ── Strategy application ─────────────────────────────────────────────────
 
-def apply_strategy(strategy, parent_expr, offset):
-    """Given a strategy name, parent expression, and offset, build the full expression."""
-    if strategy == 'base':
-        expr = parent_expr
-    elif strategy == 'triple':
-        expr = f'len(str(list(bytes({parent_expr}))))'
-    elif strategy == 'decrement':
-        expr = parent_expr
-    elif strategy == 'quad_plus_3':
-        expr = f'len(str(bytes({parent_expr})))'
-    elif strategy == 'quint_plus_5':
-        expr = f'len(ascii(str(bytes({parent_expr}))))'
-    elif strategy.startswith('ascii_exp_'):
+STRATEGIES = {
+    'base':           lambda p: p,
+    'decrement':      lambda p: p,
+    'triple':         lambda p: f'len(str(list(bytes({p}))))',
+    'quad_plus_3':    lambda p: f'len(str(bytes({p})))',
+    'quint_plus_5':   lambda p: f'len(ascii(str(bytes({p}))))',
+    'triangular':     lambda p: f'sum(range({p}))',
+    'enum_list_8x':   lambda p: f'len(str(list(enumerate(bytes({p})))))',
+    'slice_offset':   lambda p: f'len(str(slice({p})))',
+    'complex_offset': lambda p: f'len(str(complex({p})))',
+}
+
+
+def apply_parametrized_strategy(strategy, parent_expr):
+    """Handle strategies with a numeric suffix like ascii_exp_3 or zip_chain_2."""
+    if strategy.startswith('ascii_exp_'):
         k = int(strategy.split('_')[-1])
         inner = f'str(bytes({parent_expr}))'
         for _ in range(k):
             inner = f'ascii({inner})'
-        expr = f'len({inner})'
-    elif strategy.startswith('zip_chain_'):
+        return f'len({inner})'
+    if strategy.startswith('zip_chain_'):
         k = int(strategy.split('_')[-1])
         inner = f'bytes({parent_expr})'
         for _ in range(k):
             inner = f'zip({inner})'
-        expr = f'len(str(list({inner})))'
-    elif strategy == 'triangular':
-        expr = f'sum(range({parent_expr}))'
-    elif strategy == 'enum_list_8x':
-        expr = f'len(str(list(enumerate(bytes({parent_expr})))))'
-    elif strategy == 'slice_offset':
-        expr = f'len(str(slice({parent_expr})))'
-    elif strategy == 'complex_offset':
-        expr = f'len(str(complex({parent_expr})))'
+        return f'len(str(list({inner})))'
+    return None
+
+
+def apply_strategy(strategy, parent_expr, offset):
+    """Given a strategy name, parent expression, and offset, build the full expression."""
+    if strategy in STRATEGIES:
+        expr = STRATEGIES[strategy](parent_expr)
     else:
-        raise ValueError(f"Unknown strategy: {strategy}")
+        expr = apply_parametrized_strategy(strategy, parent_expr)
+        if expr is None:
+            raise ValueError(f"Unknown strategy: {strategy}")
 
     for _ in range(offset):
         expr = f'max(range({expr}))'
