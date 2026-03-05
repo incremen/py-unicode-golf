@@ -2,6 +2,7 @@
 
 import os
 import json
+from urllib.parse import unquote
 from flask import Flask, jsonify, send_from_directory, request
 from anchors import build_n, build_char, BASE_ANCHORS
 
@@ -45,6 +46,8 @@ def index():
 def api_char(char=None):
     if char is None:
         char = request.args.get('c', '')
+    else:
+        char = unquote(char)
     if len(char) != 1:
         return jsonify({'error': f'Expected exactly one character, got {len(char)} ({repr(char)})'}), 400
 
@@ -78,6 +81,8 @@ def api_char(char=None):
 def api_expr(char=None):
     if char is None:
         char = request.args.get('c', '')
+    else:
+        char = unquote(char)
     if len(char) != 1:
         return f'Expected exactly one character, got {len(char)} ({repr(char)})', 400
 
