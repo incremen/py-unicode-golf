@@ -73,6 +73,21 @@ def api_char(char=None):
     return jsonify(result)
 
 
+@app.route('/api/expr/<path:char>')
+@app.route('/api/expr')
+def api_expr(char=None):
+    if char is None:
+        char = request.args.get('c', '')
+    if len(char) != 1:
+        return f'Expected exactly one character, got {len(char)} ({repr(char)})', 400
+
+    code_point = ord(char)
+    if DB_AVAILABLE and str(code_point) in DB_EXPRS:
+        return f"chr({DB_EXPRS[str(code_point)]})", 200, {'Content-Type': 'text/plain'}
+
+    return build_char(char), 200, {'Content-Type': 'text/plain'}
+
+
 @app.route('/api/log')
 def api_log():
     db_path = os.path.join(os.path.dirname(__file__), 'expressions.db')
