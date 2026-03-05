@@ -1,9 +1,10 @@
 # py-unicode-golf
-
-Represent any character using only Python builtin function calls that take up to one argument.
+(more of a challenge than anything. this isn't useful)
+Represent any character using only Python builtin function calls that take up to one argument, in one line.
 
 For example: `chr(sum(range(ord(min(str(not())))))) = ඞ`
 
+I found a closed algorithm to represent each character this way. Also, there's a database that stores optimized representations
 **Website:** https://py-unicode-golf.vercel.app
 
 Uses Flask for server stuff and SQLite for db.
@@ -26,3 +27,12 @@ will return the json:
 ```
 
 `formula` is generated on-the-fly. `db` (if present) is the pre-optimized expression from the database.
+
+### `GET /api/expr/<char>` or `GET /api/expr?c=<char>`
+Returns just the expression as plain text (no JSON). Uses the optimized db expression if available, otherwise falls back to the formula.
+```
+curl https://py-unicode-golf.vercel.app/api/expr/A
+```
+```
+chr(len(ascii(str(bytes(max(range(len(str(type(int()))))))))))
+```
