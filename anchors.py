@@ -1,16 +1,3 @@
-"""Build Python expressions for any integer using only builtin calls — no numeric literals.
-
-Core insight: len(str(list(bytes(n)))) = 3n exactly.
-Combined with max(range(n)) = n - 1, any number can be built in base 3
-by interleaving 3x multiplications with 0-2 decrements per level.
-
-Budget for all of Unicode (max 1,114,111):
-  - 13 levels of 3x (4 parens each) = 52
-  - up to 2 decrements per level (2 parens each) = 52
-  - seed anchor ~4 + chr() 1 = 5
-  - total: ~109 parens, well under 200
-"""
-
 # ── Base anchors ─────────────────────────────────────────────────────────
 # Numbers we can construct directly from zero-arg builtins.
 
