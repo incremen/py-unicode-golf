@@ -182,12 +182,13 @@ def stats():
     print(f"Length: avg={avg_len:.0f}  max={max_len}")
 
     log = get_log()
-    if log:
-        print(f"\nOptimization history ({len(log)} entries):")
-        for entry in log:
-            print(f"  [{entry['id']}] {entry['label']}: "
-                  f"avg_depth={entry['avg_depth']}, max_depth={entry['max_depth']}, "
-                  f"avg_len={entry['avg_len']}, improvements={entry['improvements']}")
+    if not log:
+        return
+    print(f"\nOptimization history ({len(log)} entries):")
+    for entry in log:
+        print(f"  [{entry['id']}] {entry['label']}: "
+                f"avg_depth={entry['avg_depth']}, max_depth={entry['max_depth']}, "
+                f"avg_len={entry['avg_len']}, improvements={entry['improvements']}")
 
 
 # ── Populate ─────────────────────────────────────────────────────────────
