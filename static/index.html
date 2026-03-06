@@ -37,7 +37,7 @@
 <!-- ── Main tabs ── -->
 <div class="main-tabs">
   <button class="main-tab" onclick="showMain(this, 'panel-why')">why?</button>
-  <button class="main-tab" onclick="showMain(this, 'panel-formula')">the formula</button>
+  <button class="main-tab" onclick="showMain(this, 'panel-formula')">the algorithm</button>
   <button class="main-tab" onclick="showMain(this, 'panel-optimizations')">optimizations</button>
   <button class="main-tab" onclick="showMain(this, 'panel-db')">database</button>
 </div>
@@ -90,11 +90,10 @@
 
   <p>
     This algorithm works, but for bigger numbers it eventually can't fit Python's
-    200 parentheses limit. In this example, to reach 100, you'd have to use the
-    first formula thrice on 5 to get 990, and then do 890 decrements!
-    Even if you have many initial seeds, the quadratic growth of the formula to
-    get an arbitrarily large number is much too sparse, considering you have
-    160,000 numbers to find.
+    200 parentheses limit. In this example, to reach 100, you'd have to use
+    sum(range()) thrice on 5 to get 990, and then do 890 decrements!
+    Even if you have many initial seeds, the quadratic growth is much too sparse
+    to reach arbitrarily large numbers within the parentheses budget.
   </p>
   <p>
     I went looking for many formulas to get from a number n to f(n), and found many,
@@ -159,7 +158,7 @@
 
   <div class="divider"></div>
 
-  <p><strong>Formula stats</strong> (base-3 only, no optimizations)</p>
+  <p><strong>Algorithm stats</strong> (base-3 only, no optimizations)</p>
   <div class="stats-grid" id="formulaStats">
     <div class="stat-card">
       <div class="stat-val" id="fAvgDepth">--</div>
@@ -183,7 +182,7 @@
     </div>
   </div>
   <p style="color:#555; font-size:0.75rem;">
-    Python has a 200 nested parentheses limit. The base-3 formula stays
+    Python has a 200 nested parentheses limit. The base-3 algorithm stays
     well under that for all Unicode code points (max 1,114,111).
   </p>
 </div>
@@ -192,7 +191,7 @@
 <div class="main-panel" id="panel-optimizations">
   <p>
 
-    The base-3 formula works for everything but isn't always the shortest. <br>
+    The base-3 algorithm works for everything but isn't always the shortest. <br>
     These strategies produce shorter expressions for specific numbers.
     The optimizer tries all of them on every number and keeps the best result in the database (see next tab).
   </p>
@@ -289,7 +288,7 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   <p style="color:#666; font-size:0.8rem; margin-bottom:0.5rem;">
     Each row shows the state of the database after a round of improvements.
     <em>Minimal</em> = only seeds 0 and 1.
-    <em>Full formula</em> = adds 44 base anchors.
+    <em>Full algorithm</em> = adds 44 base anchors.
     <em>Optimizer</em> = tries every strategy on every number and keeps the shortest.
     <em>Deep search</em> = same, but allows up to 10 extra decrements to bridge gaps
     (instead of 2).
@@ -402,7 +401,7 @@ let lastData = null;
 function showResult(data) {
   const useOptimized = useDb.checked && data.db;
   const src = useOptimized ? data.db : data.formula;
-  const label = useOptimized ? 'db' : 'formula';
+  const label = useOptimized ? 'db' : 'algorithm';
   resultChar.textContent = `'${data.char}' \u2014 U+${data.code_point.toString(16).toUpperCase().padStart(4, '0')}`;
   resultMeta.textContent = `${src.depth} calls \xb7 ${src.len} chars \xb7 ${label}`;
   resultExpr.textContent = src.expr;
