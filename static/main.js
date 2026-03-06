@@ -53,10 +53,20 @@ function showMain(btn, id) {
 }
 
 function randomChar() {
-  const range = UNICODE_RANGES[Math.floor(Math.random() * UNICODE_RANGES.length)];
-  const cp = range[0] + Math.floor(Math.random() * (range[1] - range[0] + 1));
-  charInput.value = String.fromCodePoint(cp);
-  charInput.dispatchEvent(new Event('input'));
+  const cached = prefetchQueue.shift();
+  if (cached) {
+    charInput.value = cached.char;
+    charInput.classList.remove('wide');
+    charInput.size = 1;
+    lastData = cached.data;
+    showResult(cached.data);
+    fillPrefetchQueue();
+  } else {
+    // fallback: fetch live
+    const cp = randomCodePoint();
+    charInput.value = String.fromCodePoint(cp);
+    charInput.dispatchEvent(new Event('input'));
+  }
 }
 
 function loadHistory() {
