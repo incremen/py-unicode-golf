@@ -129,6 +129,11 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
   color: #7a8ba8;
   font-size: 0.85rem;
 }
+.expr-container {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
 .result-expr {
   background: #0a0c12;
   padding: 1rem;
@@ -140,8 +145,39 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
   color: #FFD43B;
   cursor: pointer;
   border: none;
+  flex: 1;
 }
 .result-expr:hover { box-shadow: 0 0 0 2px #306998; }
+.visualize-btn {
+  background: #1a1e28;
+  border: 2px solid #2a3040;
+  color: #7ec8e3;
+  padding: 0.5rem 0.8rem;
+  font-family: inherit;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.visualize-btn:hover { border-color: #306998; color: #FFD43B; }
+.result-expr .highlight {
+  background: rgba(255, 212, 59, 0.3);
+  padding: 0 2px;
+  border-radius: 2px;
+  animation: pulse 0.4s ease;
+}
+.result-expr .fade-in {
+  color: #7ec8e3;
+  animation: fadeIn 0.4s ease;
+}
+@keyframes pulse {
+  0%, 100% { background: rgba(255, 212, 59, 0.3); }
+  50% { background: rgba(255, 212, 59, 0.6); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
 .copied { color: #306998; font-size: 0.75rem; margin-top: 0.4rem; }
 
 code {

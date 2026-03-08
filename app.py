@@ -158,5 +158,87 @@ def api_anchors():
     return jsonify({str(k): v for k, v in sorted(BASE_ANCHORS.items())})
 
 
+import re
+
+VISUALIZE_PATTERN = re.compile(r'\b([a-z_]+)\(([^()]*)\)')
+
+
+@app.route('/api/visualize')
+def api_visualize():
+    expr = request.args.get('expr', '')
+    if not expr:
+        return jsonify({'error': 'Missing expr parameter'}), 400
+
+    steps = []
+    current = expr
+    # Track substituted values so we can eval with them in scope
+    placeholders = {}
+    counter = [0]
+
+    def make_placeholder(value):
+        name = f'_v{counter[0]}'
+        counter[0] += 1
+        placeholders[name] = value
+        return name
+
+    for _ in range(200):
+        match = VISUALIZE_PATTERN.search(current)
+        if not match:
+            break
+
+        func_call = match.group(0)
+
+        # Build display version (substitute placeholders back to repr)
+        display = current
+        for name, val in placeholders.items():
+            display = display.replace(name, repr(val))
+
+        try:
+            result = eval(func_call, {"__builtins__": __builtins__}, placeholders)
+            result_repr = repr(result)
+
+            pre = current[:match.start()]
+            for name, val in placeholders.items():
+                pre = pre.replace(name, repr(val))
+            d_start = len(pre)
+            call_display = func_call
+            for name, val in placeholders.items():
+                call_display = call_display.replace(name, repr(val))
+            d_end = d_start + len(call_display)
+
+            steps.append({
+                'expr': display,
+                'highlight': {'start': d_start, 'end': d_end},
+                'call': call_display,
+                'result': result_repr
+            })
+
+            # Use placeholder if repr contains parens (would confuse regex)
+            if '(' in result_repr or ')' in result_repr:
+                placeholder = make_placeholder(result)
+                current = current[:match.start()] + placeholder + current[match.end():]
+            else:
+                current = current[:match.start()] + result_repr + current[match.end():]
+
+        except Exception as e:
+            display_call = func_call
+            for name, val in placeholders.items():
+                display_call = display_call.replace(name, repr(val))
+            steps.append({
+                'expr': display,
+                'call': display_call,
+                'error': str(e)
+            })
+            break
+
+    # Final display
+    final = current
+    for name, val in placeholders.items():
+        final = final.replace(name, repr(val))
+    steps.append({'expr': final, 'final': True})
+
+    return jsonify({'steps': steps})
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
