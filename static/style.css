@@ -23,7 +23,7 @@ body::before {
   transform: translate(-50%, -50%);
   width: 600px;
   height: 600px;
-  background: url('/static/python_logo.png') center/contain no-repeat;
+  background: url('/static/img/python_logo.png') center/contain no-repeat;
   opacity: 0.2;
   pointer-events: none;
   z-index: 0;

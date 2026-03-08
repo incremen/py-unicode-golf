@@ -7,7 +7,7 @@ import json
 from db import get_conn, init_db
 from anchors import build_n
 
-STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static')
+STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'data')
 
 init_db()
 conn = get_conn()
