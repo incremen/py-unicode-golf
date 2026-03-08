@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="/static/style.css">
 <script src="/static/unicode_ranges.js"></script>
 <script src="/static/history.js"></script>
+<script src="/static/database_stats.js"></script>
 </head>
 <body>
 
@@ -284,6 +285,14 @@ ascii(ascii(that))    = ...                      len = 23</pre>
       <span class="tiptext">average character count of the expression string</span>
     </div>
   </div>
+
+  <p><strong>Strategy breakdown</strong></p>
+  <p style="color:#666; font-size:0.8rem; margin-bottom:0.5rem;">
+    How many numbers use each strategy as their shortest representation.
+  </p>
+  <div class="strategies" id="strategiesList"></div>
+
+  <div class="divider"></div>
 
   <p><strong>Optimization history</strong></p>
   <p style="color:#666; font-size:0.8rem; margin-bottom:0.5rem;">

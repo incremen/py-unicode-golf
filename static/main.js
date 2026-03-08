@@ -69,6 +69,13 @@ function randomChar() {
   }
 }
 
+function loadStrategies() {
+  document.getElementById('strategiesList').innerHTML = STRATEGY_BREAKDOWN.map(st =>
+    `<span class="strategy-tag tip">${st.name} <span class="count">${st.count.toLocaleString()}</span>` +
+    `<span class="tiptext">${st.count.toLocaleString()} numbers use ${st.name} (avg depth ${st.avg_depth})</span></span>`
+  ).join('');
+}
+
 function loadHistory() {
   document.getElementById('historyBody').innerHTML = OPTIMIZATION_HISTORY.map(e => `
     <tr>
@@ -111,6 +118,7 @@ function showResult(data) {
 }
 
 loadHistory();
+loadStrategies();
 loadDbStats();
 loadFormulaStats();
 try { charInput.focus(); } catch (e) { /* ignore */ }
