@@ -4,8 +4,8 @@ import os
 import json
 from urllib.parse import unquote
 from flask import Flask, jsonify, send_from_directory, request
-from anchors import build_char, BASE_ANCHORS
-from visualize import evaluate_steps
+from core.anchors import build_char, BASE_ANCHORS
+from core.visualize import evaluate_steps
 
 app = Flask(__name__, static_folder='static')
 
@@ -25,7 +25,7 @@ def load_db():
                 DB_EXPRS = json.load(f)
             DB_AVAILABLE = True
         elif os.path.exists(db_path):
-            from db import get_conn
+            from core.db import get_conn
             conn = get_conn()
             rows = conn.execute('SELECT n, expr FROM numbers').fetchall()
             conn.close()
@@ -98,7 +98,7 @@ def api_expr(char=None):
 def api_log():
     db_path = os.path.join(os.path.dirname(__file__), 'expressions.db')
     if os.path.exists(db_path):
-        from db import get_log
+        from core.db import get_log
         return jsonify(get_log())
     return jsonify([])
 

@@ -8,7 +8,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import math
-from db import get_conn, apply_strategy, snapshot, stats, init_db, MAX_N
+from core.db import get_conn, apply_strategy, snapshot, stats, init_db, MAX_N
 
 
 MAX_OFFSET = 2

@@ -11,9 +11,9 @@ import json
 import os
 from datetime import datetime
 
-from anchors import BASE_ANCHORS, build_n
+from core.anchors import BASE_ANCHORS, build_n
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'expressions.db')
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'expressions.db')
 MAX_N = 200_000
 
 
