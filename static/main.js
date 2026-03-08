@@ -87,22 +87,18 @@ function loadHistory() {
   `).join('');
 }
 
-async function loadDbStats() {
-  const res = await fetch('/api/stats');
-  const s = await res.json();
-  document.getElementById('dTotal').textContent = s.total.toLocaleString();
-  document.getElementById('dAvgDepth').textContent = s.avg_depth;
-  document.getElementById('dMaxDepth').textContent = s.max_depth;
-  document.getElementById('dAvgLen').textContent = s.avg_len;
+function loadDbStats() {
+  document.getElementById('dTotal').textContent = DB_STATS.total.toLocaleString();
+  document.getElementById('dAvgDepth').textContent = DB_STATS.avg_depth;
+  document.getElementById('dMaxDepth').textContent = DB_STATS.max_depth;
+  document.getElementById('dAvgLen').textContent = DB_STATS.avg_len;
 }
 
-async function loadFormulaStats() {
-  const res = await fetch('/api/formula-stats');
-  const s = await res.json();
-  document.getElementById('fAvgDepth').textContent = s.avg_depth;
-  document.getElementById('fMaxDepth').textContent = s.max_depth;
-  document.getElementById('fAvgLen').textContent = s.avg_len;
-  document.getElementById('fMaxLen').textContent = s.max_len;
+function loadFormulaStats() {
+  document.getElementById('fAvgDepth').textContent = FORMULA_STATS.avg_depth;
+  document.getElementById('fMaxDepth').textContent = FORMULA_STATS.max_depth;
+  document.getElementById('fAvgLen').textContent = FORMULA_STATS.avg_len;
+  document.getElementById('fMaxLen').textContent = FORMULA_STATS.max_len;
 }
 
 function showResult(data) {
