@@ -5,6 +5,7 @@ import json
 from urllib.parse import unquote
 from flask import Flask, jsonify, send_from_directory, request
 from anchors import build_n, build_char, BASE_ANCHORS
+from visualize import evaluate_steps
 
 app = Flask(__name__, static_folder='static')
 
@@ -158,91 +159,12 @@ def api_anchors():
     return jsonify({str(k): v for k, v in sorted(BASE_ANCHORS.items())})
 
 
-def find_innermost(expr):
-    """Find the innermost function call: returns (start, end) of 'func(...)' or None."""
-    last_open = expr.rfind('(')
-    if last_open == -1:
-        return None
-    close = expr.find(')', last_open)
-    if close == -1:
-        return None
-    func_start = last_open
-    while func_start > 0 and (expr[func_start - 1].isalpha() or expr[func_start - 1] == '_'):
-        func_start -= 1
-    return func_start, close + 1
-
-
-def can_eval(s):
-    """Check if a repr string can be eval'd back to a value."""
-    try:
-        eval(s, {"__builtins__": {}}, {})
-        return True
-    except Exception:
-        return False
-
-
 @app.route('/api/visualize')
 def api_visualize():
     expr = request.args.get('expr', '')
     if not expr:
         return jsonify({'error': 'Missing expr parameter'}), 400
-
-    steps = []
-    current = expr
-    scope = {}  # holds placeholder values for non-eval-able reprs
-    next_id = [0]
-
-    def placeholder(value):
-        name = f'__p{next_id[0]}__'
-        next_id[0] += 1
-        scope[name] = value
-        return name
-
-    def display(s):
-        """Replace placeholders with their repr for display."""
-        for name in sorted(scope, key=len, reverse=True):
-            s = s.replace(name, repr(scope[name]))
-        return s
-
-    for _ in range(200):
-        span = find_innermost(current)
-        if not span:
-            break
-
-        start, end = span
-        call = current[start:end]
-        display_expr = display(current)
-        display_call = display(call)
-        d_start = len(display(current[:start]))
-        d_end = d_start + len(display_call)
-
-        try:
-            result = eval(call, {"__builtins__": __builtins__}, scope)
-            result_repr = repr(result)
-
-            steps.append({
-                'expr': display_expr,
-                'highlight': {'start': d_start, 'end': d_end},
-                'call': display_call,
-                'result': result_repr
-            })
-
-            if can_eval(result_repr):
-                current = current[:start] + result_repr + current[end:]
-            else:
-                current = current[:start] + placeholder(result) + current[end:]
-
-        except Exception as e:
-            steps.append({
-                'expr': display_expr,
-                'call': display_call,
-                'error': str(e)
-            })
-            break
-
-    steps.append({'expr': display(current), 'final': True})
-
-    return jsonify({'steps': steps})
+    return jsonify({'steps': evaluate_steps(expr)})
 
 
 if __name__ == '__main__':
