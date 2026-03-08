@@ -32,7 +32,10 @@
     <span id="resultChar"></span>
     <span id="resultMeta"></span>
   </div>
-  <div class="result-expr" id="resultExpr" onclick="copyExpr()"></div>
+  <div class="expr-container">
+    <div class="result-expr" id="resultExpr" onclick="copyExpr()"></div>
+    <button class="visualize-btn" id="visualizeBtn" onclick="visualize()">visualize</button>
+  </div>
   <div class="copied" id="copiedMsg"></div>
 </div>
 
@@ -332,5 +335,6 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 
 <script src="/static/prefetch.js"></script>
 <script src="/static/main.js"></script>
+<script src="/static/visualize.js"></script>
 </body>
 </html>
