@@ -9,7 +9,7 @@ const copiedMsg = document.getElementById('copiedMsg');
 let lastExpr = '';
 let lastData = null;
 
-charInput.size = 11; // fit the placeholder 'insert char'
+charInput.size = 9; // fit the placeholder
 
 charInput.addEventListener('input', async () => {
   const char = charInput.value;
