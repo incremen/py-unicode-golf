@@ -4,8 +4,8 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import json
-from db import get_conn, init_db
-from anchors import build_n
+from core.db import get_conn, init_db
+from core.anchors import build_n
 
 STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'data')
 
