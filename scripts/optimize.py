@@ -4,6 +4,9 @@ Tries every applicable strategy on every number and updates the db
 when a shorter expression is found.
 """
 
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
 import math
 from db import get_conn, apply_strategy, snapshot, stats, init_db, MAX_N
 

@@ -3,6 +3,9 @@
 Run this anytime to regenerate the numbers for the optimization history.
 """
 
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
 from anchors import build_n, BASE_ANCHORS
 from db import get_conn
 
