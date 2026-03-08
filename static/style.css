@@ -331,3 +331,13 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
 .stat-card:hover .tiptext { display: block; }
 
 .divider { border-top: 1px solid #e0e0d8; margin: 1.2rem 0; }
+
+.strategies { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
+.strategy-tag {
+  background: #1a1e28;
+  padding: 0.2rem 0.6rem;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  color: #8a94a8;
+}
+.strategy-tag .count { color: #FFD43B; font-weight: bold; }
