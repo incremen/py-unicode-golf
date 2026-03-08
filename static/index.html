@@ -54,7 +54,7 @@
     Try pasting the expression into a python console (or using print() on it in a python file).
   </p>
   <p>
-    For example, <code>chr(max(range(sum(range(len(str(frozenset())))))))</code> evaluates to "6".
+    For example, <code>chr(max(range(ord(min(str(bytes()))))))</code> evaluates to <code>&</code>.
   </p>
 </div>
 
@@ -63,7 +63,7 @@
   <p>
     Right around the whole among us era, it was gaining traction that
     <code>chr(sum(range(ord(min(str(not()))))))</code> in Python evaluates to
-    "ඞ", a unicode character that looks suspiciously like the among us crewmate. <br>
+    <code>ඞ</code>, a unicode character that looks suspiciously like the among us crewmate. <br>
      This was an amazing discovery. But (unfortunately), I immediately tried to generalize it. <br>
      Could any Unicode character (there's ~160,000) be represented like this?
   </p>
