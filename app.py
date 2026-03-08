@@ -158,9 +158,27 @@ def api_anchors():
     return jsonify({str(k): v for k, v in sorted(BASE_ANCHORS.items())})
 
 
-import re
+def find_innermost(expr):
+    """Find the innermost function call: returns (start, end) of 'func(...)' or None."""
+    last_open = expr.rfind('(')
+    if last_open == -1:
+        return None
+    close = expr.find(')', last_open)
+    if close == -1:
+        return None
+    func_start = last_open
+    while func_start > 0 and (expr[func_start - 1].isalpha() or expr[func_start - 1] == '_'):
+        func_start -= 1
+    return func_start, close + 1
 
-VISUALIZE_PATTERN = re.compile(r'\b([a-z_]+)\(([^()]*)\)')
+
+def can_eval(s):
+    """Check if a repr string can be eval'd back to a value."""
+    try:
+        eval(s, {"__builtins__": {}}, {})
+        return True
+    except Exception:
+        return False
 
 
 @app.route('/api/visualize')
@@ -171,71 +189,58 @@ def api_visualize():
 
     steps = []
     current = expr
-    # Track substituted values so we can eval with them in scope
-    placeholders = {}
-    counter = [0]
+    scope = {}  # holds placeholder values for non-eval-able reprs
+    next_id = [0]
 
-    def make_placeholder(value):
-        name = f'_v{counter[0]}'
-        counter[0] += 1
-        placeholders[name] = value
+    def placeholder(value):
+        name = f'__p{next_id[0]}__'
+        next_id[0] += 1
+        scope[name] = value
         return name
 
+    def display(s):
+        """Replace placeholders with their repr for display."""
+        for name in sorted(scope, key=len, reverse=True):
+            s = s.replace(name, repr(scope[name]))
+        return s
+
     for _ in range(200):
-        match = VISUALIZE_PATTERN.search(current)
-        if not match:
+        span = find_innermost(current)
+        if not span:
             break
 
-        func_call = match.group(0)
-
-        # Build display version (substitute placeholders back to repr)
-        display = current
-        for name, val in placeholders.items():
-            display = display.replace(name, repr(val))
+        start, end = span
+        call = current[start:end]
+        display_expr = display(current)
+        display_call = display(call)
+        d_start = len(display(current[:start]))
+        d_end = d_start + len(display_call)
 
         try:
-            result = eval(func_call, {"__builtins__": __builtins__}, placeholders)
+            result = eval(call, {"__builtins__": __builtins__}, scope)
             result_repr = repr(result)
 
-            pre = current[:match.start()]
-            for name, val in placeholders.items():
-                pre = pre.replace(name, repr(val))
-            d_start = len(pre)
-            call_display = func_call
-            for name, val in placeholders.items():
-                call_display = call_display.replace(name, repr(val))
-            d_end = d_start + len(call_display)
-
             steps.append({
-                'expr': display,
+                'expr': display_expr,
                 'highlight': {'start': d_start, 'end': d_end},
-                'call': call_display,
+                'call': display_call,
                 'result': result_repr
             })
 
-            # Use placeholder if repr contains parens (would confuse regex)
-            if '(' in result_repr or ')' in result_repr:
-                placeholder = make_placeholder(result)
-                current = current[:match.start()] + placeholder + current[match.end():]
+            if can_eval(result_repr):
+                current = current[:start] + result_repr + current[end:]
             else:
-                current = current[:match.start()] + result_repr + current[match.end():]
+                current = current[:start] + placeholder(result) + current[end:]
 
         except Exception as e:
-            display_call = func_call
-            for name, val in placeholders.items():
-                display_call = display_call.replace(name, repr(val))
             steps.append({
-                'expr': display,
+                'expr': display_expr,
                 'call': display_call,
                 'error': str(e)
             })
             break
 
-    # Final display
-    final = current
-    for name, val in placeholders.items():
-        final = final.replace(name, repr(val))
-    steps.append({'expr': final, 'final': True})
+    steps.append({'expr': display(current), 'final': True})
 
     return jsonify({'steps': steps})
 
