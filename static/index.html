@@ -38,10 +38,24 @@
 
 <!-- ── Main tabs ── -->
 <div class="main-tabs">
+  <button class="main-tab" onclick="showMain(this, 'panel-what')">what?</button>
   <button class="main-tab" onclick="showMain(this, 'panel-why')">why?</button>
   <button class="main-tab" onclick="showMain(this, 'panel-formula')">the algorithm</button>
   <button class="main-tab" onclick="showMain(this, 'panel-optimizations')">optimizations</button>
   <button class="main-tab" onclick="showMain(this, 'panel-db')">database</button>
+</div>
+
+<!-- ── What? ── -->
+<div class="main-panel" id="panel-what">
+  <p>
+    Python has built-in functions like <code>len()</code>, <code>str()</code>, <code>not()</code>, <code>chr()</code>, etc.
+    This site builds any Unicode character using only those functions: no numbers, no strings, no variables.
+    Just nested function calls.
+    Try pasting the expression into a python console (or using print() on it in a python file).
+  </p>
+  <p>
+    For example, <code>chr(max(range(sum(range(len(str(frozenset())))))))</code> evaluates to "6".
+  </p>
 </div>
 
 <!-- ── Why? ── -->
