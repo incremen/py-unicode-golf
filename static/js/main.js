@@ -54,6 +54,7 @@ function showMain(btn, id) {
 }
 
 function randomChar() {
+  if (vizRunning) stopVisualization();
   const cached = prefetchQueue.shift();
   if (cached) {
     charInput.value = cached.char;
