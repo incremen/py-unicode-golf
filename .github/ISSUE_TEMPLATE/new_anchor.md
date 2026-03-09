@@ -13,6 +13,6 @@ labels: anchor
 **Value**
 <!-- What number does it produce? e.g. 84 -->
 
-**Paren count**
-<!-- Total parentheses in the expression -->
+**Depth**
+<!-- How many function calls are there here? -->
 

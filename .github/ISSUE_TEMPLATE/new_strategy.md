@@ -13,6 +13,6 @@ labels: strategy
 **Formula**
 <!-- What does it compute? e.g. f(n) = 3n -->
 
-**Paren cost**
-<!-- How many parentheses does it add? -->
+**Depth**
+<!-- How many function calls are there here?
 
