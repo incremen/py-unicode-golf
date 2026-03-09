@@ -8,12 +8,60 @@ let vizPaused = false;
 let vizRunning = false;
 let vizCancelled = false;
 
+const vizBtn = () => document.getElementById('visualizeBtn');
+
 function stopVisualization() {
   vizCancelled = true;
   vizPaused = false;
   vizRunning = false;
-  document.getElementById('visualizeBtn').textContent = 'visualize';
+  vizBtn().textContent = 'visualize';
   resultExpr.style.cursor = 'pointer';
+}
+
+async function waitAndCheck(ms) {
+  await sleep(ms);
+  if (vizCancelled) return false;
+  while (vizPaused && !vizCancelled) await sleep(100);
+  return !vizCancelled;
+}
+
+function renderStep(before, middle, after, className) {
+  resultExpr.innerHTML =
+    `${syntaxHighlight(before)}<span class="${className}">${syntaxHighlight(middle)}</span>${syntaxHighlight(after)}`;
+}
+
+async function fetchSteps(expr) {
+  const res = await fetch(`/api/visualize?expr=${encodeURIComponent(expr)}`);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data.steps;
+}
+
+async function animateSteps(steps) {
+  resultExpr.style.cursor = 'default';
+  let speed = 1;
+
+  for (const step of steps) {
+    if (vizCancelled) break;
+
+    if (step.final) {
+      resultExpr.innerHTML = syntaxHighlight(step.expr);
+      await sleep(FINAL_DELAY);
+      break;
+    }
+
+    const before = step.expr.substring(0, step.highlight.start);
+    const highlighted = step.expr.substring(step.highlight.start, step.highlight.end);
+    const after = step.expr.substring(step.highlight.end);
+
+    renderStep(before, highlighted, after, 'highlight');
+    if (!await waitAndCheck(HIGHLIGHT_DELAY * speed)) break;
+
+    renderStep(before, step.result, after, 'fade-in');
+    if (!await waitAndCheck(REPLACE_DELAY * speed)) break;
+
+    speed = Math.max(SPEEDUP_UNTIL / HIGHLIGHT_DELAY, speed * SPEEDUP);
+  }
 }
 
 async function visualize() {
@@ -21,66 +69,23 @@ async function visualize() {
 
   if (vizRunning) {
     vizPaused = !vizPaused;
-    document.getElementById('visualizeBtn').textContent = vizPaused ? 'resume' : 'pause';
+    vizBtn().textContent = vizPaused ? 'resume' : 'pause';
     return;
   }
 
   vizRunning = true;
   vizPaused = false;
   vizCancelled = false;
-  document.getElementById('visualizeBtn').textContent = 'pause';
+  vizBtn().textContent = 'pause';
 
   try {
-    const res = await fetch(`/api/visualize?expr=${encodeURIComponent(lastExpr)}`);
-    const data = await res.json();
-
-    if (data.error || vizCancelled) {
-      if (data.error) console.error(data.error);
-      stopVisualization();
-      return;
-    }
-
-    resultExpr.style.cursor = 'default';
-    let speed = 1;
-
-    for (const step of data.steps) {
-      if (vizCancelled) break;
-      while (vizPaused && !vizCancelled) await sleep(100);
-      if (vizCancelled) break;
-
-      if (step.final) {
-        resultExpr.innerHTML = syntaxHighlight(step.expr);
-        await sleep(FINAL_DELAY);
-        break;
-      }
-
-      const before = step.expr.substring(0, step.highlight.start);
-      const highlight = step.expr.substring(step.highlight.start, step.highlight.end);
-      const after = step.expr.substring(step.highlight.end);
-
-      resultExpr.innerHTML = `${syntaxHighlight(before)}<span class="highlight">${syntaxHighlight(highlight)}</span>${syntaxHighlight(after)}`;
-      await sleep(HIGHLIGHT_DELAY * speed);
-
-      if (vizCancelled) break;
-      while (vizPaused && !vizCancelled) await sleep(100);
-      if (vizCancelled) break;
-
-      resultExpr.innerHTML = `${syntaxHighlight(before)}<span class="fade-in">${syntaxHighlight(step.result)}</span>${syntaxHighlight(after)}`;
-      await sleep(REPLACE_DELAY * speed);
-
-      speed = Math.max(SPEEDUP_UNTIL / HIGHLIGHT_DELAY, speed * SPEEDUP);
-    }
-
-    resultExpr.style.cursor = 'pointer';
+    const steps = await fetchSteps(lastExpr);
+    if (!vizCancelled) await animateSteps(steps);
   } catch (e) {
     console.error(e);
-    resultExpr.style.cursor = 'pointer';
   }
 
-  vizRunning = false;
-  vizPaused = false;
-  vizCancelled = false;
-  document.getElementById('visualizeBtn').textContent = 'visualize';
+  stopVisualization();
 }
 
 function sleep(ms) {
