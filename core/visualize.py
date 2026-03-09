@@ -11,22 +11,36 @@ stored in a placeholder dict and swapped back to repr for display only.
 
 
 def find_innermost(expr):
-    """Find the innermost parenthesized call. Returns (start, end) or None."""
-    last_open = expr.rfind('(')
-    if last_open == -1:
-        return None
-    close = expr.find(')', last_open)
-    if close == -1:
-        return None
-    # Walk back to find the function name
-    i = last_open
-    while i > 0 and (expr[i - 1].isalpha() or expr[i - 1] == '_'):
-        i -= 1
-    return i, close + 1
+    """Find the innermost function call. Returns (start, end) or None.
+
+    Searches right-to-left for '(' that is preceded by a function name.
+    Skips bare parentheses from tuple/group literals like (0,).
+    """
+    pos = len(expr)
+    while True:
+        pos = expr.rfind('(', 0, pos)
+        if pos == -1:
+            return None
+        # Walk back to find the function name
+        i = pos
+        while i > 0 and (expr[i - 1].isalpha() or expr[i - 1] == '_'):
+            i -= 1
+        # Must have a function name — skip bare parens
+        if i == pos:
+            continue
+        close = expr.find(')', pos)
+        if close == -1:
+            continue
+        return i, close + 1
 
 
 def is_safe_literal(s):
-    """Can this repr be pasted back into an expression and eval'd?"""
+    """Can this repr be pasted back into an expression without confusing the parser?
+
+    Must be eval-able AND not contain parens (which would look like function calls).
+    """
+    if '(' in s or ')' in s:
+        return False
     try:
         eval(s, {"__builtins__": {}}, {})
         return True
