@@ -95,4 +95,4 @@ returns
 
 ## Contributing
 
-Found a new anchor or strategy? [Open an issue](https://github.com/incremen/py-unicode-golf/issues/new/choose) - there are templates for both.
+If you found a new anchor or strategy, please [Open an issue](https://github.com/incremen/py-unicode-golf/issues/new/choose). I'll test it and see if I can improve the database.
