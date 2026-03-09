@@ -2,7 +2,7 @@ const HIGHLIGHT_DELAY = 600;
 const REPLACE_DELAY = 600;
 const FINAL_DELAY = 600;
 const SPEEDUP = 0.80;
-const SPEEDUP_UNTIL = 350;
+const SPEEDUP_UNTIL = 310;
 
 let vizPaused = false;
 let vizRunning = false;
