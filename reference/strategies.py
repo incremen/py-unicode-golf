@@ -69,11 +69,6 @@ def digit_count(expr):
     return f'len(str({expr}))'
 
 
-# 1 for any n > 0, 2 parens
-def collapse_to_one(expr):
-    return f'int(bool({expr}))'
-
-
 # ── Quick reference ──────────────────────────────────────────────────
 #
 #  Formula       Parens  Expression
