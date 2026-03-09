@@ -39,7 +39,7 @@ async function visualize() {
       while (vizPaused) await sleep(100);
 
       if (step.final) {
-        resultExpr.innerHTML = escapeHtml(step.expr);
+        resultExpr.innerHTML = syntaxHighlight(step.expr);
         await sleep(FINAL_DELAY);
         break;
       }
@@ -48,12 +48,12 @@ async function visualize() {
       const highlight = step.expr.substring(step.highlight.start, step.highlight.end);
       const after = step.expr.substring(step.highlight.end);
 
-      resultExpr.innerHTML = `${escapeHtml(before)}<span class="highlight">${escapeHtml(highlight)}</span>${escapeHtml(after)}`;
+      resultExpr.innerHTML = `${syntaxHighlight(before)}<span class="highlight">${syntaxHighlight(highlight)}</span>${syntaxHighlight(after)}`;
       await sleep(HIGHLIGHT_DELAY * speed);
 
       while (vizPaused) await sleep(100);
 
-      resultExpr.innerHTML = `${escapeHtml(before)}<span class="fade-in">${escapeHtml(step.result)}</span>${escapeHtml(after)}`;
+      resultExpr.innerHTML = `${syntaxHighlight(before)}<span class="fade-in">${syntaxHighlight(step.result)}</span>${syntaxHighlight(after)}`;
       await sleep(REPLACE_DELAY * speed);
 
       speed = Math.max(SPEEDUP_UNTIL / HIGHLIGHT_DELAY, speed * SPEEDUP);
@@ -74,8 +74,3 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}

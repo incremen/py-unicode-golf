@@ -148,6 +148,11 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
   flex: 1;
 }
 .result-expr:hover { box-shadow: 0 0 0 2px #306998; }
+.syn-fn { color: #61dafb; }
+.syn-num { color: #98e66a; }
+.syn-bool { color: #ff6eb4; }
+.syn-paren { color: #FFD43B; }
+.syn-str { color: #c9a0ff; }
 .visualize-btn {
   background: #1a1e28;
   border: 2px solid #2a3040;

@@ -107,7 +107,7 @@ function showResult(data) {
   const label = useOptimized ? 'db' : 'algorithm';
   resultChar.textContent = `'${data.char}' \u2014 U+${data.code_point.toString(16).toUpperCase().padStart(4, '0')}`;
   resultMeta.textContent = `${src.depth} calls \xb7 ${src.len} chars \xb7 ${label}`;
-  resultExpr.textContent = src.expr;
+  resultExpr.innerHTML = syntaxHighlight(src.expr);
   lastExpr = src.expr;
   copiedMsg.textContent = '';
   result.classList.add('visible');
