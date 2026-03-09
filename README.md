@@ -77,3 +77,9 @@ returns
 ```
 
 `formula` is generated on-the-fly. `db` (if present) is the pre-optimized expression from the database.
+
+---
+
+## Contributing
+
+Found a new anchor or strategy? [Open an issue](https://github.com/incremen/py-unicode-golf/issues/new/choose) — there are templates for both.

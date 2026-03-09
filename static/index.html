@@ -209,11 +209,23 @@
 <!-- ── Optimizations ── -->
 <div class="main-panel" id="panel-optimizations">
   <p>
-
-    The base-3 algorithm works for everything but isn't always the shortest. <br>
-    These strategies produce shorter expressions for specific numbers.
-    The optimizer tries all of them on every number and keeps the best result in the database (see next tab).
+    The base-3 algorithm works for everything but isn't always the shortest.
   </p>
+  <p>
+    The idea: for each number in the database, the optimizer asks "could any strategy + some
+    smaller number produce this more cheaply?" For example, for target 51: the 3x strategy
+    inverts to 51/3 = 17. If wrapping 17's expression in <code>len(str(list(bytes(...))))</code>
+    is shorter than what we already have for 51, we replace it.
+  </p>
+  <p>
+    It does this for every number (0&ndash;200,000) and every strategy. Each pass can improve
+    expressions, and improvements cascade &mdash; if a later pass finds a shorter way to build 17,
+    everything that depends on 17 (like 51) automatically gets shorter too.
+  </p>
+
+  <div class="divider"></div>
+
+  <p><strong>Available strategies</strong></p>
 
   <p style="margin-top: 1rem;"><strong>Exact multipliers</strong></p>
   <p>All based on stringifying bytes objects in different ways:</p>
@@ -268,6 +280,13 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 
   <p><strong>Triangular jump</strong> &mdash; quadratic growth for 2 parens</p>
   <p><code>sum(range(n))</code> = n(n-1)/2</p>
+
+  <div class="divider"></div>
+
+  <p style="color:#666; font-size:0.8rem;">
+    Know a strategy or anchor we're missing?
+    <a href="https://github.com/incremen/py-unicode-golf/issues/new/choose" target="_blank">Suggest it on GitHub</a>
+  </p>
 </div>
 
 <!-- ── Database ── -->
