@@ -1,6 +1,8 @@
 const HIGHLIGHT_DELAY = 600;
 const REPLACE_DELAY = 600;
 const FINAL_DELAY = 600;
+const SPEEDUP = 0.80;
+const SPEEDUP_UNTIL = 350;
 
 let vizPaused = false;
 let vizRunning = false;
@@ -31,6 +33,7 @@ async function visualize() {
     }
 
     resultExpr.style.cursor = 'default';
+    let speed = 1;
 
     for (const step of data.steps) {
       while (vizPaused) await sleep(100);
@@ -46,12 +49,14 @@ async function visualize() {
       const after = step.expr.substring(step.highlight.end);
 
       resultExpr.innerHTML = `${escapeHtml(before)}<span class="highlight">${escapeHtml(highlight)}</span>${escapeHtml(after)}`;
-      await sleep(HIGHLIGHT_DELAY);
+      await sleep(HIGHLIGHT_DELAY * speed);
 
       while (vizPaused) await sleep(100);
 
       resultExpr.innerHTML = `${escapeHtml(before)}<span class="fade-in">${escapeHtml(step.result)}</span>${escapeHtml(after)}`;
-      await sleep(REPLACE_DELAY);
+      await sleep(REPLACE_DELAY * speed);
+
+      speed = Math.max(SPEEDUP_UNTIL / HIGHLIGHT_DELAY, speed * SPEEDUP);
     }
 
     resultExpr.style.cursor = 'pointer';
