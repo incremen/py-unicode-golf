@@ -4,7 +4,7 @@ Evaluates from the inside out: finds the innermost parenthesized call,
 evals it, replaces it with the result, and repeats.
 
 Some intermediate results (like property objects or ranges) have repr
-strings that aren't valid Python — e.g. repr(property()) gives
+strings that aren't valid Python - e.g. repr(property()) gives
 "<property object at 0x...>" which can't be eval'd back. These get
 stored in a placeholder dict and swapped back to repr for display only.
 """
@@ -25,7 +25,7 @@ def find_innermost(expr):
         i = pos
         while i > 0 and (expr[i - 1].isalpha() or expr[i - 1] == '_'):
             i -= 1
-        # Must have a function name — skip bare parens
+        # Must have a function name - skip bare parens
         if i == pos:
             continue
         close = expr.find(')', pos)

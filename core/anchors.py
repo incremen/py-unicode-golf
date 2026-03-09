@@ -34,7 +34,7 @@ BASE_ANCHORS = {
     30:  'len(str(type(reversed(list()))))',          # "<class 'list_reverseiterator'>"
     33:  'len(str(type(reversed(dict()))))',          # "<class 'dict_reversekeyiterator'>"
 
-    # ── ord(min/max(repr)) — pick chars from string reprs ──
+    # ── ord(min/max(repr)) - pick chars from string reprs ──
     32:  'ord(min(str(type(not()))))',                # ' ' in "<class 'bool'>"
     39:  'ord(min(str(bytes())))',                    # "'" in "b''"
     40:  'ord(min(str(tuple())))',                    # '(' in "()"

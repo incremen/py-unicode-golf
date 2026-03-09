@@ -1,5 +1,5 @@
 // Renderable Unicode ranges (auto-generated)
-// 102 ranges, 50335 chars — BMP + emoji, font-safe
+// 102 ranges, 50335 chars - BMP + emoji, font-safe
 const UNICODE_RANGES = [
   [32, 126],  // SPACE...
   [160, 172],  // NO-BREAK SPACE...
