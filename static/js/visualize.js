@@ -6,11 +6,19 @@ const SPEEDUP_UNTIL = 350;
 
 let vizPaused = false;
 let vizRunning = false;
+let vizCancelled = false;
+
+function stopVisualization() {
+  vizCancelled = true;
+  vizPaused = false;
+  vizRunning = false;
+  document.getElementById('visualizeBtn').textContent = 'visualize';
+  resultExpr.style.cursor = 'pointer';
+}
 
 async function visualize() {
   if (!lastExpr) return;
 
-  // Toggle pause if already running
   if (vizRunning) {
     vizPaused = !vizPaused;
     document.getElementById('visualizeBtn').textContent = vizPaused ? 'resume' : 'pause';
@@ -19,16 +27,16 @@ async function visualize() {
 
   vizRunning = true;
   vizPaused = false;
+  vizCancelled = false;
   document.getElementById('visualizeBtn').textContent = 'pause';
 
   try {
     const res = await fetch(`/api/visualize?expr=${encodeURIComponent(lastExpr)}`);
     const data = await res.json();
 
-    if (data.error) {
-      console.error(data.error);
-      vizRunning = false;
-      document.getElementById('visualizeBtn').textContent = 'visualize';
+    if (data.error || vizCancelled) {
+      if (data.error) console.error(data.error);
+      stopVisualization();
       return;
     }
 
@@ -36,7 +44,9 @@ async function visualize() {
     let speed = 1;
 
     for (const step of data.steps) {
-      while (vizPaused) await sleep(100);
+      if (vizCancelled) break;
+      while (vizPaused && !vizCancelled) await sleep(100);
+      if (vizCancelled) break;
 
       if (step.final) {
         resultExpr.innerHTML = syntaxHighlight(step.expr);
@@ -51,7 +61,9 @@ async function visualize() {
       resultExpr.innerHTML = `${syntaxHighlight(before)}<span class="highlight">${syntaxHighlight(highlight)}</span>${syntaxHighlight(after)}`;
       await sleep(HIGHLIGHT_DELAY * speed);
 
-      while (vizPaused) await sleep(100);
+      if (vizCancelled) break;
+      while (vizPaused && !vizCancelled) await sleep(100);
+      if (vizCancelled) break;
 
       resultExpr.innerHTML = `${syntaxHighlight(before)}<span class="fade-in">${syntaxHighlight(step.result)}</span>${syntaxHighlight(after)}`;
       await sleep(REPLACE_DELAY * speed);
@@ -67,10 +79,10 @@ async function visualize() {
 
   vizRunning = false;
   vizPaused = false;
+  vizCancelled = false;
   document.getElementById('visualizeBtn').textContent = 'visualize';
 }
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
-

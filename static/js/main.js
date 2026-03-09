@@ -12,6 +12,7 @@ let lastData = null;
 charInput.size = 9; // fit the placeholder
 
 charInput.addEventListener('input', async () => {
+  if (vizRunning) stopVisualization();
   const char = charInput.value;
   // when empty, show the wider placeholder state; collapse to single-char size when there's input
   if (!char || char.length === 0) { charInput.classList.add('wide'); charInput.size = 11; result.classList.remove('visible'); return; }
