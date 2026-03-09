@@ -12,17 +12,17 @@ def decrement(expr, times=1):
 
 
 # 3n, 4 parens, n >= 1
-def triple(expr):
+def multiply_3(expr):
     return f'len(str(list(bytes({expr}))))'
 
 
 # 4n + 3, 3 parens, n >= 0
-def quad(expr):
+def multiply_4_plus_3(expr):
     return f'len(str(bytes({expr})))'
 
 
 # 5n + 5, 4 parens, n >= 0
-def quint(expr):
+def multiply_5_plus_5(expr):
     return f'len(ascii(str(bytes({expr}))))'
 
 
@@ -45,22 +45,22 @@ def ascii_exp(expr, k=1):
 
 
 # n(n-1)/2, 2 parens, n >= 0
-def triangular(expr):
+def triangular_sum(expr):
     return f'sum(range({expr}))'
 
 
 # 3n (but 4 at n=1), 4 parens, n >= 1
-def triple_tuple(expr):
+def multiply_3_tuple(expr):
     return f'len(str(tuple(bytes({expr}))))'
 
 
 # 6n for n < 10, 5 parens, n >= 1
-def enum_list(expr):
+def enumerate_dict(expr):
     return f'len(str(dict(enumerate(bytearray({expr})))))'
 
 
 # ~n*log10(n), 4 parens, n >= 1
-def range_repr(expr):
+def range_str_length(expr):
     return f'len(str(list(range({expr}))))'
 
 
@@ -70,7 +70,7 @@ def digit_count(expr):
 
 
 # 1 for any n > 0, 2 parens
-def collapse(expr):
+def collapse_to_one(expr):
     return f'int(bool({expr}))'
 
 
