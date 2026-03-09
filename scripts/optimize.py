@@ -122,7 +122,9 @@ def load_entries():
     return {n: {'expr': expr, 'depth': depth, 'len': length} for n, expr, depth, length in rows}
 
 
-def find_improvements(entries, max_n):
+def find_improvements(entries, max_n, strategies=None):
+    if strategies is None:
+        strategies = STRATEGIES
     improvements = []
 
     for target in range(max_n + 1):
@@ -130,7 +132,7 @@ def find_improvements(entries, max_n):
             continue
         current = entries[target]
 
-        for strategy_name, inverse_fn in STRATEGIES:
+        for strategy_name, inverse_fn in strategies:
             result = inverse_fn(target)
             if result is None:
                 continue
