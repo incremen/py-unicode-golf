@@ -85,7 +85,7 @@ function logoStart(total, durationSec) {
   const toScale = LOGO_BASE_SCALE + geoSum(VIZ_SCALE_PER_STEP, VIZ_SCALE_DECAY, total);
   const toOpacity = LOGO_BASE_OPACITY + geoSum(VIZ_OPACITY_PER_STEP, VIZ_OPACITY_DECAY, total);
   const toRotate = logoBaseRotation + total * VIZ_ROTATE_PER_STEP;
-  const toHue = VIZ_HUE_PER_STEP * total * 0.5 * hueDirection;
+  const toHue = VIZ_HUE_PER_STEP * total * hueDirection;
   vizEndState = { rotate: toRotate };
 
   vizStyle.textContent = `
