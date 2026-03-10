@@ -12,6 +12,8 @@ body::before {
   z-index: 0;
   filter: hue-rotate(var(--logo-hue, 0deg));
   transition: opacity var(--logo-transition, 0.15s) var(--logo-easing, ease-out), transform var(--logo-transition, 0.15s) var(--logo-easing, ease-out), filter var(--logo-transition, 0.15s) var(--logo-easing, ease-out);
+  animation: var(--logo-anim, none);
+  animation-play-state: var(--logo-play-state, running);
 }
 
 @media (max-width: 900px) {

@@ -95,6 +95,7 @@ async function visualize() {
   if (vizRunning) {
     vizPaused = !vizPaused;
     vizBtn().textContent = vizPaused ? 'resume' : 'pause';
+    if (vizPaused) logoPause(); else logoResume();
     return;
   }
 
