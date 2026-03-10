@@ -28,10 +28,11 @@ function logoPop() {
   if (vizRunning) return;
   clearLogoTimer();
   setLogoTransition(0.15);
-  setLogo(LOGO_BASE_SCALE + 0.05, LOGO_BASE_OPACITY + 0.15, 0);
+  setLogo(LOGO_BASE_SCALE + 0.05, LOGO_BASE_OPACITY + 0.15, logoBaseRotation);
   logoSettleTimer = setTimeout(() => {
-    setLogo(LOGO_BASE_SCALE, LOGO_BASE_OPACITY, 0);
-  }, 600);
+    setLogoTransition(0.5);
+    setLogo(LOGO_BASE_SCALE, LOGO_BASE_OPACITY, logoBaseRotation);
+  }, 200);
 }
 
 
