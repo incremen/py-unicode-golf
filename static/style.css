@@ -263,6 +263,7 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
 /* Tabs */
 .main-tabs {
   display: flex;
+  justify-content: center;
   gap: 0;
   border-bottom: 3px solid rgba(0, 0, 0, 0.15);
   margin-bottom: 0;
