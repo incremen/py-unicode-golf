@@ -47,6 +47,7 @@ function logoPop() {
 const VIZ_SCALE_PER_STEP = 0.025;
 const VIZ_SCALE_DECAY = 0.93;
 const VIZ_OPACITY_PER_STEP = 0.03;
+const VIZ_OPACITY_DECAY = 0.85;
 const VIZ_ROTATE_PER_STEP = -0.4;
 const VIZ_HUE_PER_STEP = -2.2;
 const VIZ_OVERSHOOT = 0.06;
@@ -62,7 +63,7 @@ function vizTarget() {
   return {
     // Geometric series: step * (1 + 0.95 + 0.95^2 + ...) = step * (1 - decay^n) / (1 - decay)
     scale: LOGO_BASE_SCALE + VIZ_SCALE_PER_STEP * (1 - Math.pow(VIZ_SCALE_DECAY, logoCombo)) / (1 - VIZ_SCALE_DECAY),
-    opacity: LOGO_BASE_OPACITY + VIZ_OPACITY_PER_STEP * (1 - Math.pow(VIZ_SCALE_DECAY, logoCombo)) / (1 - VIZ_SCALE_DECAY),
+    opacity: LOGO_BASE_OPACITY + VIZ_OPACITY_PER_STEP * (1 - Math.pow(VIZ_OPACITY_DECAY, logoCombo)) / (1 - VIZ_OPACITY_DECAY),
     rotate: logoBaseRotation + logoCombo * VIZ_ROTATE_PER_STEP,
     hue,
   };
@@ -74,7 +75,7 @@ function logoStep(total) {
   clearLogoTimer();
   setLogoTransition(0.08);
   const t = vizTarget();
-  setLogo(t.scale + VIZ_OVERSHOOT, t.opacity + VIZ_OVERSHOOT, t.rotate - 1.5, t.hue * 1.2);
+  setLogo(t.scale + VIZ_OVERSHOOT, t.opacity, t.rotate - 1.5, t.hue * 1.2);
   logoSettleTimer = setTimeout(() => {
     setLogoTransition(0.35);
     setLogo(t.scale, t.opacity, t.rotate, t.hue);
