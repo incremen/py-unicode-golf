@@ -16,6 +16,7 @@ function stopVisualization() {
   vizRunning = false;
   vizBtn().textContent = 'visualize';
   resultExpr.style.cursor = 'pointer';
+  logoReset();
 }
 
 async function waitAndCheck(ms) {
@@ -58,6 +59,7 @@ async function animateSteps(steps) {
     if (!await waitAndCheck(HIGHLIGHT_DELAY * speed)) break;
 
     renderStep(before, step.result, after, 'fade-in');
+    logoStep();
     if (!await waitAndCheck(REPLACE_DELAY * speed)) break;
 
     speed = Math.max(SPEEDUP_UNTIL / HIGHLIGHT_DELAY, speed * SPEEDUP);
@@ -85,6 +87,7 @@ async function visualize() {
     console.error(e);
   }
 
+  logoReset();
   stopVisualization();
 }
 
