@@ -48,7 +48,7 @@ def is_safe_literal(s):
         return False
 
 
-def truncate_repr(s, max_len=30):
+def truncate_repr(s, max_len=60):
     """Truncate long literals like lists, bytes, and strings for display."""
     if len(s) <= max_len:
         return s
