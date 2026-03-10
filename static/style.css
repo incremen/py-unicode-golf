@@ -399,6 +399,12 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
   .main-panel { padding: 1rem; }
   .result { padding: 0.9rem; }
   .result-expr { font-size: 0.8rem; }
+  .result-sidebar {
+    position: static;
+    flex-direction: row;
+    justify-content: flex-start;
+    margin-top: 0.5rem;
+  }
   pre { font-size: 0.75rem; }
   .main-panel table, .op-table, table {
     display: block;
