@@ -48,6 +48,13 @@ def is_safe_literal(s):
         return False
 
 
+def truncate_repr(s, max_len=30):
+    """Truncate long literals like lists, bytes, and strings for display."""
+    if len(s) <= max_len:
+        return s
+    return s[:20] + ' \u2026 ' + s[-5:]
+
+
 def evaluate_steps(expr, max_steps=200):
     """Evaluate an expression from the inside out, returning each step.
 
@@ -70,7 +77,7 @@ def evaluate_steps(expr, max_steps=200):
 
     def resolve(s):
         for name in sorted(scope, key=len, reverse=True):
-            s = s.replace(name, repr(scope[name]))
+            s = s.replace(name, truncate_repr(repr(scope[name])))
         return s
 
     for _ in range(max_steps):
@@ -95,10 +102,10 @@ def evaluate_steps(expr, max_steps=200):
             'expr': display_expr,
             'highlight': {'start': d_start, 'end': d_start + len(display_call)},
             'call': display_call,
-            'result': result_repr,
+            'result': truncate_repr(result_repr),
         })
 
-        if is_safe_literal(result_repr):
+        if is_safe_literal(result_repr) and len(result_repr) <= 30:
             current = current[:start] + result_repr + current[end:]
         else:
             current = current[:start] + make_placeholder(result) + current[end:]
