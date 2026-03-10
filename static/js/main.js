@@ -118,19 +118,18 @@ function showResult(data) {
   result.classList.add('visible');
   shareBtn.classList.add('visible');
   shareBtn.classList.remove('copied');
-  shareBtn.textContent = 'copy link';
+  shareBtn.innerHTML = `share <span class="share-char">${escapeHtml(data.char)}</span>`;
   history.replaceState(null, '', `?c=${encodeURIComponent(data.char)}`);
 }
 
+let shareResetTimer = null;
 function shareChar() {
   const url = window.location.href;
   navigator.clipboard.writeText(url);
+  clearTimeout(shareResetTimer);
   shareBtn.classList.add('copied');
   shareBtn.textContent = 'copied!';
-  setTimeout(() => {
-    shareBtn.classList.remove('copied');
-    shareBtn.textContent = 'copy link';
-  }, 1500);
+  // Stay as "copied!" until a new character is loaded (showResult resets it)
 }
 
 // Auto-load character from ?c= URL param
