@@ -1,13 +1,21 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-  /* blue from the left, yellow from the right, both fading to transparent toward the center */
+html {
+  background-color: #f0efe8;
+}
+html::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
   background:
     linear-gradient(to right, rgba(48,105,152,1) 0%, rgba(48,105,152,0) 50%),
-    linear-gradient(to left, rgba(255,212,59,1) 0%, rgba(255,212,59,0) 50%),
-    #f0efe8;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+    linear-gradient(to left, rgba(255,212,59,1) 0%, rgba(255,212,59,0) 50%);
+  filter: hue-rotate(var(--bg-hue, 0deg));
+  transition: filter var(--logo-transition, 0.15s) ease-out;
+  z-index: -1;
+  pointer-events: none;
+}
+body {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
   color: #2a2a2a;
   min-height: 100vh;
   padding: 2rem;
