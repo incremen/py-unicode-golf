@@ -376,7 +376,7 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
 
 .divider { border-top: 1px solid #e0e0d8; margin: 1.2rem 0; }
 
-/* Responsive — must come last */
+/* Responsive - must come last */
 @media (max-width: 900px) {
   body { padding: 1.25rem; max-width: min(1000px, 96%); }
   h1 { font-size: 1.4rem; }
