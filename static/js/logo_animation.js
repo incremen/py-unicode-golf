@@ -45,22 +45,24 @@ function logoPop() {
 // End: hold for 2s, then shrink back (faster if bigger).
 
 const VIZ_SCALE_PER_STEP = 0.025;
+const VIZ_SCALE_DECAY = 0.93;
 const VIZ_OPACITY_PER_STEP = 0.03;
 const VIZ_ROTATE_PER_STEP = -0.4;
 const VIZ_HUE_PER_STEP = -2.2;
-const VIZ_OVERSHOOT = 0.03;
+const VIZ_OVERSHOOT = 0.06;
 
 let logoCombo = 0;
 let logoTotalSteps = 1;
 let logoBaseRotation = 0;
+let hueDirection = 1;
 
 function vizTarget() {
-  // Hue follows a sine wave: 0 at start, peak at middle, 0 at end
   const progress = logoCombo / logoTotalSteps;
-  const hue = Math.sin(progress * Math.PI) * VIZ_HUE_PER_STEP * logoTotalSteps * 0.5;
+  const hue = Math.sin(progress * Math.PI) * VIZ_HUE_PER_STEP * logoTotalSteps * 0.5 * hueDirection;
   return {
-    scale: LOGO_BASE_SCALE + logoCombo * VIZ_SCALE_PER_STEP,
-    opacity: LOGO_BASE_OPACITY + logoCombo * VIZ_OPACITY_PER_STEP,
+    // Geometric series: step * (1 + 0.95 + 0.95^2 + ...) = step * (1 - decay^n) / (1 - decay)
+    scale: LOGO_BASE_SCALE + VIZ_SCALE_PER_STEP * (1 - Math.pow(VIZ_SCALE_DECAY, logoCombo)) / (1 - VIZ_SCALE_DECAY),
+    opacity: LOGO_BASE_OPACITY + VIZ_OPACITY_PER_STEP * (1 - Math.pow(VIZ_SCALE_DECAY, logoCombo)) / (1 - VIZ_SCALE_DECAY),
     rotate: logoBaseRotation + logoCombo * VIZ_ROTATE_PER_STEP,
     hue,
   };
@@ -70,10 +72,13 @@ function logoStep(total) {
   logoCombo++;
   if (total) logoTotalSteps = total;
   clearLogoTimer();
-  setLogoTransition(0.15);
+  setLogoTransition(0.08);
   const t = vizTarget();
-  setLogo(t.scale + VIZ_OVERSHOOT, t.opacity + VIZ_OVERSHOOT, t.rotate - 0.5, t.hue);
-  logoSettleTimer = setTimeout(() => setLogo(t.scale, t.opacity, t.rotate, t.hue), 150);
+  setLogo(t.scale + VIZ_OVERSHOOT, t.opacity + VIZ_OVERSHOOT, t.rotate - 1.5, t.hue * 1.2);
+  logoSettleTimer = setTimeout(() => {
+    setLogoTransition(0.35);
+    setLogo(t.scale, t.opacity, t.rotate, t.hue);
+  }, 100);
 }
 
 function logoReset() {
@@ -82,6 +87,7 @@ function logoReset() {
   const shrinkDuration = Math.min(0.6, 0.15 + logoCombo * 0.02);
   setLogoTransition(shrinkDuration);
   logoCombo = 0;
+  hueDirection *= -1;
   setLogo(LOGO_BASE_SCALE - 0.02, LOGO_BASE_OPACITY, logoBaseRotation, 0);
   logoSettleTimer = setTimeout(() => {
     setLogoTransition(0.15);
