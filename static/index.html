@@ -29,16 +29,19 @@
   </div>
 </div>
 
-<div class="result" id="result">
-  <div class="result-header">
-    <span id="resultChar"></span>
-    <span id="resultMeta"></span>
+<div class="result-wrapper">
+  <div class="result" id="result">
+    <div class="result-header">
+      <span id="resultChar"></span>
+      <span id="resultMeta"></span>
+    </div>
+    <div class="expr-container">
+      <div class="result-expr" id="resultExpr" onclick="copyExpr()"></div>
+      <button class="visualize-btn" id="visualizeBtn" onclick="visualize()">visualize</button>
+    </div>
+    <div class="copied" id="copiedMsg"></div>
   </div>
-  <div class="expr-container">
-    <div class="result-expr" id="resultExpr" onclick="copyExpr()"></div>
-    <button class="visualize-btn" id="visualizeBtn" onclick="visualize()">visualize</button>
-  </div>
-  <div class="copied" id="copiedMsg"></div>
+  <div class="step-counter" id="stepCounter"></div>
 </div>
 
 <!-- ── Main tabs ── -->

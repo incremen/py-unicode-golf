@@ -9,12 +9,15 @@ let vizRunning = false;
 let vizCancelled = false;
 
 const vizBtn = () => document.getElementById('visualizeBtn');
+const stepCounter = document.getElementById('stepCounter');
 
 function stopVisualization() {
   vizCancelled = true;
   vizPaused = false;
   vizRunning = false;
   vizBtn().textContent = 'visualize';
+  stepCounter.textContent = '';
+  stepCounter.classList.remove('active', 'bump');
   resultExpr.style.cursor = 'pointer';
   logoReset();
 }
@@ -40,16 +43,26 @@ async function fetchSteps(expr) {
 
 async function animateSteps(steps) {
   resultExpr.style.cursor = 'default';
+  const total = steps.filter(s => !s.final).length;
+  let current = 0;
   let speed = 1;
 
   for (const step of steps) {
     if (vizCancelled) break;
 
     if (step.final) {
+      stepCounter.classList.remove('active', 'bump');
+      stepCounter.textContent = '';
       resultExpr.innerHTML = syntaxHighlight(step.expr);
       await sleep(FINAL_DELAY);
       break;
     }
+
+    current++;
+    stepCounter.textContent = `${current}/${total}`;
+    stepCounter.classList.add('active');
+    stepCounter.classList.add('bump');
+    setTimeout(() => stepCounter.classList.remove('bump'), 150);
 
     const before = step.expr.substring(0, step.highlight.start);
     const highlighted = step.expr.substring(step.highlight.start, step.highlight.end);
