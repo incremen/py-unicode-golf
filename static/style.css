@@ -15,19 +15,6 @@ body {
   margin: 0 auto;
   position: relative;
 }
-body::before {
-  content: '';
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 600px;
-  height: 600px;
-  background: url('/static/img/python_logo.png') center/contain no-repeat;
-  opacity: 0.2;
-  pointer-events: none;
-  z-index: 0;
-}
 body > * { position: relative; z-index: 1; }
 
 h1 { color: #306998; font-size: 1.6rem; margin-bottom: 0.3rem; }

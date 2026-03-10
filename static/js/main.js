@@ -50,6 +50,7 @@ function showMain(btn, id) {
   if (!wasActive) {
     document.getElementById(id).classList.add('active');
     btn.classList.add('active');
+    logoPop();
   }
 }
 

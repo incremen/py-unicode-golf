@@ -1,0 +1,18 @@
+body::before {
+  content: '';
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  width: 600px;
+  height: 600px;
+  background: url('/static/img/python_logo.png') center/contain no-repeat;
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+body.logo-pop::before {
+  opacity: 0.35;
+  transform: translate(-50%, -50%) scale(1.05);
+}
