@@ -6,6 +6,7 @@
 <title>ඞ</title>
 <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/syntax_highlighting.css">
 <link rel="stylesheet" href="/static/logo_animation.css">
 <script src="/static/data/unicode_ranges.js"></script>
 <script src="/static/data/history.js"></script>
@@ -14,9 +15,9 @@
 <body>
 
 <h1>py-unicode-golf:</h1>
-  <h2>represent any character using only python builtin function calls, no literals
+<p class="subtitle">represent any character using only python builtin function calls, no literals
   <a href="https://github.com/incremen/py-unicode-golf" class="github-link" target="_blank">github</a>
-</h2>
+</p>
 
 <!-- ── Input ── -->
 <div class="input-row">
@@ -127,12 +128,12 @@
   </p>
 
   <p><strong>Subtract 1:</strong> <code>max(range(n))</code> returns n - 1.</p>
-  <p class="note" style="margin-bottom:1.2rem;">
+  <p class="note note-spaced">
     range(n) produces 0, 1, ..., n-1. max() picks the last one. Costs 2 parentheses.
   </p>
 
   <p><strong>Multiply by 3:</strong> <code>len(str(list(bytes(n))))</code> returns exactly 3n.</p>
-  <p class="note" style="margin-bottom:1.2rem;">
+  <p class="note note-spaced">
     bytes(n) creates n zero-bytes. list() turns it into [0, 0, ..., 0].
     str() gives "[0, 0, ..., 0]" &mdash; always exactly 3n characters. Costs 4 parentheses.
   </p>
@@ -228,7 +229,7 @@
 
   <p><strong>Available strategies</strong></p>
 
-  <p style="margin-top: 1rem;"><strong>Exact multipliers</strong></p>
+  <p style="margin-top:1rem"><strong>Exact multipliers</strong></p>
   <p>All based on stringifying bytes objects in different ways:</p>
   <table class="op-table">
     <tr><td>len(str(list(bytes(n))))</td><td>= 3n</td><td>4 parens</td></tr>
@@ -302,7 +303,7 @@ ascii(ascii(that))    = ...                      len = 23</pre>
     and get a smaller representation for 50.
   </p>
 
-  <p style="margin-top: 1rem;"><strong>Current stats</strong></p>
+  <p style="margin-top:1rem"><strong>Current stats</strong></p>
   <div class="stats-grid" id="dbStats">
     <div class="stat-card">
       <div class="stat-val" id="dTotal">--</div>
@@ -327,7 +328,7 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   </div>
 
   <p><strong>Strategy breakdown</strong></p>
-  <p class="note" style="margin-bottom:0.5rem;">
+  <p class="note">
     How many numbers use each strategy as their shortest representation, in the final database.
   </p>
   <div class="strategies" id="strategiesList"></div>
@@ -335,7 +336,7 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   <div class="divider"></div>
 
   <p><strong>Optimization history</strong></p>
-  <p class="note" style="margin-bottom:0.5rem;">
+  <p class="note">
     Each row shows the state of the database after a round of improvements.
     <em>Minimal</em> = only seeds 0 and 1.
     <em>Full algorithm</em> = adds 44 base anchors.
@@ -356,6 +357,7 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   </table>
 </div>
 
+<!-- Load order matters: utilities first, then main, then features that depend on main's globals -->
 <script src="/static/js/syntax_highlighting.js"></script>
 <script src="/static/js/logo_animation.js"></script>
 <script src="/static/js/prefetch.js"></script>
