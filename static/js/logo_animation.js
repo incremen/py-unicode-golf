@@ -47,27 +47,32 @@ function logoPop() {
 const VIZ_SCALE_PER_STEP = 0.025;
 const VIZ_OPACITY_PER_STEP = 0.03;
 const VIZ_ROTATE_PER_STEP = -0.4;
-const VIZ_HUE_PER_STEP = -2;
+const VIZ_HUE_PER_STEP = -2.2;
 const VIZ_OVERSHOOT = 0.03;
 
 let logoCombo = 0;
+let logoTotalSteps = 1;
 let logoBaseRotation = 0;
 
 function vizTarget() {
+  // Hue follows a sine wave: 0 at start, peak at middle, 0 at end
+  const progress = logoCombo / logoTotalSteps;
+  const hue = Math.sin(progress * Math.PI) * VIZ_HUE_PER_STEP * logoTotalSteps * 0.5;
   return {
     scale: LOGO_BASE_SCALE + logoCombo * VIZ_SCALE_PER_STEP,
     opacity: LOGO_BASE_OPACITY + logoCombo * VIZ_OPACITY_PER_STEP,
     rotate: logoBaseRotation + logoCombo * VIZ_ROTATE_PER_STEP,
-    hue: logoCombo * VIZ_HUE_PER_STEP,
+    hue,
   };
 }
 
-function logoStep() {
+function logoStep(total) {
   logoCombo++;
+  if (total) logoTotalSteps = total;
   clearLogoTimer();
   setLogoTransition(0.15);
   const t = vizTarget();
-  setLogo(t.scale + VIZ_OVERSHOOT, t.opacity + VIZ_OVERSHOOT, t.rotate - 0.5, t.hue + 5);
+  setLogo(t.scale + VIZ_OVERSHOOT, t.opacity + VIZ_OVERSHOOT, t.rotate - 0.5, t.hue);
   logoSettleTimer = setTimeout(() => setLogo(t.scale, t.opacity, t.rotate, t.hue), 150);
 }
 
