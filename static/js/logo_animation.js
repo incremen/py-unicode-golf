@@ -38,10 +38,8 @@ function logoReset() {
 }
 
 function logoPop() {
+  if (vizRunning) return;
   clearTimeout(logoSettleTimer);
-  setLogo(LOGO_BASE_SCALE + 0.12, LOGO_BASE_OPACITY + 0.25);
-  logoSettleTimer = setTimeout(() => {
-    setLogo(LOGO_BASE_SCALE + 0.04, LOGO_BASE_OPACITY + 0.08);
-    logoSettleTimer = setTimeout(logoReset, 400);
-  }, 200);
+  setLogo(LOGO_BASE_SCALE + 0.05, LOGO_BASE_OPACITY + 0.15);
+  logoSettleTimer = setTimeout(logoReset, 600);
 }
