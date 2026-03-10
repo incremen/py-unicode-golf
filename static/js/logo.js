@@ -41,8 +41,7 @@ function logoPop() {
 
 // ── Visualize animation ──────────────────────────────────────────────
 
-const VIZ_SCALE_PER_STEP = 0.025;
-const VIZ_SCALE_DECAY = 0.8;
+const VIZ_SCALE_PER_STEP = 0.02;
 const VIZ_OPACITY_PER_STEP = 0.03;
 const VIZ_OPACITY_DECAY = 0.85;
 const VIZ_ROTATE_PER_STEP = -1.8;
@@ -82,7 +81,7 @@ function logoStart(total, durationSec) {
   clearLogoTimer();
 
   const fromRotate = logoBaseRotation;
-  const toScale = LOGO_BASE_SCALE + geoSum(VIZ_SCALE_PER_STEP, VIZ_SCALE_DECAY, total);
+  const toScale = LOGO_BASE_SCALE + VIZ_SCALE_PER_STEP * total;
   const toOpacity = LOGO_BASE_OPACITY + geoSum(VIZ_OPACITY_PER_STEP, VIZ_OPACITY_DECAY, total);
   const toRotate = logoBaseRotation + total * VIZ_ROTATE_PER_STEP;
   const toHue = VIZ_HUE_PER_STEP * total * hueDirection;
