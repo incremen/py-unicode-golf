@@ -98,9 +98,7 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
 .toggle input:checked + label { color: #306998; font-weight: 600; }
 
 .result-wrapper {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
+  position: relative;
   margin-bottom: 2rem;
 }
 .result {
@@ -111,7 +109,6 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
   padding: 1.2rem;
   display: none;
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-  flex: 1;
 }
 .result.visible { display: block; }
 .result-header {
@@ -141,7 +138,10 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
 }
 .result-expr:hover { box-shadow: 0 0 0 2px #306998; }
 .step-counter {
-  color: #3445c5;
+  position: absolute;
+  top: 0;
+  left: calc(100% + 0.6rem);
+  color: #4446ce;
   font-size: 1.1rem;
   font-weight: bold;
   white-space: nowrap;
@@ -152,7 +152,6 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
   opacity: 0;
   transform: scale(0.8);
   transition: opacity 0.15s ease, transform 0.15s ease;
-  margin-top: 0;
 }
 .step-counter.active {
   opacity: 1;
