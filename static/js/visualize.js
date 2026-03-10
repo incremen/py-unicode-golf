@@ -72,7 +72,7 @@ async function animateSteps(steps) {
     stepCounter.classList.add('active');
     stepCounter.classList.add('bump');
     setTimeout(() => stepCounter.classList.remove('bump'), 150);
-    logoStep();
+    logoStep(total);
     if (!await waitAndCheck(REPLACE_DELAY * speed)) break;
 
     speed = Math.max(SPEEDUP_UNTIL / HIGHLIGHT_DELAY, speed * SPEEDUP);
