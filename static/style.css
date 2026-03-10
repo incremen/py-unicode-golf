@@ -266,10 +266,19 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
 .main-tabs {
   display: flex;
   gap: 0;
-  border-bottom: 3px solid rgba(0, 0, 0, 0.15);
+  border-bottom: none;
   margin-bottom: 0;
+  position: relative;
 }
-.main-tabs .main-tab { flex: 1; text-align: center; }
+.main-tabs::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.5), transparent);
+}
 .main-tab {
   padding: 0.6rem 1.2rem;
   font-size: 0.9rem;
