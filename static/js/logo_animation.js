@@ -12,6 +12,8 @@ function setLogo(scale, opacity, rotate, hue) {
   el().style.setProperty('--logo-rotate', (rotate || 0) + 'deg');
   el().style.setProperty('--logo-hue', (hue || 0) + 'deg');
   document.documentElement.style.setProperty('--bg-hue', (hue || 0) + 'deg');
+  document.documentElement.style.setProperty('--bg-angle', (90 + (rotate || 0)) + 'deg');
+  document.documentElement.style.setProperty('--bg-angle-inv', (270 + (rotate || 0)) + 'deg');
 }
 
 function setLogoTransition(seconds) {
