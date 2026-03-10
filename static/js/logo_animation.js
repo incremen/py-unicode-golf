@@ -45,12 +45,13 @@ const VIZ_ROTATE_PER_STEP = -0.4;
 const VIZ_OVERSHOOT = 0.03;
 
 let logoCombo = 0;
+let logoBaseRotation = 0;
 
 function vizTarget() {
   return {
     scale: LOGO_BASE_SCALE + logoCombo * VIZ_SCALE_PER_STEP,
     opacity: LOGO_BASE_OPACITY + logoCombo * VIZ_OPACITY_PER_STEP,
-    rotate: logoCombo * VIZ_ROTATE_PER_STEP,
+    rotate: logoBaseRotation + logoCombo * VIZ_ROTATE_PER_STEP,
   };
 }
 
@@ -65,14 +66,16 @@ function logoStep() {
 
 function logoReset() {
   clearLogoTimer();
+  // Save rotation from this combo
+  logoBaseRotation += logoCombo * VIZ_ROTATE_PER_STEP;
   // Faster shrink if it got bigger
   const shrinkDuration = Math.min(0.6, 0.15 + logoCombo * 0.02);
   setLogoTransition(shrinkDuration);
   logoCombo = 0;
-  setLogo(LOGO_BASE_SCALE - 0.02, LOGO_BASE_OPACITY, 0);
+  setLogo(LOGO_BASE_SCALE - 0.02, LOGO_BASE_OPACITY, logoBaseRotation);
   logoSettleTimer = setTimeout(() => {
     setLogoTransition(0.15);
-    setLogo(LOGO_BASE_SCALE, LOGO_BASE_OPACITY, 0);
+    setLogo(LOGO_BASE_SCALE, LOGO_BASE_OPACITY, logoBaseRotation);
   }, shrinkDuration * 1000);
 }
 
