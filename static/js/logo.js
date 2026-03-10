@@ -12,8 +12,7 @@ function setLogo(scale, opacity, rotate, hue) {
   el().style.setProperty('--logo-rotate', (rotate || 0) + 'deg');
   el().style.setProperty('--logo-hue', (hue || 0) + 'deg');
   document.documentElement.style.setProperty('--bg-hue', (hue || 0) + 'deg');
-  document.documentElement.style.setProperty('--bg-angle', (90 + (rotate || 0)) + 'deg');
-  document.documentElement.style.setProperty('--bg-angle-inv', (270 + (rotate || 0)) + 'deg');
+  document.documentElement.style.setProperty('--bg-rotate', (rotate || 0) + 'deg');
 }
 
 function setLogoTransition(seconds, easing) {
@@ -46,10 +45,10 @@ function logoPop() {
 // End: hold for 2s, then shrink back (faster if bigger).
 
 const VIZ_SCALE_PER_STEP = 0.025;
-const VIZ_SCALE_DECAY = 0.97;
+const VIZ_SCALE_DECAY = 0.8;
 const VIZ_OPACITY_PER_STEP = 0.03;
 const VIZ_OPACITY_DECAY = 0.85;
-const VIZ_ROTATE_PER_STEP = -1.5;
+const VIZ_ROTATE_PER_STEP = -1.8;
 const VIZ_HUE_PER_STEP = -2.2;
 
 let logoCombo = 0;
@@ -73,7 +72,7 @@ function logoStep(total) {
   logoCombo++;
   if (total) logoTotalSteps = total;
   clearLogoTimer();
-  setLogoTransition(0.3);
+  setLogoTransition(0.5, 'ease-in-out');
   const t = vizTarget();
   setLogo(t.scale, t.opacity, t.rotate, t.hue);
 }
