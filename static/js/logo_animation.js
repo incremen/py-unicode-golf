@@ -6,10 +6,11 @@ const LOGO_BASE_OPACITY = 0.2;
 let logoSettleTimer = null;
 const el = () => document.body;
 
-function setLogo(scale, opacity, rotate) {
+function setLogo(scale, opacity, rotate, hue) {
   el().style.setProperty('--logo-scale', scale);
   el().style.setProperty('--logo-opacity', opacity);
   el().style.setProperty('--logo-rotate', (rotate || 0) + 'deg');
+  el().style.setProperty('--logo-hue', (hue || 0) + 'deg');
 }
 
 function setLogoTransition(seconds) {
@@ -43,6 +44,7 @@ function logoPop() {
 const VIZ_SCALE_PER_STEP = 0.025;
 const VIZ_OPACITY_PER_STEP = 0.03;
 const VIZ_ROTATE_PER_STEP = -0.4;
+const VIZ_HUE_PER_STEP = -2;
 const VIZ_OVERSHOOT = 0.03;
 
 let logoCombo = 0;
@@ -53,6 +55,7 @@ function vizTarget() {
     scale: LOGO_BASE_SCALE + logoCombo * VIZ_SCALE_PER_STEP,
     opacity: LOGO_BASE_OPACITY + logoCombo * VIZ_OPACITY_PER_STEP,
     rotate: logoBaseRotation + logoCombo * VIZ_ROTATE_PER_STEP,
+    hue: logoCombo * VIZ_HUE_PER_STEP,
   };
 }
 
@@ -61,22 +64,20 @@ function logoStep() {
   clearLogoTimer();
   setLogoTransition(0.15);
   const t = vizTarget();
-  setLogo(t.scale + VIZ_OVERSHOOT, t.opacity + VIZ_OVERSHOOT, t.rotate - 0.5);
-  logoSettleTimer = setTimeout(() => setLogo(t.scale, t.opacity, t.rotate), 150);
+  setLogo(t.scale + VIZ_OVERSHOOT, t.opacity + VIZ_OVERSHOOT, t.rotate - 0.5, t.hue + 5);
+  logoSettleTimer = setTimeout(() => setLogo(t.scale, t.opacity, t.rotate, t.hue), 150);
 }
 
 function logoReset() {
   clearLogoTimer();
-  // Save rotation from this combo
   logoBaseRotation += logoCombo * VIZ_ROTATE_PER_STEP;
-  // Faster shrink if it got bigger
   const shrinkDuration = Math.min(0.6, 0.15 + logoCombo * 0.02);
   setLogoTransition(shrinkDuration);
   logoCombo = 0;
-  setLogo(LOGO_BASE_SCALE - 0.02, LOGO_BASE_OPACITY, logoBaseRotation);
+  setLogo(LOGO_BASE_SCALE - 0.02, LOGO_BASE_OPACITY, logoBaseRotation, 0);
   logoSettleTimer = setTimeout(() => {
     setLogoTransition(0.15);
-    setLogo(LOGO_BASE_SCALE, LOGO_BASE_OPACITY, logoBaseRotation);
+    setLogo(LOGO_BASE_SCALE, LOGO_BASE_OPACITY, logoBaseRotation, 0);
   }, shrinkDuration * 1000);
 }
 

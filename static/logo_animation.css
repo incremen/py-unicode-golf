@@ -10,7 +10,8 @@ body::before {
   opacity: var(--logo-opacity, 0.2);
   pointer-events: none;
   z-index: 0;
-  transition: opacity var(--logo-transition, 0.15s) ease-out, transform var(--logo-transition, 0.15s) ease-out;
+  filter: hue-rotate(var(--logo-hue, 0deg));
+  transition: opacity var(--logo-transition, 0.15s) ease-out, transform var(--logo-transition, 0.15s) ease-out, filter var(--logo-transition, 0.15s) ease-out;
 }
 
 @media (max-width: 900px) {
