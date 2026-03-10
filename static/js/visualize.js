@@ -19,7 +19,7 @@ function stopVisualization() {
   stepCounter.textContent = '';
   stepCounter.classList.remove('active', 'bump');
   resultExpr.style.cursor = 'pointer';
-  logoReset();
+  logoCancel();
 }
 
 async function waitAndCheck(ms) {
