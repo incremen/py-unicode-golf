@@ -59,10 +59,6 @@ async function animateSteps(steps) {
     }
 
     current++;
-    stepCounter.textContent = `${current}/${total}`;
-    stepCounter.classList.add('active');
-    stepCounter.classList.add('bump');
-    setTimeout(() => stepCounter.classList.remove('bump'), 150);
 
     const before = step.expr.substring(0, step.highlight.start);
     const highlighted = step.expr.substring(step.highlight.start, step.highlight.end);
@@ -72,6 +68,10 @@ async function animateSteps(steps) {
     if (!await waitAndCheck(HIGHLIGHT_DELAY * speed)) break;
 
     renderStep(before, step.result, after, 'fade-in');
+    stepCounter.textContent = `${current}/${total}`;
+    stepCounter.classList.add('active');
+    stepCounter.classList.add('bump');
+    setTimeout(() => stepCounter.classList.remove('bump'), 150);
     logoStep();
     if (!await waitAndCheck(REPLACE_DELAY * speed)) break;
 
