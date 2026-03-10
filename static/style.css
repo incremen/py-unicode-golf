@@ -169,7 +169,7 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
 .share-btn {
   background: #1a1e28;
   border: 1px solid #2a3040;
-  color: #7a8ba8;
+  color: #d9dde3;
   font-size: 0.7rem;
   font-family: inherit;
   cursor: pointer;
@@ -179,6 +179,7 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
   display: none;
   white-space: nowrap;
 }
+.share-char { font-size: 1.3em; color: #FFD43B; }
 .share-btn:hover { color: #FFD43B; border-color: #306998; }
 .share-btn.visible { display: block; }
 .share-btn.copied { color: #61dafb; background: #12151e; border-color: #61dafb; }
