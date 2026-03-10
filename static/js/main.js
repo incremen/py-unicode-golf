@@ -5,6 +5,7 @@ const resultChar = document.getElementById('resultChar');
 const resultMeta = document.getElementById('resultMeta');
 const resultExpr = document.getElementById('resultExpr');
 const copiedMsg = document.getElementById('copiedMsg');
+const shareBtn = document.getElementById('shareBtn');
 
 let lastExpr = '';
 let lastData = null;
@@ -115,7 +116,41 @@ function showResult(data) {
   lastExpr = src.expr;
   copiedMsg.textContent = '';
   result.classList.add('visible');
+  shareBtn.classList.add('visible');
+  shareBtn.classList.remove('copied');
+  shareBtn.textContent = 'copy link';
+  history.replaceState(null, '', `?c=${encodeURIComponent(data.char)}`);
 }
+
+function shareChar() {
+  const url = window.location.href;
+  navigator.clipboard.writeText(url);
+  shareBtn.classList.add('copied');
+  shareBtn.textContent = 'copied!';
+  setTimeout(() => {
+    shareBtn.classList.remove('copied');
+    shareBtn.textContent = 'copy link';
+  }, 1500);
+}
+
+// Auto-load character from ?c= URL param
+(function loadFromUrl() {
+  const c = new URLSearchParams(window.location.search).get('c');
+  if (!c) return;
+  // Use setTimeout to ensure all scripts are loaded first
+  setTimeout(() => {
+    charInput.value = c;
+    charInput.classList.remove('wide');
+    charInput.size = 1;
+    fetch(`/api/char?c=${encodeURIComponent(c)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) return;
+        lastData = data;
+        showResult(data);
+      });
+  }, 0);
+})();
 
 loadHistory();
 loadStrategies();
