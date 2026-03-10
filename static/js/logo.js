@@ -43,10 +43,10 @@ function logoPop() {
 
 // ── Visualization animation (CSS keyframes) ─────────────────────────
 // Uses dynamic @keyframes so animation-play-state works for pause/resume.
-// logoStart()       — begin animation to target state
-// logoPause/Resume  — freeze/unfreeze via animation-play-state
-// logoCancel        — cancelled mid-viz: smooth return to base
-// logoReset         — natural end: smooth return to base
+// logoStart()       - begin animation to target state
+// logoPause/Resume  - freeze/unfreeze via animation-play-state
+// logoCancel        - cancelled mid-viz: smooth return to base
+// logoReset         - natural end: smooth return to base
 // Both cancel/reset use logoSmoothReset which reads getComputedStyle
 // to start the return animation from wherever the current frame is.
 
