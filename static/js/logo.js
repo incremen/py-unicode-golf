@@ -1,23 +1,25 @@
-// ── Shared ──────────────────────────────────────────────────────────
+// ── CSS property helpers ─────────────────────────────────────────────
 
 const LOGO_BASE_SCALE = 1;
 const LOGO_BASE_OPACITY = 0.2;
 
 let logoSettleTimer = null;
-const el = () => document.body;
+let logoBaseRotation = 0;
 
 function setLogo(scale, opacity, rotate, hue) {
-  el().style.setProperty('--logo-scale', scale);
-  el().style.setProperty('--logo-opacity', opacity);
-  el().style.setProperty('--logo-rotate', (rotate || 0) + 'deg');
-  el().style.setProperty('--logo-hue', (hue || 0) + 'deg');
-  document.documentElement.style.setProperty('--bg-hue', (hue || 0) + 'deg');
-  document.documentElement.style.setProperty('--bg-rotate', (rotate || 0) + 'deg');
+  const body = document.body.style;
+  const root = document.documentElement.style;
+  body.setProperty('--logo-scale', scale);
+  body.setProperty('--logo-opacity', opacity);
+  body.setProperty('--logo-rotate', (rotate || 0) + 'deg');
+  body.setProperty('--logo-hue', (hue || 0) + 'deg');
+  root.setProperty('--bg-hue', (hue || 0) + 'deg');
+  root.setProperty('--bg-rotate', (rotate || 0) + 'deg');
 }
 
 function setLogoTransition(seconds, easing) {
-  el().style.setProperty('--logo-transition', seconds + 's');
-  el().style.setProperty('--logo-easing', easing || 'ease-out');
+  document.body.style.setProperty('--logo-transition', seconds + 's');
+  document.body.style.setProperty('--logo-easing', easing || 'ease-out');
 }
 
 function clearLogoTimer() {
@@ -25,7 +27,7 @@ function clearLogoTimer() {
 }
 
 
-// ── Tab button animation ────────────────────────────────────────────
+// ── Tab button pop ──────────────────────────────────────────────────
 
 function logoPop() {
   if (vizRunning) return;
@@ -39,7 +41,14 @@ function logoPop() {
 }
 
 
-// ── Visualize animation ──────────────────────────────────────────────
+// ── Visualization animation (CSS keyframes) ─────────────────────────
+// Uses dynamic @keyframes so animation-play-state works for pause/resume.
+// logoStart()       — begin animation to target state
+// logoPause/Resume  — freeze/unfreeze via animation-play-state
+// logoCancel        — cancelled mid-viz: smooth return to base
+// logoReset         — natural end: smooth return to base
+// Both cancel/reset use logoSmoothReset which reads getComputedStyle
+// to start the return animation from wherever the current frame is.
 
 const VIZ_SCALE_PER_STEP = 0.02;
 const VIZ_OPACITY_PER_STEP = 0.03;
@@ -48,35 +57,48 @@ const VIZ_ROTATE_PER_STEP = -1.8;
 const VIZ_HUE_PER_STEP = -2.2;
 const VIZ_EASING = 'cubic-bezier(0.4, 0, 0.9, 0.95)';
 
-let logoTotalSteps = 1;
-let logoBaseRotation = 0;
 let hueDirection = 1;
 let vizAnimId = 0;
-let vizEndState = { rotate: 0 };
+let vizEndRotate = 0;
 
 const vizStyle = document.createElement('style');
 document.head.appendChild(vizStyle);
 
-function geoSum(step, decay, n) {
-  return step * (1 - Math.pow(decay, n)) / (1 - decay);
+function geoSum(perStep, decay, n) {
+  return perStep * (1 - Math.pow(decay, n)) / (1 - decay);
 }
 
-function setLogoAnim(name, duration, easing) {
-  const logoAnim = `${name} ${duration}s ${easing} forwards`;
-  const bgAnim = `bg${name} ${duration}s ${easing} forwards`;
-  el().style.setProperty('--logo-anim', logoAnim);
-  el().style.setProperty('--logo-play-state', 'running');
-  document.documentElement.style.setProperty('--bg-anim', bgAnim);
-  document.documentElement.style.setProperty('--bg-play-state', 'running');
+// ── Animation plumbing ──────────────────────────────────────────────
+
+function setAnim(name, duration, easing) {
+  const body = document.body.style;
+  const root = document.documentElement.style;
+  body.setProperty('--logo-anim', `${name} ${duration}s ${easing} forwards`);
+  body.setProperty('--logo-play-state', 'running');
+  root.setProperty('--bg-anim', `bg${name} ${duration}s ${easing} forwards`);
+  root.setProperty('--bg-play-state', 'running');
 }
 
-function clearLogoAnim() {
-  el().style.setProperty('--logo-anim', 'none');
+function clearAnim() {
+  document.body.style.setProperty('--logo-anim', 'none');
   document.documentElement.style.setProperty('--bg-anim', 'none');
 }
 
+function writeKeyframes(id, logoFrom, logoTo, bgFrom, bgTo) {
+  vizStyle.textContent = `
+    @keyframes viz${id} {
+      from { transform: ${logoFrom.transform}; opacity: ${logoFrom.opacity}; filter: ${logoFrom.filter}; }
+      to   { transform: ${logoTo.transform}; opacity: ${logoTo.opacity}; filter: ${logoTo.filter}; }
+    }
+    @keyframes bgviz${id} {
+      from { transform: ${bgFrom.transform}; filter: ${bgFrom.filter}; }
+      to   { transform: ${bgTo.transform}; filter: ${bgTo.filter}; }
+    }`;
+}
+
+// ── Public API ──────────────────────────────────────────────────────
+
 function logoStart(total, durationSec) {
-  logoTotalSteps = total;
   vizAnimId++;
   clearLogoTimer();
 
@@ -85,90 +107,64 @@ function logoStart(total, durationSec) {
   const toOpacity = LOGO_BASE_OPACITY + geoSum(VIZ_OPACITY_PER_STEP, VIZ_OPACITY_DECAY, total);
   const toRotate = logoBaseRotation + total * VIZ_ROTATE_PER_STEP;
   const toHue = VIZ_HUE_PER_STEP * total * hueDirection;
-  vizEndState = { rotate: toRotate };
+  vizEndRotate = toRotate;
 
-  vizStyle.textContent = `
-    @keyframes logoViz${vizAnimId} {
-      from {
-        transform: translate(-50%, -50%) scale(${LOGO_BASE_SCALE}) rotate(${fromRotate}deg);
-        opacity: ${LOGO_BASE_OPACITY};
-        filter: hue-rotate(0deg);
-      }
-      to {
-        transform: translate(-50%, -50%) scale(${toScale}) rotate(${toRotate}deg);
-        opacity: ${toOpacity};
-        filter: hue-rotate(${toHue}deg);
-      }
-    }
-    @keyframes bglogoViz${vizAnimId} {
-      from { transform: rotate(${fromRotate}deg); filter: hue-rotate(0deg); }
-      to { transform: rotate(${toRotate}deg); filter: hue-rotate(${toHue}deg); }
-    }
-  `;
+  writeKeyframes(vizAnimId,
+    { transform: `translate(-50%,-50%) scale(${LOGO_BASE_SCALE}) rotate(${fromRotate}deg)`,
+      opacity: LOGO_BASE_OPACITY, filter: 'hue-rotate(0deg)' },
+    { transform: `translate(-50%,-50%) scale(${toScale}) rotate(${toRotate}deg)`,
+      opacity: toOpacity, filter: `hue-rotate(${toHue}deg)` },
+    { transform: `rotate(${fromRotate}deg)`, filter: 'hue-rotate(0deg)' },
+    { transform: `rotate(${toRotate}deg)`, filter: `hue-rotate(${toHue}deg)` },
+  );
 
-  setLogoAnim(`logoViz${vizAnimId}`, durationSec, VIZ_EASING);
+  setAnim(`viz${vizAnimId}`, durationSec, VIZ_EASING);
 }
 
 function logoPause() {
-  el().style.setProperty('--logo-play-state', 'paused');
+  document.body.style.setProperty('--logo-play-state', 'paused');
   document.documentElement.style.setProperty('--bg-play-state', 'paused');
 }
 
 function logoResume() {
-  el().style.setProperty('--logo-play-state', 'running');
+  document.body.style.setProperty('--logo-play-state', 'running');
   document.documentElement.style.setProperty('--bg-play-state', 'running');
 }
 
-// Smoothly animate from current state back to base.
-// Reads computed styles so it starts exactly where the animation is right now.
 function logoSmoothReset(targetRotate, duration) {
   clearLogoTimer();
   logoPause();
 
-  const logoStyle = getComputedStyle(document.body, '::before');
-  const bgStyle = getComputedStyle(document.documentElement, '::after');
+  const logoNow = getComputedStyle(document.body, '::before');
+  const bgNow = getComputedStyle(document.documentElement, '::after');
 
   logoBaseRotation = targetRotate;
   hueDirection *= -1;
   vizAnimId++;
 
-  vizStyle.textContent = `
-    @keyframes logoViz${vizAnimId} {
-      from {
-        transform: ${logoStyle.transform};
-        opacity: ${logoStyle.opacity};
-        filter: ${logoStyle.filter};
-      }
-      to {
-        transform: translate(-50%, -50%) scale(${LOGO_BASE_SCALE}) rotate(${targetRotate}deg);
-        opacity: ${LOGO_BASE_OPACITY};
-        filter: hue-rotate(0deg);
-      }
-    }
-    @keyframes bglogoViz${vizAnimId} {
-      from { transform: ${bgStyle.transform}; filter: ${bgStyle.filter}; }
-      to { transform: rotate(${targetRotate}deg); filter: hue-rotate(0deg); }
-    }
-  `;
+  writeKeyframes(vizAnimId,
+    { transform: logoNow.transform, opacity: logoNow.opacity, filter: logoNow.filter },
+    { transform: `translate(-50%,-50%) scale(${LOGO_BASE_SCALE}) rotate(${targetRotate}deg)`,
+      opacity: LOGO_BASE_OPACITY, filter: 'hue-rotate(0deg)' },
+    { transform: bgNow.transform, filter: bgNow.filter },
+    { transform: `rotate(${targetRotate}deg)`, filter: 'hue-rotate(0deg)' },
+  );
 
-  setLogoAnim(`logoViz${vizAnimId}`, duration, 'ease-out');
+  setAnim(`viz${vizAnimId}`, duration, 'ease-out');
 
-  // After reset animation ends, clean up so transitions work again
   logoSettleTimer = setTimeout(() => {
     setLogo(LOGO_BASE_SCALE, LOGO_BASE_OPACITY, targetRotate, 0);
-    clearLogoAnim();
+    clearAnim();
   }, duration * 1000 + 50);
 }
 
 function logoCancel() {
-  // Extract current rotation from computed transform matrix
   const m = new DOMMatrix(getComputedStyle(document.body, '::before').transform);
-  const currentRotate = Math.atan2(m.b, m.a) * 180 / Math.PI;
-  logoSmoothReset(currentRotate, 0.5);
+  logoSmoothReset(Math.atan2(m.b, m.a) * 180 / Math.PI, 0.5);
 }
 
 function logoReset() {
-  logoSmoothReset(vizEndState.rotate, 0.6);
+  logoSmoothReset(vizEndRotate, 0.6);
 }
 
 function logoDelayedReset() {

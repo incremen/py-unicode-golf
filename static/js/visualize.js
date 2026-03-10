@@ -34,17 +34,9 @@ function renderStep(before, middle, after, className) {
     `${syntaxHighlight(before)}<span class="${className}">${syntaxHighlight(middle)}</span>${syntaxHighlight(after)}`;
 }
 
-async function fetchSteps(expr) {
-  const res = await fetch(`/api/visualize?expr=${encodeURIComponent(expr)}`);
-  const data = await res.json();
-  if (data.error) throw new Error(data.error);
-  return data.steps;
-}
-
-function estimateDuration(totalSteps) {
-  let speed = 1;
-  let ms = 0;
-  for (let i = 0; i < totalSteps; i++) {
+function estimateDuration(total) {
+  let speed = 1, ms = 0;
+  for (let i = 0; i < total; i++) {
     ms += (HIGHLIGHT_DELAY + REPLACE_DELAY) * speed;
     speed = Math.max(SPEEDUP_UNTIL / HIGHLIGHT_DELAY, speed * SPEEDUP);
   }
@@ -55,8 +47,7 @@ async function animateSteps(steps) {
   resultExpr.style.cursor = 'default';
   const total = steps.filter(s => !s.final).length;
   logoStart(total, estimateDuration(total));
-  let current = 0;
-  let speed = 1;
+  let current = 0, speed = 1;
 
   for (const step of steps) {
     if (vizCancelled) break;
@@ -70,7 +61,6 @@ async function animateSteps(steps) {
     }
 
     current++;
-
     const before = step.expr.substring(0, step.highlight.start);
     const highlighted = step.expr.substring(step.highlight.start, step.highlight.end);
     const after = step.expr.substring(step.highlight.end);
@@ -80,8 +70,7 @@ async function animateSteps(steps) {
 
     renderStep(before, step.result, after, 'fade-in');
     stepCounter.textContent = `${current}/${total}`;
-    stepCounter.classList.add('active');
-    stepCounter.classList.add('bump');
+    stepCounter.classList.add('active', 'bump');
     setTimeout(() => stepCounter.classList.remove('bump'), 150);
     if (!await waitAndCheck(REPLACE_DELAY * speed)) break;
 
@@ -115,3 +104,9 @@ async function visualize() {
   stopVisualization();
 }
 
+async function fetchSteps(expr) {
+  const res = await fetch(`/api/visualize?expr=${encodeURIComponent(expr)}`);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data.steps;
+}
