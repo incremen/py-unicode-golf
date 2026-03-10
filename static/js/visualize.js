@@ -41,9 +41,20 @@ async function fetchSteps(expr) {
   return data.steps;
 }
 
+function estimateDuration(totalSteps) {
+  let speed = 1;
+  let ms = 0;
+  for (let i = 0; i < totalSteps; i++) {
+    ms += (HIGHLIGHT_DELAY + REPLACE_DELAY) * speed;
+    speed = Math.max(SPEEDUP_UNTIL / HIGHLIGHT_DELAY, speed * SPEEDUP);
+  }
+  return ms / 1000;
+}
+
 async function animateSteps(steps) {
   resultExpr.style.cursor = 'default';
   const total = steps.filter(s => !s.final).length;
+  logoStart(total, estimateDuration(total));
   let current = 0;
   let speed = 1;
 
@@ -72,7 +83,6 @@ async function animateSteps(steps) {
     stepCounter.classList.add('active');
     stepCounter.classList.add('bump');
     setTimeout(() => stepCounter.classList.remove('bump'), 150);
-    logoStep(total);
     if (!await waitAndCheck(REPLACE_DELAY * speed)) break;
 
     speed = Math.max(SPEEDUP_UNTIL / HIGHLIGHT_DELAY, speed * SPEEDUP);
