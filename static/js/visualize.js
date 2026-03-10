@@ -87,7 +87,7 @@ async function visualize() {
     console.error(e);
   }
 
-  logoReset();
+  logoDelayedReset();
   stopVisualization();
 }
 
