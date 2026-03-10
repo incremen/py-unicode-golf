@@ -2,6 +2,7 @@
 
 import os
 import json
+import unicodedata
 from urllib.parse import unquote
 from flask import Flask, jsonify, send_from_directory, request
 from core.anchors import build_char, BASE_ANCHORS
@@ -55,9 +56,15 @@ def api_char(char=None):
     code_point = ord(char)
     formula_expr = build_char(char)
 
+    try:
+        name = unicodedata.name(char)
+    except ValueError:
+        name = None
+
     result = {
         'char': char,
         'code_point': code_point,
+        'name': name,
         'formula': {
             'expr': formula_expr,
             'depth': formula_expr.count('('),

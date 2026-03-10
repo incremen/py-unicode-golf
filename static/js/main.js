@@ -67,7 +67,9 @@ function showResult(data) {
   const useOptimized = useDb.checked && data.db;
   const src = useOptimized ? data.db : data.formula;
   const label = useOptimized ? 'db' : 'algorithm';
-  resultChar.textContent = `'${data.char}' \u2014 U+${data.code_point.toString(16).toUpperCase().padStart(4, '0')}`;
+  const hex = 'U+' + data.code_point.toString(16).toUpperCase().padStart(4, '0');
+  const name = data.name ? `  \xb7  ${data.name}` : '';
+  resultChar.textContent = `'${data.char}' \u2014 ${hex}${name}`;
   resultMeta.textContent = `${src.depth} calls \xb7 ${src.len} chars \xb7 ${label}`;
   resultExpr.innerHTML = syntaxHighlight(src.expr);
   lastExpr = src.expr;
