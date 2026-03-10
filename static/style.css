@@ -263,11 +263,11 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
 /* Tabs */
 .main-tabs {
   display: flex;
-  justify-content: center;
   gap: 0;
   border-bottom: 3px solid rgba(0, 0, 0, 0.15);
   margin-bottom: 0;
 }
+.main-tabs .main-tab { flex: 1; text-align: center; }
 .main-tab {
   padding: 0.6rem 1.2rem;
   font-size: 0.9rem;
