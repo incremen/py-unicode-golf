@@ -363,11 +363,12 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   </table>
 </div>
 
-<!-- Load order matters: utilities first, then main, then features that depend on main's globals -->
-<script src="/static/js/syntax_highlighting.js"></script>
-<script src="/static/js/logo_animation.js"></script>
+<!-- Load order: utils → logo → prefetch → main → visualize → panels -->
+<script src="/static/js/utils.js"></script>
+<script src="/static/js/logo.js"></script>
 <script src="/static/js/prefetch.js"></script>
 <script src="/static/js/main.js"></script>
 <script src="/static/js/visualize.js"></script>
+<script src="/static/js/panels.js"></script>
 </body>
 </html>

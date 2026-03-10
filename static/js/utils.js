@@ -23,3 +23,7 @@ function syntaxHighlight(text) {
   }
   return escaped;
 }
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
