@@ -127,12 +127,12 @@
   </p>
 
   <p><strong>Subtract 1:</strong> <code>max(range(n))</code> returns n - 1.</p>
-  <p style="color:#666; font-size:0.8rem; margin-bottom:1.2rem;">
+  <p class="note" style="margin-bottom:1.2rem;">
     range(n) produces 0, 1, ..., n-1. max() picks the last one. Costs 2 parentheses.
   </p>
 
   <p><strong>Multiply by 3:</strong> <code>len(str(list(bytes(n))))</code> returns exactly 3n.</p>
-  <p style="color:#666; font-size:0.8rem; margin-bottom:1.2rem;">
+  <p class="note" style="margin-bottom:1.2rem;">
     bytes(n) creates n zero-bytes. list() turns it into [0, 0, ..., 0].
     str() gives "[0, 0, ..., 0]" &mdash; always exactly 3n characters. Costs 4 parentheses.
   </p>
@@ -201,7 +201,7 @@
       <span class="tiptext">longest expression string for any single number</span>
     </div>
   </div>
-  <p style="color:#555; font-size:0.75rem;">
+  <p class="note">
     Python has a 200 nested parentheses limit. The base-3 algorithm stays
     well under that for all Unicode code points (max 1,114,111).
   </p>
@@ -235,7 +235,7 @@
     <tr><td>len(str(bytes(n)))</td><td>= 4n + 3</td><td>3 parens</td></tr>
     <tr><td>len(ascii(str(bytes(n))))</td><td>= 5n + 5</td><td>4 parens</td></tr>
   </table>
-  <p style="color:#666; font-size:0.8rem;">
+  <p class="note">
     4n+3 costs only 3 parens (cheaper than 3x), so it's often better
     when you can land on the right value with the +3 offset.
   </p>
@@ -243,7 +243,7 @@
   <div class="divider"></div>
 
   <p><strong>Zip chain</strong> &mdash; higher exact multiples via nested tuples</p>
-  <p style="color:#666; font-size:0.8rem;">
+  <p class="note">
     Each zip() wrapper turns each element into a deeper tuple,
     adding exactly 3n to the string length.
   </p>
@@ -256,7 +256,7 @@
   <div class="divider"></div>
 
   <p><strong>Ascii exponential</strong> &mdash; exponential multiplier for linear paren cost</p>
-  <p style="color:#666; font-size:0.8rem;">
+  <p class="note">
     <code>str(bytes(n))</code> produces backslash escapes like <code>\x00</code>.
     Each <code>ascii()</code> call escapes those backslashes again, doubling them.
     So the string roughly doubles in length with each wrap:
@@ -264,7 +264,7 @@
 <pre>str(bytes(2))         = "b'\x00\x00'"          len = 11
 ascii(that)           = "\"b'\\x00\\x00'\""     len = 15
 ascii(ascii(that))    = ...                      len = 23</pre>
-  <p style="color:#666; font-size:0.8rem;">
+  <p class="note">
     General formula with k layers of <code>ascii()</code>: <code>f(n) = (2^k + 3)n + (2^(k+1) + 1)</code>
   </p>
   <table class="op-table">
@@ -284,7 +284,7 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 
   <div class="divider"></div>
 
-  <p style="color:#666; font-size:0.8rem;">
+  <p class="note">
     Full list of strategies (many are useless): <a href="https://github.com/incremen/py-unicode-golf/blob/master/reference/strategies.py" target="_blank">strategies.py</a>
     &middot; Base anchors: <a href="https://github.com/incremen/py-unicode-golf/blob/master/core/anchors.py" target="_blank">anchors.py</a>
     <br>
@@ -327,7 +327,7 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   </div>
 
   <p><strong>Strategy breakdown</strong></p>
-  <p style="color:#666; font-size:0.8rem; margin-bottom:0.5rem;">
+  <p class="note" style="margin-bottom:0.5rem;">
     How many numbers use each strategy as their shortest representation, in the final database.
   </p>
   <div class="strategies" id="strategiesList"></div>
@@ -335,7 +335,7 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   <div class="divider"></div>
 
   <p><strong>Optimization history</strong></p>
-  <p style="color:#666; font-size:0.8rem; margin-bottom:0.5rem;">
+  <p class="note" style="margin-bottom:0.5rem;">
     Each row shows the state of the database after a round of improvements.
     <em>Minimal</em> = only seeds 0 and 1.
     <em>Full algorithm</em> = adds 44 base anchors.

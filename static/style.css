@@ -255,14 +255,10 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
 }
 .main-panel li { margin-bottom: 0.3rem; }
 .main-panel strong { color: #306998; }
+.note { color: #666; font-size: 0.8rem; }
 
-/* Tooltip */
-.tip {
-  position: relative;
-  border-bottom: 1px dotted #306998;
-  cursor: help;
-}
-.tip .tiptext {
+/* Tooltip (shared by .tip and .stat-card) */
+.tiptext {
   display: none;
   position: absolute;
   bottom: 100%;
@@ -277,53 +273,12 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
   z-index: 10;
   margin-bottom: 4px;
 }
-.tip:hover .tiptext { display: block; }
-
-
-/* Responsive adjustments */
-@media (max-width: 900px) {
-  body { padding: 1.25rem; max-width: min(1000px, 96%); }
-  h1 { font-size: 1.4rem; }
-  h2 { font-size: 0.98rem; gap: 0.45rem; }
-  .main-tab { padding: 0.5rem 0.95rem; font-size: 0.88rem; }
-  .main-panel { padding: 1.1rem; }
+.tip {
+  position: relative;
+  border-bottom: 1px dotted #306998;
+  cursor: help;
 }
-
-@media (max-width: 600px) {
-  body { padding: 1rem; max-width: 98%; }
-
-  /* stack header on small screens so text wraps nicely */
-  h2 { display: block; font-size: 0.95rem; margin-bottom: 0.8rem; }
-  .github-link { margin-left: 0; margin-top: 0.25rem; display: inline-block; }
-
-  /* keep the char input and random button on the same line */
-  .input-row { flex-direction: row; align-items: center; gap: 0.5rem; }
-  input[type="text"] { width: 4.5rem; min-width: 3.6rem; font-size: 1.05rem; border: 2px solid #2a3040; box-shadow: 0 1px 0 rgba(0,0,0,0.3) inset; }
-  .btn { width: auto; padding: 0.6rem 0.9rem; }
-
-  /* place toggle below the input-row but keep it visually compact */
-  .toggle { flex-basis: 100%; margin-top: 0.4rem; height: 32px; padding: 0 0.5rem; }
-  .toggle input { width: 14px; height: 14px; }
-
-  /* allow tabs to scroll horizontally on narrow screens */
-  .main-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 0.4rem; }
-  .main-tab { flex: 0 0 auto; padding: 0.45rem 0.8rem; border-radius: 6px; }
-
-  .main-panel { padding: 1rem; }
-  .result { padding: 0.9rem; }
-  .result-expr { font-size: 0.8rem; }
-  pre { font-size: 0.75rem; }
-
-  /* Keep decorative gradients unchanged on small screens */
-
-  /* Allow tables to scroll horizontally to avoid layout breakage */
-  .main-panel table, .op-table, table {
-    display: block;
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-}
+.tip:hover .tiptext, .stat-card:hover .tiptext { display: block; }
 
 /* Stats grid */
 .stats-grid {
@@ -341,25 +296,8 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
 }
 .stat-card .stat-val { color: #FFD43B; font-size: 1.2rem; margin-bottom: 0.2rem; font-weight: bold; }
 .stat-card .stat-label { color: #7a8ba8; font-size: 0.75rem; }
-.stat-card .tiptext {
-  display: none;
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #12151e;
-  color: #d0d4dc;
-  padding: 0.4rem 0.7rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  z-index: 10;
-  margin-bottom: 4px;
-}
-.stat-card:hover .tiptext { display: block; }
 
-.divider { border-top: 1px solid #e0e0d8; margin: 1.2rem 0; }
-
+/* Strategy tags */
 .strategies { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
 .strategy-tag {
   background: #1a1e28;
@@ -369,3 +307,37 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
   color: #8a94a8;
 }
 .strategy-tag .count { color: #FFD43B; font-weight: bold; }
+
+.divider { border-top: 1px solid #e0e0d8; margin: 1.2rem 0; }
+
+/* Responsive — must come last */
+@media (max-width: 900px) {
+  body { padding: 1.25rem; max-width: min(1000px, 96%); }
+  h1 { font-size: 1.4rem; }
+  h2 { font-size: 0.98rem; gap: 0.45rem; }
+  .main-tab { padding: 0.5rem 0.95rem; font-size: 0.88rem; }
+  .main-panel { padding: 1.1rem; }
+}
+
+@media (max-width: 600px) {
+  body { padding: 1rem; max-width: 98%; }
+  h2 { display: block; font-size: 0.95rem; margin-bottom: 0.8rem; }
+  .github-link { margin-left: 0; margin-top: 0.25rem; display: inline-block; }
+  .input-row { flex-direction: row; align-items: center; gap: 0.5rem; }
+  input[type="text"] { width: 4.5rem; min-width: 3.6rem; font-size: 1.05rem; border: 2px solid #2a3040; box-shadow: 0 1px 0 rgba(0,0,0,0.3) inset; }
+  .btn { width: auto; padding: 0.6rem 0.9rem; }
+  .toggle { flex-basis: 100%; margin-top: 0.4rem; height: 32px; padding: 0 0.5rem; }
+  .toggle input { width: 14px; height: 14px; }
+  .main-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 0.4rem; }
+  .main-tab { flex: 0 0 auto; padding: 0.45rem 0.8rem; border-radius: 6px; }
+  .main-panel { padding: 1rem; }
+  .result { padding: 0.9rem; }
+  .result-expr { font-size: 0.8rem; }
+  pre { font-size: 0.75rem; }
+  .main-panel table, .op-table, table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
