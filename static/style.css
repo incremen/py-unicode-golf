@@ -264,7 +264,7 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
 .main-tabs {
   display: flex;
   gap: 0;
-  border-bottom: 2px solid #ddd;
+  border-bottom: 3px solid rgba(0, 0, 0, 0.15);
   margin-bottom: 0;
 }
 .main-tab {
