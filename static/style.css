@@ -5,12 +5,14 @@ html {
 html::after {
   content: '';
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
   background:
-    linear-gradient(var(--bg-angle, 90deg), rgba(48,105,152,1) 0%, rgba(48,105,152,0) 50%),
-    linear-gradient(var(--bg-angle-inv, 270deg), rgba(255,212,59,1) 0%, rgba(255,212,59,0) 50%);
+    linear-gradient(90deg, rgba(48,105,152,1) 0%, rgba(48,105,152,0) 50%),
+    linear-gradient(270deg, rgba(255,212,59,1) 0%, rgba(255,212,59,0) 50%);
+  transform: rotate(var(--bg-rotate, 0deg));
   filter: hue-rotate(var(--bg-hue, 0deg));
-  transition: background var(--logo-transition, 0.15s) var(--logo-easing, ease-out), filter var(--logo-transition, 0.15s) var(--logo-easing, ease-out);
+  transition: transform 0.6s ease-in-out, filter 0.6s ease-in-out;
   z-index: -1;
   pointer-events: none;
 }
