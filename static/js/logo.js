@@ -58,9 +58,14 @@ function geoSum(step, decay, n) {
   return step * (1 - Math.pow(decay, n)) / (1 - decay);
 }
 
+function setBgDuration(seconds) {
+  document.documentElement.style.setProperty('--bg-duration', seconds + 's');
+}
+
 function logoStart(total, durationSec) {
   logoTotalSteps = total;
   clearLogoTimer();
+  setBgDuration(durationSec);
   setLogoTransition(durationSec, 'cubic-bezier(0.4, 0, 0.9, 0.95)');
   setLogo(
     LOGO_BASE_SCALE + geoSum(VIZ_SCALE_PER_STEP, VIZ_SCALE_DECAY, total),
@@ -74,6 +79,7 @@ function logoReset() {
   clearLogoTimer();
   logoBaseRotation += logoTotalSteps * VIZ_ROTATE_PER_STEP;
   const shrinkDuration = Math.min(0.6, 0.15 + logoTotalSteps * 0.02);
+  setBgDuration(shrinkDuration);
   setLogoTransition(shrinkDuration, 'ease-out');
   hueDirection *= -1;
   setLogo(LOGO_BASE_SCALE - 0.02, LOGO_BASE_OPACITY, logoBaseRotation, 0);
