@@ -10,7 +10,7 @@ html::after {
     linear-gradient(var(--bg-angle, 90deg), rgba(48,105,152,1) 0%, rgba(48,105,152,0) 50%),
     linear-gradient(var(--bg-angle-inv, 270deg), rgba(255,212,59,1) 0%, rgba(255,212,59,0) 50%);
   filter: hue-rotate(var(--bg-hue, 0deg));
-  transition: background var(--logo-transition, 0.15s) ease-out, filter var(--logo-transition, 0.15s) ease-out;
+  transition: background var(--logo-transition, 0.15s) var(--logo-easing, ease-out), filter var(--logo-transition, 0.15s) var(--logo-easing, ease-out);
   z-index: -1;
   pointer-events: none;
 }
