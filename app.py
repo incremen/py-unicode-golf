@@ -9,7 +9,7 @@ from core.anchors import build_char, build_string, BASE_ANCHORS
 from core.visualize import evaluate_steps
 
 app = Flask(__name__, static_folder='static')
-
+MAX_STRING_LENGTH = 200
 # Load optimized expressions from JSON (works on Vercel) or SQLite (local dev)
 DB_EXPRS = None
 DB_AVAILABLE = False
@@ -120,8 +120,8 @@ def api_string():
     text = request.args.get('s', '')
     if not text:
         return jsonify({'error': 'Missing s parameter'}), 400
-    if len(text) > 50:
-        return jsonify({'error': 'Max 50 characters'}), 400
+    if len(text) > MAX_STRING_LENGTH:
+        return jsonify({'error': f'Max {MAX_STRING_LENGTH} characters'}), 400
 
     expr = build_string(text)
     return jsonify({
