@@ -421,7 +421,7 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
   body { padding: 1rem; max-width: 98%; }
   .subtitle { display: block; font-size: 0.95rem; margin-bottom: 0.8rem; }
   .github-link { margin-left: 0; margin-top: 0.25rem; display: inline-block; }
-  .input-row { flex-direction: row; align-items: center; gap: 0.5rem; }
+  .input-row { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
   input[type="text"] { width: 4.5rem; min-width: 3.6rem; font-size: 1.05rem; border: 2px solid #2a3040; box-shadow: 0 1px 0 rgba(0,0,0,0.3) inset; }
   .btn { width: auto; padding: 0.6rem 0.9rem; }
   .toggle { flex-basis: 100%; margin-top: 0.4rem; height: 32px; padding: 0 0.5rem; }
