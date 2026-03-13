@@ -103,8 +103,8 @@ function getTrackExpr(track, pos, mode) {
   return syntaxHighlight(step.expr);
 }
 
-const WRAPPER_OPEN = syntaxHighlight('eval(bytes(map(ord,next(zip(');
-const WRAPPER_CLOSE = syntaxHighlight('))))))');
+const WRAPPER_OPEN = syntaxHighlight('eval(bytes(next(zip(');
+const WRAPPER_CLOSE = syntaxHighlight('))))');
 const SYN_COMMA = '<span class="syn-paren">,</span>';
 
 function renderStringUnfold(tracks, splitAt) {
@@ -180,17 +180,18 @@ async function animateStringTracks(data) {
     stepCounter.classList.remove('active', 'bump');
     stepCounter.textContent = '';
 
-    const finalExprs = tracks.map(t => t.steps[t.steps.length - 1].expr);
+    // Build resolved expressions from byte values
+    const resolvedExprs = tracks.map(t => `reversed(range(${t.byte + 1}))`);
 
     // ── Outro: fold back into one line ──
     if (!await waitAndCheck(400)) return;
     for (let i = tracks.length; i >= 0; i--) {
       if (vizCancelled) return;
       let html = WRAPPER_OPEN;
-      for (let j = 0; j < finalExprs.length; j++) {
+      for (let j = 0; j < resolvedExprs.length; j++) {
         if (j > 0) html += SYN_COMMA;
         if (j < i) html += '\n  ';
-        html += syntaxHighlight(finalExprs[j]);
+        html += syntaxHighlight(resolvedExprs[j]);
       }
       if (i > 0) html += '\n';
       html += WRAPPER_CLOSE;
@@ -198,34 +199,17 @@ async function animateStringTracks(data) {
       if (!await waitAndCheck(Math.max(60, 200 - (tracks.length - i) * 15))) return;
     }
 
-    // ── Final: peel away wrapper layers one at a time ──
-    const inner = finalExprs.join(',');
-    const textRepr = escapeHtml(JSON.stringify(data.text));
+    // ── Final: visualize the outer wrapper using the regular step-by-step ──
+    // Build from byte values (not track finals, which are iterator placeholders)
+    const revExprs = tracks.map(t => `reversed(range(${t.byte + 1}))`);
+    const fullExpr = `eval(bytes(next(zip(${revExprs.join(',')}))))`;
+    resultExpr.innerHTML = syntaxHighlight(fullExpr);
+    if (!await waitAndCheck(600)) return;
 
-    // Step through each wrapper layer: zip → next → map(ord) → bytes → eval
-    const layers = [
-      `eval(bytes(map(ord,next(zip(${inner})))))`,
-      `eval(bytes(map(ord,next((${finalExprs.map(e => e).join(',')}))))) `,
-      `eval(bytes(map(ord,(${finalExprs.map(e => e).join(',')}))))`,
-      `eval(bytes((${finalExprs.map((_, i) => data.tracks[i].byte).join(',')})))`,
-      `eval(b${textRepr})`,
-      textRepr,
-    ];
-
-    for (let i = 0; i < layers.length - 1; i++) {
-      if (vizCancelled) return;
-      // Show current with highlight on the part that will change
-      resultExpr.innerHTML = syntaxHighlight(layers[i]);
-      if (!await waitAndCheck(800)) return;
-
-      // Fade in next
-      resultExpr.innerHTML = `<span class="fade-in">${syntaxHighlight(layers[i + 1])}</span>`;
-      if (!await waitAndCheck(600)) return;
-    }
-
-    // Show final result
-    resultExpr.innerHTML = syntaxHighlight(layers[layers.length - 1]);
-    await sleep(FINAL_DELAY);
+    try {
+      const outerSteps = await fetchSteps(fullExpr);
+      if (!vizCancelled) await animateSteps(outerSteps);
+    } catch (e) { console.error(e); }
   }
 }
 
