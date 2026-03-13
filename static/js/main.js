@@ -16,23 +16,29 @@ let stringMode = false;
 charInput.size = 9;
 
 function toggleMode() {
+  if (vizRunning) stopVisualization();
   stringMode = !stringMode;
   modeBtn.textContent = stringMode ? 'char mode' : 'string mode';
   modeBtn.classList.toggle('active', stringMode);
   dbToggle.style.display = stringMode ? 'none' : '';
-  charInput.removeAttribute('maxlength');
+  charInput.value = '';
+  lastExpr = '';
+  lastData = null;
+  result.classList.remove('visible');
+  shareBtn.classList.remove('visible');
+  history.replaceState(null, '', window.location.pathname);
   if (stringMode) {
+    charInput.removeAttribute('maxlength');
     charInput.classList.add('wide');
     charInput.size = 20;
     charInput.placeholder = 'type a string';
   } else {
     charInput.maxLength = 2;
+    charInput.classList.add('wide');
+    charInput.size = 11;
     charInput.placeholder = 'type here';
-    if (!charInput.value) { charInput.classList.add('wide'); charInput.size = 11; }
-    else { charInput.classList.remove('wide'); charInput.size = 1; }
   }
-  result.classList.remove('visible');
-  shareBtn.classList.remove('visible');
+  charInput.focus();
 }
 
 charInput.addEventListener('input', async () => {
@@ -84,21 +90,29 @@ function copyExpr() {
 }
 
 function randomChar() {
-  if (stringMode) return;
   if (vizRunning) stopVisualization();
   logoPop();
-  const cached = prefetchQueue.shift();
-  if (cached) {
-    charInput.value = cached.char;
-    charInput.classList.remove('wide');
-    charInput.size = 1;
-    lastData = cached.data;
-    showResult(cached.data);
-    fillPrefetchQueue();
-  } else {
-    const cp = randomCodePoint();
-    charInput.value = String.fromCodePoint(cp);
+  if (stringMode) {
+    const len = 1 + Math.floor(Math.random() * 50);
+    let s = '';
+    for (let i = 0; i < len; i++) s += String.fromCodePoint(randomCodePoint());
+    charInput.value = s;
+    charInput.size = Math.max(10, s.length + 2);
     charInput.dispatchEvent(new Event('input'));
+  } else {
+    const cached = prefetchQueue.shift();
+    if (cached) {
+      charInput.value = cached.char;
+      charInput.classList.remove('wide');
+      charInput.size = 1;
+      lastData = cached.data;
+      showResult(cached.data);
+      fillPrefetchQueue();
+    } else {
+      const cp = randomCodePoint();
+      charInput.value = String.fromCodePoint(cp);
+      charInput.dispatchEvent(new Event('input'));
+    }
   }
 }
 
