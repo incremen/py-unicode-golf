@@ -52,8 +52,8 @@ def evaluate_string_steps(text):
     """Evaluate a string expression in parallel per-character tracks.
 
     Returns a dict with:
-      - wrapper: the outer eval(bytes(map(ord,next(zip(...))))) template
-      - chars: list of {byte, label, steps} where steps are from evaluate_steps
+      - wrapper: the outer expression template (for reference)
+      - tracks: list of {byte, label, expr, steps} for each repr byte
     """
     from core.anchors import build_n
 
@@ -71,7 +71,7 @@ def evaluate_string_steps(text):
 
     return {
         'text': text,
-        'wrapper': 'eval(bytes(map(ord,next(zip(...)))))',
+        'wrapper': 'eval(bytes(next(zip(reversed(range(...))))))',
         'tracks': tracks,
     }
 

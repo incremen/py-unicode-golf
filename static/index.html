@@ -73,7 +73,7 @@
     Try pasting the expression into a python console (or using print() on it in a python file). <br>
     After you enter a character, the visualize button works you through the evaluation step by step. <br> <br>
 
-    Also (new!) this works for strings too, but we allow multiple paramaters. <br>
+    Also (new!) this works for strings too, but we allow multiple parameters. <br>
     
   </p>
 
@@ -387,7 +387,8 @@ ascii(ascii(that))    = ...                      len = 23</pre>
     flowing in one direction without any branches or merges.
     So, methods that take in no arguments would be better, since they at least keep the AST linear.
     And you can think of doing <code>x.to_bytes()</code> as basically just doing <code>to_bytes(x)</code>. Just looks less nice.
-    Multiple paramaters, on the other hand, introduce branches in the AST :(
+    Multiple parameters, on the other hand, introduce branches in the AST :(
+  </p>
 
   <div class="divider"></div>
 
@@ -416,13 +417,13 @@ ascii(ascii(that))    = ...                      len = 23</pre>
     </li>
   </ul>
   <p class="note note-spaced">
-    The linear AST approach dies at ~8 characters. The numbers just get too big :( <br
-      I really doubt there's a different way to map between strings and integers in a one-to-one way. <br>
+    The linear AST approach dies at ~8 characters. The numbers just get too big :(
+      <br>I really doubt there's a different way to map between strings and integers in a one-to-one way. <br>
       There are other issues with this too: for example, you can't do <code>x = b"ඞ"</code> in Python, you get: <br>
       <code>SyntaxError: bytes can only contain ASCII literal characters</code>
-      So you'd have to build the bytes one by one, which would require multiple paramaters! <br>
+      So you'd have to build the bytes one by one, which would require multiple parameters! <br>
       Also, to even decode the bytes back into a string, you'd need to specify that you are doing <code>str(x, "u8")</code>, which
-      uses multiple paramaters... <br>
+      uses multiple parameters... <br>
 
   </p>
 
@@ -499,8 +500,7 @@ ascii(ascii(that))    = ...                      len = 23</pre>
     For strings (2+ characters), we allow one exception: <code>zip()</code> takes multiple arguments.
     Everything else remains pure.
   </p>
-  <p class="note">
-  </p>
+
 </div>
 
 <!-- Load order: utils → logo → prefetch → main → visualize → panels -->
