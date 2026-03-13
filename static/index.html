@@ -23,7 +23,8 @@
 <div class="input-row">
   <input type="text" id="charInput" class="wide" maxlength="2" placeholder="type here" autofocus>
   <button class="btn" onclick="randomChar()">random</button>
-  <div class="toggle">
+  <button class="btn mode-btn" id="modeBtn" onclick="toggleMode()">string mode</button>
+  <div class="toggle" id="dbToggle">
     <input type="checkbox" id="useDb" checked>
     <label for="useDb">use optimized database</label>
   </div>

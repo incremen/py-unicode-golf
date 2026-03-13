@@ -5,7 +5,7 @@ import json
 import unicodedata
 from urllib.parse import unquote
 from flask import Flask, jsonify, send_from_directory, request
-from core.anchors import build_char, BASE_ANCHORS
+from core.anchors import build_char, build_string, BASE_ANCHORS
 from core.visualize import evaluate_steps
 
 app = Flask(__name__, static_folder='static')
@@ -113,6 +113,23 @@ def api_log():
 @app.route('/api/anchors')
 def api_anchors():
     return jsonify({str(k): v for k, v in sorted(BASE_ANCHORS.items())})
+
+
+@app.route('/api/string')
+def api_string():
+    text = request.args.get('s', '')
+    if not text:
+        return jsonify({'error': 'Missing s parameter'}), 400
+    if len(text) > 50:
+        return jsonify({'error': 'Max 50 characters'}), 400
+
+    expr = build_string(text)
+    return jsonify({
+        'text': text,
+        'expr': expr,
+        'depth': expr.count('('),
+        'len': len(expr),
+    })
 
 
 @app.route('/api/visualize')

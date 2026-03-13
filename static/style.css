@@ -90,6 +90,7 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
   cursor: pointer;
 }
 .btn:hover { border-color: #306998; }
+.mode-btn.active { background: #306998; color: #fff; border-color: #306998; }
 .toggle {
   display: inline-flex;
   align-items: center;

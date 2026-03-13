@@ -107,3 +107,18 @@ def build_char(char):
     """Build a chr(...) expression for a single character."""
     return f'chr({build_n(ord(char))})'
 
+
+def build_string(text):
+    """Build a string expression using the zip trick + eval.
+
+    Pattern: eval(bytes(map(ord, next(zip(chr(b1), chr(b2), ...)))))
+    where each bi is the UTF-8 byte value of repr(text), built from builtins.
+    eval() parses the repr back into the original string.
+    """
+    if len(text) == 1:
+        return build_char(text)
+
+    repr_bytes = repr(text).encode('utf-8')
+    chr_exprs = [f'chr({build_n(b)})' for b in repr_bytes]
+    return f'eval(bytes(map(ord,next(zip({",".join(chr_exprs)})))))'
+
