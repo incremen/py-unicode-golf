@@ -199,17 +199,38 @@ async function animateStringTracks(data) {
       if (!await waitAndCheck(Math.max(60, 200 - (tracks.length - i) * 15))) return;
     }
 
-    // ── Final: visualize the outer wrapper using the regular step-by-step ──
-    // Build from byte values (not track finals, which are iterator placeholders)
+    // ── Final: client-side conceptual steps with highlight → replace ──
     const revExprs = tracks.map(t => `reversed(range(${t.byte + 1}))`);
-    const fullExpr = `eval(bytes(next(zip(${revExprs.join(',')}))))`;
-    resultExpr.innerHTML = syntaxHighlight(fullExpr);
-    if (!await waitAndCheck(600)) return;
+    const byteVals = tracks.map(t => t.byte);
+    const reprText = JSON.stringify(data.text).slice(1, -1);
 
-    try {
-      const outerSteps = await fetchSteps(fullExpr);
-      if (!vizCancelled) await animateSteps(outerSteps);
-    } catch (e) { console.error(e); }
+    // Each step: [before, highlighted_part, after, replacement]
+    const endSteps = [
+      // zip(reversed(range(N)),...) → zip(39,70,...)
+      ['eval(bytes(next(', `zip(${revExprs.join(',')})`, ')))', `zip(${byteVals.join(',')})`],
+      // next(zip(39,70,...)) → (39,70,...)
+      ['eval(bytes(', `next(zip(${byteVals.join(',')}))`, '))', `(${byteVals.join(',')})`],
+      // bytes((39,70,...)) → b'FF'
+      ['eval(', `bytes((${byteVals.join(',')}))`, ')', `b'${reprText}'`],
+      // eval(b'FF') → 'FF'
+      ['', `eval(b'${reprText}')`, '', `'${reprText}'`],
+    ];
+
+    for (const [before, mid, after, result] of endSteps) {
+      if (vizCancelled) return;
+      // Highlight
+      resultExpr.innerHTML =
+        syntaxHighlight(before) +
+        `<span class="highlight">${syntaxHighlight(mid)}</span>` +
+        syntaxHighlight(after);
+      if (!await waitAndCheck(800)) return;
+      // Replace
+      resultExpr.innerHTML =
+        syntaxHighlight(before) +
+        `<span class="fade-in">${syntaxHighlight(result)}</span>` +
+        syntaxHighlight(after);
+      if (!await waitAndCheck(600)) return;
+    }
   }
 }
 
