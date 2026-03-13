@@ -7,7 +7,6 @@ const resultMeta = document.getElementById('resultMeta');
 const resultExpr = document.getElementById('resultExpr');
 const copiedMsg = document.getElementById('copiedMsg');
 const shareBtn = document.getElementById('shareBtn');
-const modeBtn = document.getElementById('modeBtn');
 
 let lastExpr = '';
 let lastData = null;
@@ -15,11 +14,13 @@ let stringMode = false;
 
 charInput.size = 9;
 
-function toggleMode() {
+function setMode(isString) {
+  if (stringMode === isString) return;
   if (vizRunning) stopVisualization();
-  stringMode = !stringMode;
-  modeBtn.textContent = stringMode ? 'char mode' : 'string mode';
-  modeBtn.classList.toggle('active', stringMode);
+  stringMode = isString;
+  document.querySelectorAll('.mode-opt').forEach((el, i) => {
+    el.classList.toggle('active', i === (stringMode ? 1 : 0));
+  });
   dbToggle.style.display = stringMode ? 'none' : '';
   charInput.value = '';
   lastExpr = '';
@@ -163,14 +164,8 @@ function shareChar() {
   const s = params.get('s');
   if (s) {
     setTimeout(() => {
-      stringMode = true;
-      modeBtn.textContent = 'char mode';
-      modeBtn.classList.add('active');
-      dbToggle.style.display = 'none';
-      charInput.removeAttribute('maxlength');
-      charInput.placeholder = 'type a string';
+      setMode(true);
       charInput.value = s;
-      charInput.classList.add('wide');
       charInput.size = Math.max(10, s.length + 2);
       fetch(`/api/string?s=${encodeURIComponent(s)}`)
         .then(r => r.json())

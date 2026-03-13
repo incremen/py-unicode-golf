@@ -90,7 +90,26 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
   cursor: pointer;
 }
 .btn:hover { border-color: #306998; }
-.mode-btn.active { background: #306998; color: #fff; border-color: #306998; }
+.mode-toggle {
+  display: inline-flex;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  overflow: hidden;
+  height: 36px;
+}
+.mode-opt {
+  background: rgba(255,255,255,0.4);
+  border: none;
+  padding: 0 0.7rem;
+  font-family: inherit;
+  font-size: 0.8rem;
+  color: #555;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.mode-opt:not(:last-child) { border-right: 1px solid #ccc; }
+.mode-opt.active { background: #306998; color: #fff; }
+.mode-opt:hover:not(.active) { background: rgba(48,105,152,0.1); }
 .toggle {
   display: inline-flex;
   align-items: center;
