@@ -27,6 +27,7 @@ function setMode(isString) {
   lastData = null;
   result.classList.remove('visible');
   shareBtn.classList.remove('visible');
+  vizBtn().classList.remove('visible');
   history.replaceState(null, '', window.location.pathname);
   if (stringMode) {
     charInput.removeAttribute('maxlength');
@@ -50,6 +51,7 @@ charInput.addEventListener('input', async () => {
     if (stringMode) { charInput.size = 20; } else { charInput.classList.add('wide'); charInput.size = 11; }
     result.classList.remove('visible');
     shareBtn.classList.remove('visible');
+    vizBtn().classList.remove('visible');
     return;
   }
 
@@ -130,6 +132,7 @@ function showResult(data) {
   copiedMsg.textContent = '';
   result.classList.add('visible');
   shareBtn.classList.add('visible');
+  vizBtn().classList.add('visible');
   shareBtn.classList.remove('copied');
   shareBtn.innerHTML = `share <span class="share-char">${escapeHtml(data.char)}</span>`;
   history.replaceState(null, '', `?c=${encodeURIComponent(data.char)}`);
@@ -143,6 +146,7 @@ function showStringResult(data) {
   copiedMsg.textContent = '';
   result.classList.add('visible');
   shareBtn.classList.add('visible');
+  vizBtn().classList.add('visible');
   shareBtn.classList.remove('copied');
   shareBtn.innerHTML = `share <span class="share-char">${escapeHtml(data.text)}</span>`;
   history.replaceState(null, '', `?s=${encodeURIComponent(data.text)}`);
