@@ -104,30 +104,20 @@ function getTrackExpr(track, pos, mode) {
 }
 
 function renderStringState(tracks, positions, mode) {
-  let rows = '<div class="string-viz-header">' +
-    syntaxHighlight('eval') + '(' +
+  let html = syntaxHighlight('eval') + '(' +
     syntaxHighlight('bytes') + '(' +
     syntaxHighlight('map') + '(' +
     syntaxHighlight('ord') + ', ' +
     syntaxHighlight('next') + '(' +
-    syntaxHighlight('zip') + '(</div>';
-  rows += '<div class="string-viz-tracks">';
+    syntaxHighlight('zip') + '(\n';
 
   for (let i = 0; i < tracks.length; i++) {
-    const step = tracks[i].steps[positions[i]];
-    const done = !step || step.final;
-    const label = escapeHtml(tracks[i].label);
-    const comma = i < tracks.length - 1 ? '<span class="string-viz-comma">,</span>' : '';
-
-    rows += `<div class="string-viz-row${done ? ' done' : ''}">`;
-    rows += `<span class="string-viz-label">${label}</span>`;
-    rows += `<span class="string-viz-expr">${getTrackExpr(tracks[i], positions[i], mode)}${comma}</span>`;
-    rows += '</div>';
+    const comma = i < tracks.length - 1 ? ',\n' : '\n';
+    html += '  ' + getTrackExpr(tracks[i], positions[i], mode) + comma;
   }
 
-  rows += '</div>';
-  rows += '<div class="string-viz-footer">)))))) </div>';
-  resultExpr.innerHTML = rows;
+  html += ')))))) ';
+  resultExpr.innerHTML = html;
 }
 
 async function animateStringTracks(data) {
