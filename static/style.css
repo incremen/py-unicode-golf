@@ -220,7 +220,9 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
   border-radius: 6px;
   cursor: pointer;
   white-space: nowrap;
+  display: none;
 }
+.visualize-btn.visible { display: block; }
 .visualize-btn:hover { border-color: #306998; color: #FFD43B; }
 .result-expr .highlight {
   background: rgba(255, 212, 59, 0.3);
