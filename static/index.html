@@ -65,13 +65,20 @@
 <div class="main-panel" id="panel-what">
   <p>
     Python has built-in functions like <code>len()</code>, <code>str()</code>, <code>not()</code>, <code>chr()</code>, etc.
-    This site builds any Unicode character using only those functions: no numbers, no strings, no variables.
+    This site builds any Unicode character using only those functions: no numbers, no strings, no variables, only one paramater. <br>
     Just nested function calls.
-    Try pasting the expression into a python console (or using print() on it in a python file).
+    </p>
+    <p>
+    For example, <code>chr(max(range(ord(min(str(bytes()))))))</code> evaluates to <code>&</code>. <br>
+</p>
+<p>
+    Try pasting the expression into a python console (or using print() on it in a python file). <br>
+    After you enter a character, the visualize button works you through the evaluation step by step. <br> <br>
+
+    Also (new!) this works for strings too, but we allow multiple paramaters. <br>
+    
   </p>
-  <p>
-    For example, <code>chr(max(range(ord(min(str(bytes()))))))</code> evaluates to <code>&</code>.
-  </p>
+
 </div>
 
 <!-- ── Why? ── -->
