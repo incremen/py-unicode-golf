@@ -136,6 +136,7 @@ async function animateStringTracks(data) {
   const maxSteps = Math.max(...tracks.map(t => t.steps.filter(s => !s.final).length));
   const positions = tracks.map(() => 0);
   let level = 0;
+  const totalSteps = maxSteps + 4; // parallel steps + 4 end steps
 
   // ── Intro: unfold one line at a time ──
   renderStringUnfold(tracks, 0);
@@ -162,7 +163,7 @@ async function animateStringTracks(data) {
     level++;
 
     renderStringState(tracks, positions, 'highlight');
-    stepCounter.textContent = `${level}`;
+    stepCounter.textContent = `${level}/${totalSteps}`;
     stepCounter.classList.add('active', 'bump');
     setTimeout(() => stepCounter.classList.remove('bump'), 150);
     if (!await waitAndCheck(STRING_STEP_DELAY / 2)) break;
@@ -216,8 +217,13 @@ async function animateStringTracks(data) {
       ['', `eval(b'${reprText}')`, '', `'${reprText}'`],
     ];
 
-    for (const [before, mid, after, result] of endSteps) {
+    const totalEnd = endSteps.length;
+    for (let i = 0; i < totalEnd; i++) {
       if (vizCancelled) return;
+      const [before, mid, after, result] = endSteps[i];
+      stepCounter.textContent = `${maxSteps + i + 1}/${totalSteps}`;
+      stepCounter.classList.add('active', 'bump');
+      setTimeout(() => stepCounter.classList.remove('bump'), 150);
       // Highlight
       resultExpr.innerHTML =
         syntaxHighlight(before) +
@@ -231,6 +237,8 @@ async function animateStringTracks(data) {
         syntaxHighlight(after);
       if (!await waitAndCheck(600)) return;
     }
+    stepCounter.classList.remove('active', 'bump');
+    stepCounter.textContent = '';
   }
 }
 
