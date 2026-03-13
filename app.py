@@ -6,7 +6,7 @@ import unicodedata
 from urllib.parse import unquote
 from flask import Flask, jsonify, send_from_directory, request
 from core.anchors import build_char, build_string, BASE_ANCHORS
-from core.visualize import evaluate_steps
+from core.visualize import evaluate_steps, evaluate_string_steps
 
 app = Flask(__name__, static_folder='static')
 MAX_STRING_LENGTH = 200
@@ -138,6 +138,14 @@ def api_visualize():
     if not expr:
         return jsonify({'error': 'Missing expr parameter'}), 400
     return jsonify({'steps': evaluate_steps(expr)})
+
+
+@app.route('/api/visualize_string')
+def api_visualize_string():
+    text = request.args.get('s', '')
+    if not text or len(text) > MAX_STRING_LENGTH:
+        return jsonify({'error': 'Invalid string'}), 400
+    return jsonify(evaluate_string_steps(text))
 
 
 if __name__ == '__main__':

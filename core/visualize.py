@@ -48,6 +48,34 @@ def is_safe_literal(s):
         return False
 
 
+def evaluate_string_steps(text):
+    """Evaluate a string expression in parallel per-character tracks.
+
+    Returns a dict with:
+      - wrapper: the outer eval(bytes(map(ord,next(zip(...))))) template
+      - chars: list of {byte, label, steps} where steps are from evaluate_steps
+    """
+    from core.anchors import build_n
+
+    repr_bytes = repr(text).encode('utf-8')
+    tracks = []
+    for b in repr_bytes:
+        expr = f'chr({build_n(b)})'
+        steps = evaluate_steps(expr)
+        tracks.append({
+            'byte': b,
+            'label': chr(b) if 32 <= b < 127 else f'0x{b:02x}',
+            'expr': expr,
+            'steps': steps,
+        })
+
+    return {
+        'text': text,
+        'wrapper': 'eval(bytes(map(ord,next(zip(...)))))',
+        'tracks': tracks,
+    }
+
+
 def truncate_repr(s, max_len=60):
     """Truncate long literals like lists, bytes, and strings for display."""
     if len(s) <= max_len:
