@@ -486,19 +486,9 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   </ol>
 
   <p class="note note-spaced">
-    Zero brackets. Zero methods. Zero uncalled references. Every argument
-    is the evaluated result of a function call. The AST stays flat and scales
-    to any length. By accepting commas specifically for <code>zip()</code>,
-    we eliminate the need for methods entirely.
-  </p>
-
-  <div class="divider"></div>
-
-  <p><strong>The rules for strings</strong></p>
-  <p>
-    Single characters still use <code>chr(number)</code> with one-argument functions only.
-    For strings (2+ characters), we allow one exception: <code>zip()</code> takes multiple arguments.
-    Everything else remains pure.
+    <br>
+    So yeah. We end up using multiple paramaters for zip. But no methods.
+    And it still comes out looking pretty cool I think.
   </p>
 
 </div>
