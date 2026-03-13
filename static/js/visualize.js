@@ -96,27 +96,37 @@ function getTrackExpr(track, pos, mode) {
     const mid = step.expr.substring(step.highlight.start, step.highlight.end);
     const after = step.expr.substring(step.highlight.end);
     if (mode === 'highlight') {
-      return `${escapeHtml(before)}<span class="highlight">${syntaxHighlight(mid)}</span>${escapeHtml(after)}`;
+      return `${syntaxHighlight(before)}<span class="highlight">${syntaxHighlight(mid)}</span>${syntaxHighlight(after)}`;
     }
-    return `${escapeHtml(before)}<span class="fade-in">${syntaxHighlight(step.result)}</span>${escapeHtml(after)}`;
+    return `${syntaxHighlight(before)}<span class="fade-in">${syntaxHighlight(step.result)}</span>${syntaxHighlight(after)}`;
   }
-  return escapeHtml(step.expr);
+  return syntaxHighlight(step.expr);
+}
+
+const WRAPPER_OPEN = syntaxHighlight('eval(bytes(map(ord,next(zip(');
+const WRAPPER_CLOSE = syntaxHighlight('))))))');
+const SYN_COMMA = '<span class="syn-paren">,</span>';
+
+function renderStringUnfold(tracks, splitAt) {
+  // Show the expression with newlines inserted up to splitAt index
+  let html = WRAPPER_OPEN;
+  for (let i = 0; i < tracks.length; i++) {
+    if (i > 0) html += SYN_COMMA;
+    if (i < splitAt) html += '\n  ';
+    html += syntaxHighlight(tracks[i].expr);
+  }
+  if (splitAt > 0) html += '\n';
+  html += WRAPPER_CLOSE;
+  resultExpr.innerHTML = html;
 }
 
 function renderStringState(tracks, positions, mode) {
-  let html = syntaxHighlight('eval') + '(' +
-    syntaxHighlight('bytes') + '(' +
-    syntaxHighlight('map') + '(' +
-    syntaxHighlight('ord') + ', ' +
-    syntaxHighlight('next') + '(' +
-    syntaxHighlight('zip') + '(\n';
-
+  let html = WRAPPER_OPEN + '\n';
   for (let i = 0; i < tracks.length; i++) {
-    const comma = i < tracks.length - 1 ? ',\n' : '\n';
-    html += '  ' + getTrackExpr(tracks[i], positions[i], mode) + comma;
+    const comma = i < tracks.length - 1 ? SYN_COMMA : '';
+    html += '  ' + getTrackExpr(tracks[i], positions[i], mode) + comma + '\n';
   }
-
-  html += ')))))) ';
+  html += WRAPPER_CLOSE;
   resultExpr.innerHTML = html;
 }
 
@@ -127,6 +137,17 @@ async function animateStringTracks(data) {
   const positions = tracks.map(() => 0);
   let level = 0;
 
+  // ── Intro: unfold one line at a time ──
+  renderStringUnfold(tracks, 0);
+  if (!await waitAndCheck(400)) return;
+  for (let i = 1; i <= tracks.length; i++) {
+    if (vizCancelled) return;
+    renderStringUnfold(tracks, i);
+    if (!await waitAndCheck(Math.max(60, 300 - i * 15))) return;
+  }
+  if (!await waitAndCheck(300)) return;
+
+  // ── Main: parallel step-by-step ──
   logoStart(maxSteps, maxSteps * STRING_STEP_DELAY / 1000);
 
   while (true) {
@@ -140,18 +161,15 @@ async function animateStringTracks(data) {
 
     level++;
 
-    // Phase 1: highlight
     renderStringState(tracks, positions, 'highlight');
     stepCounter.textContent = `${level}`;
     stepCounter.classList.add('active', 'bump');
     setTimeout(() => stepCounter.classList.remove('bump'), 150);
     if (!await waitAndCheck(STRING_STEP_DELAY / 2)) break;
 
-    // Phase 2: replace
     renderStringState(tracks, positions, 'replace');
     if (!await waitAndCheck(STRING_STEP_DELAY / 2)) break;
 
-    // Advance all non-final tracks
     for (let i = 0; i < tracks.length; i++) {
       const step = tracks[i].steps[positions[i]];
       if (step && !step.final) positions[i]++;
@@ -159,15 +177,54 @@ async function animateStringTracks(data) {
   }
 
   if (!vizCancelled) {
-    // Assemble final full expression
-    const finalExprs = tracks.map(t => {
-      const last = t.steps[t.steps.length - 1];
-      return last.expr;
-    });
-    const fullExpr = `eval(bytes(map(ord,next(zip(${finalExprs.join(',')})))))`;
-    resultExpr.innerHTML = syntaxHighlight(fullExpr);
     stepCounter.classList.remove('active', 'bump');
     stepCounter.textContent = '';
+
+    const finalExprs = tracks.map(t => t.steps[t.steps.length - 1].expr);
+
+    // ── Outro: fold back into one line ──
+    if (!await waitAndCheck(400)) return;
+    for (let i = tracks.length; i >= 0; i--) {
+      if (vizCancelled) return;
+      let html = WRAPPER_OPEN;
+      for (let j = 0; j < finalExprs.length; j++) {
+        if (j > 0) html += SYN_COMMA;
+        if (j < i) html += '\n  ';
+        html += syntaxHighlight(finalExprs[j]);
+      }
+      if (i > 0) html += '\n';
+      html += WRAPPER_CLOSE;
+      resultExpr.innerHTML = html;
+      if (!await waitAndCheck(Math.max(60, 200 - (tracks.length - i) * 15))) return;
+    }
+
+    // ── Final: peel away wrapper layers one at a time ──
+    const inner = finalExprs.join(',');
+    const textRepr = escapeHtml(JSON.stringify(data.text));
+
+    // Step through each wrapper layer: zip → next → map(ord) → bytes → eval
+    const layers = [
+      `eval(bytes(map(ord,next(zip(${inner})))))`,
+      `eval(bytes(map(ord,next((${finalExprs.map(e => e).join(',')}))))) `,
+      `eval(bytes(map(ord,(${finalExprs.map(e => e).join(',')}))))`,
+      `eval(bytes((${finalExprs.map((_, i) => data.tracks[i].byte).join(',')})))`,
+      `eval(b${textRepr})`,
+      textRepr,
+    ];
+
+    for (let i = 0; i < layers.length - 1; i++) {
+      if (vizCancelled) return;
+      // Show current with highlight on the part that will change
+      resultExpr.innerHTML = syntaxHighlight(layers[i]);
+      if (!await waitAndCheck(800)) return;
+
+      // Fade in next
+      resultExpr.innerHTML = `<span class="fade-in">${syntaxHighlight(layers[i + 1])}</span>`;
+      if (!await waitAndCheck(600)) return;
+    }
+
+    // Show final result
+    resultExpr.innerHTML = syntaxHighlight(layers[layers.length - 1]);
     await sleep(FINAL_DELAY);
   }
 }
