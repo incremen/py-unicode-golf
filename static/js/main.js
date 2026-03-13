@@ -94,7 +94,7 @@ function randomChar() {
   if (vizRunning) stopVisualization();
   logoPop();
   if (stringMode) {
-    const len = 1 + Math.floor(Math.random() * 50);
+    const len = 1 + Math.floor(Math.random() * 10);
     let s = '';
     for (let i = 0; i < len; i++) s += String.fromCodePoint(randomCodePoint());
     charInput.value = s;
