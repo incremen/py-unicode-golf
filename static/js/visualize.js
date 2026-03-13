@@ -32,7 +32,7 @@ async function waitAndCheck(ms) {
 
 function renderStep(before, middle, after, className) {
   resultExpr.innerHTML =
-    `${escapeHtml(before)}<span class="${className}">${syntaxHighlight(middle)}</span>${escapeHtml(after)}`;
+    `${syntaxHighlight(before)}<span class="${className}">${syntaxHighlight(middle)}</span>${syntaxHighlight(after)}`;
 }
 
 function estimateDuration(total) {
