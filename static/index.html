@@ -411,8 +411,14 @@ ascii(ascii(that))    = ...                      len = 23</pre>
     </li>
   </ul>
   <p class="note note-spaced">
-    The linear AST approach dies at ~8 characters. The numbers just get too big :(
-      I really doubt there's a different way to map between strings and integers in a one-to-one way.
+    The linear AST approach dies at ~8 characters. The numbers just get too big :( <br
+      I really doubt there's a different way to map between strings and integers in a one-to-one way. <br>
+      There are other issues with this too: for example, you can't do <code>x = b"ඞ"</code> in Python, you get: <br>
+      <code>SyntaxError: bytes can only contain ASCII literal characters</code>
+      So you'd have to build the bytes one by one, which would require multiple paramaters! <br>
+      Also, to even decode the bytes back into a string, you'd need to specify that you are doing <code>str(x, "u8")</code>, which
+      uses multiple paramaters... <br>
+
   </p>
 
   <div class="divider"></div>
