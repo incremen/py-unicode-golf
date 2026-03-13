@@ -255,6 +255,16 @@ code {
   border-radius: 3px;
   color: #7ec8e3;
   font-size: 0.85rem;
+  word-break: break-all;
+}
+.main-panel ol, .main-panel ul {
+  padding-left: 1.5rem;
+  font-size: 0.85rem;
+  color: #555;
+  line-height: 1.7;
+}
+.main-panel ol li, .main-panel ul li {
+  margin-bottom: 0.4rem;
 }
 pre {
   background: #12151e;
