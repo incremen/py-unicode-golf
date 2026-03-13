@@ -109,16 +109,18 @@ def build_char(char):
 
 
 def build_string(text):
-    """Build a string expression using the zip trick + eval.
+    """Build a string expression using reversed(range()) iterators + eval.
 
-    Pattern: eval(bytes(map(ord, next(zip(chr(b1), chr(b2), ...)))))
-    where each bi is the UTF-8 byte value of repr(text), built from builtins.
-    eval() parses the repr back into the original string.
+    Pattern: eval(bytes(next(zip(reversed(range(b1+1)), reversed(range(b2+1)), ...))))
+    where each bi is a UTF-8 byte of repr(text).
+    reversed(range(b+1)) yields b as its first element.
+    zip packs them, next pulls the tuple, bytes makes the repr string, eval parses it.
+    No uncalled function references — every argument is a function call result.
     """
     if len(text) == 1:
         return build_char(text)
 
     repr_bytes = repr(text).encode('utf-8')
-    chr_exprs = [f'chr({build_n(b)})' for b in repr_bytes]
-    return f'eval(bytes(map(ord,next(zip({",".join(chr_exprs)})))))'
+    rev_exprs = [f'reversed(range({build_n(b + 1)}))' for b in repr_bytes]
+    return f'eval(bytes(next(zip({",".join(rev_exprs)}))))'
 

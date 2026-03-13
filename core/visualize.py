@@ -60,7 +60,7 @@ def evaluate_string_steps(text):
     repr_bytes = repr(text).encode('utf-8')
     tracks = []
     for b in repr_bytes:
-        expr = f'chr({build_n(b)})'
+        expr = f'reversed(range({build_n(b + 1)}))'
         steps = evaluate_steps(expr)
         tracks.append({
             'byte': b,
