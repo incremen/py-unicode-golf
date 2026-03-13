@@ -412,7 +412,7 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   </ul>
   <p class="note note-spaced">
     The linear AST approach dies at ~8 characters. The numbers just get too big :(
-      I really doubt there's a different way to represent strings as integers in a one-to-one way.
+      I really doubt there's a different way to map between strings and integers in a one-to-one way.
   </p>
 
   <div class="divider"></div>
@@ -489,8 +489,6 @@ ascii(ascii(that))    = ...                      len = 23</pre>
     Everything else remains pure.
   </p>
   <p class="note">
-    Try it: click "string" above the input, type something, and hit visualize.
-    Each byte's expression resolves in parallel, then the outer wrapper assembles the final string.
   </p>
 </div>
 
