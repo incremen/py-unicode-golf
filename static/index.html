@@ -371,116 +371,90 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 <!-- ── Strings ── -->
 <div class="main-panel" id="panel-strings">
   <p>
-    Single characters are easy: <code>chr(number)</code>. But what about whole strings?
+    So we've got single characters figured out. But what about whole strings?
     Python has no builtin <code>concat(a, b)</code>. There's no way to join two strings
     without operators (<code>+</code>), methods (<code>.join()</code>), or syntax (<code>[]</code>).
+    (at least, I really don't think so!)
   </p>
   <p>
-    The beauty of the single-character system is that it produces a purely linear AST
-    (abstract syntax tree - the tree structure Python builds when parsing an expression).
-    Every expression is a straight line: each function wraps the previous one, flowing in
-    one direction. There are no branches, no forks, no points where two independent
-    computations merge.
-  </p>
-  <p>
-    Strings break this. To combine two characters, I need to merge two independent branches
-    of computation into one result. That fundamentally requires either commas (multi-arg functions,
-    creating a branching AST) or dot notation (methods). I'm reluctant about both - commas
-    shatter the linear purity, and methods feel like operator access in disguise.
-    <strong>Dunder methods are outright banned</strong>:
-    <code>chr(a).__add__(chr(b))</code> is just <code>+</code> wearing a mask.
-  </p>
-  <p>Here's the graveyard of attempts.</p>
+    The single-character system works nicely because it produces a linear AST
+    (abstract syntax tree). Every expression is a straight line: each function wraps the previous one,
+    flowing in one direction without any branches or merges.
+    So, methods that take in no arguments would be better, since they at least keep the AST linear.
+    And you can think of doing <code>x.to_bytes()</code> as basically just doing <code>to_bytes(x)</code>. Just looks less nice.
+    Multiple paramaters, on the other hand, introduce branches in the AST :(
 
   <div class="divider"></div>
 
-  <p><strong>The syntax hacks</strong></p>
+  <p><strong>The giant integer problem</strong></p>
   <p>
-    <code>str().join([chr(a), chr(b)])</code> - relies on <code>[]</code> list syntax. Rejected.<br>
-    <code>str().join(Exception(chr(a), chr(b)).args)</code> - avoids <code>[]</code> by packing
-    characters into an Exception's <code>.args</code> tuple. But this introduces both commas
-    AND attribute access/methods. Rejected.
-  </p>
-
-  <div class="divider"></div>
-
-  <p><strong>The giant integer</strong></p>
-  <p>
-    My favorite idea: encode the entire string as one massive base-256 integer,
-    build it with the base-3 algorithm, convert back with
-    <code>.to_bytes(length).decode()</code>. This would keep the AST almost
-    perfectly linear - though you still need to pass the length parameter,
-    which creates a small branch.
-  </p>
-  <p class="note note-spaced">
-    "hello" = 448 billion as a big-endian integer.
-    Build that number, call <code>.to_bytes(5).decode()</code>.
+    To keep the AST completely linear for a whole string, that would mean uniquely representing each string as a single number.
+    There is a clear way to do this - write the string as a number in base 256, where each byte is a digit (basically,
+    just write the string out as raw bytes and interpret it as an integer).
+    For example, "hello" as a big-endian integer is about 448 billion. 
   </p>
   <p>
-    I tried several ways to build massive numbers. I found that
-    <code>sum(slice(A, B).indices(M))</code> gives O(1) addition
-    (it evaluates to A + B + 1 when M is large enough), and
-    <code>len(range(A, B))</code> gives O(1) subtraction (B - A).
-    I tried power-of-2 ceilings with <code>pow()</code> and binary
-    decomposition of the difference. None of it worked -
-    all of them hit CPython's hard limits:
+    But representing huge numbers with our restricted toolset doesn't scale. CPython physically cannot handle the execution:
   </p>
   <ul>
     <li>
-      <strong>Memory wall:</strong> the base-3 tripling step uses
-      <code>len(str(list(bytes(n))))</code>. As n grows, CPython physically
-      executes <code>bytes(n)</code> at each step, allocating real memory.
-      Billion-scale intermediates = gigabytes of RAM = <code>MemoryError</code>.
+      <strong>Memory wall:</strong> The base-3 algorithm uses <code>len(str(list(bytes(n))))</code> for tripling.
+      Python physically executes <code>bytes(n)</code>. For billion-scale numbers, that means allocating gigabytes of RAM at runtime, resulting in an instant <code>MemoryError</code>.
     </li>
     <li>
-      <strong>AST wall:</strong> Python's parser rejects expressions with more
-      than 200 nested parentheses. The AST grows linearly with string length:
-      a string of length L needs roughly
-      log<sub>3</sub>(256<sup>L</sup>) = ~5L base-3 steps, each adding a few
-      nested function calls. Past ~8-10 characters, the parenthesis count
-      exceeds 200 and Python throws a <code>SyntaxError</code>.
+      <strong>AST wall:</strong> Python's parser rejects expressions with more than 200 nested parentheses.
+      Because we build numbers logarithmically, the parenthesis count grows linearly. Past ~8 characters, it hits the 200 limit and throws a <code>SyntaxError</code>.
     </li>
     <li>
-      <strong>C-struct wall:</strong> <code>len()</code> and <code>range()</code>
-      can't return values larger than <code>sys.maxsize</code> (2<sup>63</sup>),
-      which is only ~9.2 quintillion - a 10-character ASCII string already exceeds this.
+      <strong>C-struct wall:</strong> Functions like <code>len()</code> and <code>range()</code> are capped at
+      <code>sys.maxsize</code> (2<sup>63</sup> - 1). A 10-character string easily exceeds this, breaking any length-based math tricks.
     </li>
   </ul>
   <p class="note note-spaced">
-    Even the O(1) addition and subtraction tricks, which bypass the base-3 nesting entirely,
-    still crash on the C-struct wall. The linear AST dream dies at ~8 characters no matter
-    what mathematical tricks I throw at it.
+    The linear AST approach dies at ~8 characters. The numbers just get too big :(
+      I really doubt there's a different way to represent strings as integers in a one-to-one way.
   </p>
+
+  <div class="divider"></div>
+
+  <p><strong>Forced to branch</strong></p>
+  <p>
+    Since massive numbers are impossible, we have to build each byte independently and pack them together.
+    But merging independent branches requires either commas (multi-arg functions) or dot notation (methods).
+    (And dunder methods like <code>.__add__()</code> are outright banned, as they are just operators in disguise).
+  </p>
+  <p>Here are a few early attempts at merging that didn't make the cut:</p>
+  <ul>
+    <li><code>str().join([chr(a), chr(b)])</code> - Relies on <code>[]</code> list syntax. Rejected.</li>
+    <li><code>str().join(Exception(chr(a), chr(b)).args)</code> - Avoids <code>[]</code>, but introduces both commas AND attribute access. Rejected.</li>
+  </ul>
 
   <div class="divider"></div>
 
   <p><strong>The map(ord) pipeline</strong></p>
   <p>
-    So I gave up on keeping the AST linear. Instead, build each byte
-    independently and pack them horizontally:
+    This led to horizontal packing using <code>zip()</code>:
   </p>
 <pre>bytes(map(ord, next(zip(
   chr(b1), chr(b2), ...
 )))).decode()</pre>
   <p>
-    <code>zip()</code> on single-char strings produces a tuple of characters.
-    <code>next()</code> extracts it. <code>map(ord, ...)</code> converts back to ints.
-    <code>bytes()</code> builds the byte string. <code>.decode()</code> gives the final string.
+    <code>zip()</code> on single-char strings produces a tuple. <code>next()</code> extracts it.
+    <code>map(ord, ...)</code> converts back to integers, <code>bytes()</code> builds the byte string,
+    and <code>.decode()</code> gives the final string.
   </p>
   <p class="note note-spaced">
-    This works and scales to any length. But passing <code>ord</code> as a bare
-    reference into <code>map()</code> bothers me - it's an uncalled function identifier,
-    not the evaluated result of a call. And <code>.decode()</code> is a method.
+    This works. But passing <code>ord</code> as a bare reference into <code>map()</code> is basically cheating—it's an uncalled function identifier, not the evaluated result of a call. Plus, it still relies on a method (<code>.decode()</code>).
   </p>
 
   <div class="divider"></div>
 
   <p><strong>The final solution: the eval() literal pipeline</strong></p>
   <p>
-    Instead of building the string and decoding it, build the <em>Python source code</em>
-    for the string literal as bytes, and let <code>eval()</code> parse it.
-    To get pure integers into <code>zip()</code> without <code>map()</code>,
-    use <code>reversed(range(N))</code> - an iterator whose first element is exactly N-1.
+    Instead of building a string and decoding it, we can build the <em>Python source code</em>
+    for the string literal as raw bytes, and let <code>eval()</code> parse it.
+    To get pure integers into <code>zip()</code> without using <code>map()</code>,
+    we use <code>reversed(range(N))</code>—an iterator whose first element is exactly N-1.
   </p>
 
 <pre>eval(bytes(next(zip(
@@ -492,26 +466,18 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 
   <p>Step by step for "py":</p>
   <ol>
-    <li>Take <code>repr("py")</code> = <code>'py'</code>.
-      Its UTF-8 bytes are 39, 112, 121, 39.</li>
-    <li>For each byte <em>b</em>, build <em>b+1</em>
-      with base-3, wrap in
-      <code>reversed(range(...))</code> -
-      yields <em>b</em> first.</li>
-    <li><code>zip</code> packs the iterators.
-      <code>next</code> pulls one from each:
-      (39, 112, 121, 39).</li>
-    <li><code>bytes</code> builds
-      <code>b"'py'"</code>.</li>
-    <li><code>eval</code> accepts bytes in Python 3,
-      parses the literal, returns "py".</li>
+    <li><code>repr("py")</code> gives <code>'py'</code>. Its UTF-8 bytes are 39, 112, 121, 39.</li>
+    <li>For each byte <em>b</em>, generate <em>b+1</em> with the base-3 algorithm, and wrap it in <code>reversed(range(...))</code>. This yields <em>b</em> as its first element.</li>
+    <li><code>zip</code> packs the iterators. <code>next</code> pulls the first element from each, creating the tuple: (39, 112, 121, 39).</li>
+    <li><code>bytes</code> naturally consumes the tuple to build <code>b"'py'"</code>.</li>
+    <li><code>eval</code> accepts bytes natively in Python 3, parses the literal, and returns "py".</li>
   </ol>
 
   <p class="note note-spaced">
     Zero brackets. Zero methods. Zero uncalled references. Every argument
     is the evaluated result of a function call. The AST stays flat and scales
     to any length. By accepting commas specifically for <code>zip()</code>,
-    I eliminated the need for methods entirely.
+    we eliminate the need for methods entirely.
   </p>
 
   <div class="divider"></div>
@@ -519,7 +485,7 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   <p><strong>The rules for strings</strong></p>
   <p>
     Single characters still use <code>chr(number)</code> with one-argument functions only.
-    For strings (2+ characters), I allow one exception: <code>zip()</code> takes multiple arguments.
+    For strings (2+ characters), we allow one exception: <code>zip()</code> takes multiple arguments.
     Everything else remains pure.
   </p>
   <p class="note">
