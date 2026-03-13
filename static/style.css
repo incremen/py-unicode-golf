@@ -150,11 +150,6 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
   color: #7a8ba8;
   font-size: 0.85rem;
 }
-.expr-container {
-  display: flex;
-  gap: 0.5rem;
-  align-items: stretch;
-}
 .result-expr {
   background: #0a0c12;
   padding: 1rem;
@@ -167,7 +162,6 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
   color: #FFD43B;
   cursor: pointer;
   border: none;
-  flex: 1;
 }
 .result-expr:hover { box-shadow: 0 0 0 2px #306998; }
 .result-sidebar {
