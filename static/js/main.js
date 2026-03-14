@@ -56,7 +56,7 @@ charInput.addEventListener('input', async () => {
   }
 
   if (stringMode) {
-    charInput.size = Math.max(10, val.length + 2);
+    charInput.size = Math.min(40, Math.max(10, val.length + 2));
     try {
       const res = await fetch(`/api/string?s=${encodeURIComponent(val)}`);
       const data = await res.json();
@@ -100,7 +100,7 @@ function randomChar() {
     let s = '';
     for (let i = 0; i < len; i++) s += String.fromCodePoint(randomCodePoint());
     charInput.value = s;
-    charInput.size = Math.max(10, s.length + 2);
+    charInput.size = Math.min(40, Math.max(10, s.length + 2));
     charInput.dispatchEvent(new Event('input'));
   } else {
     const cached = prefetchQueue.shift();
@@ -148,7 +148,8 @@ function showStringResult(data) {
   shareBtn.classList.add('visible');
   vizBtn().classList.add('visible');
   shareBtn.classList.remove('copied');
-  shareBtn.innerHTML = `share <span class="share-char">${escapeHtml(data.text)}</span>`;
+  const preview = data.text.length > 15 ? data.text.slice(0, 15) + '\u2026' : data.text;
+  shareBtn.innerHTML = `share <span class="share-char">${escapeHtml(preview)}</span>`;
   history.replaceState(null, '', `?s=${encodeURIComponent(data.text)}`);
 }
 
@@ -170,7 +171,7 @@ function shareChar() {
     setTimeout(() => {
       setMode(true);
       charInput.value = s;
-      charInput.size = Math.max(10, s.length + 2);
+      charInput.size = Math.min(40, Math.max(10, s.length + 2));
       fetch(`/api/string?s=${encodeURIComponent(s)}`)
         .then(r => r.json())
         .then(data => { if (!data.error) showStringResult(data); });

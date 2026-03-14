@@ -149,6 +149,17 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
   margin-bottom: 0.8rem;
   color: #7a8ba8;
   font-size: 0.85rem;
+  gap: 1rem;
+}
+.result-header #resultChar {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.result-header #resultMeta {
+  flex-shrink: 0;
+  text-align: right;
 }
 .result-expr {
   background: #0a0c12;
