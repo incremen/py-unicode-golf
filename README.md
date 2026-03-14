@@ -67,6 +67,23 @@ returns
 
 `formula` is generated on-the-fly. `db` (if present) is the pre-optimized expression from the database.
 
+### `GET /api/string?s=<text>`
+
+Returns the expression for an arbitrary string (up to 200 characters). Uses `zip` with multiple arguments.
+
+```
+curl https://py-unicode-golf.vercel.app/api/string?s=hi
+```
+
+returns
+
+```json
+{"text":"hi",
+"expr":"eval(bytes(next(zip(reversed(range(...)),reversed(range(...)),...))))",
+"depth":57,
+"len":319}
+```
+
 ---
 
 ## Contributing
