@@ -6,8 +6,9 @@ Represent any character using only Python builtin function calls that take up to
 
 For example: `chr(sum(range(ord(min(str(not())))))) = ඞ`
 
-I found a closed algorithm to represent each character this way. Also, there's a database that stores optimized representations.
-Also I do this with strings too, but allow multiple arguments.
+I found a closed algorithm to represent each character this way. Also, there's a database that stores optimized representations. 
+ 
+Additionally, the project also does this for an arbitrary string (but you need to allow multiple arguments).
 
 Details in:
 
