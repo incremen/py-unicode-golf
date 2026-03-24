@@ -1,5 +1,3 @@
-import sys
-
 ONE = 'int(not())'
 
 def build_n(n):
