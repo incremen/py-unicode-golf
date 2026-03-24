@@ -446,7 +446,7 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
 .code-editor {
   display: block;
   width: 100%;
-  min-height: 300px;
+  min-height: 450px;
   background: #12151e;
   color: #c0c8d8;
   border: none;
