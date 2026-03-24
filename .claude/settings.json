@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python payload_compiler.py)"
+    ]
+  }
+}
