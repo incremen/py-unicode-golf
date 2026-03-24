@@ -77,7 +77,7 @@ async function compileCode() {
     }
     lastCodeExpr = data.expr;
     codeResultMeta.textContent = `${data.bytes} bytes → ${data.len.toLocaleString()} chars`;
-    codeResultExpr.innerHTML = escapeHtml(data.expr);
+    codeResultExpr.innerHTML = syntaxHighlight(data.expr);
     codeResultCopied.textContent = '';
     codeResult.classList.add('visible');
   } catch (e) {
