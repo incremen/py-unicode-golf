@@ -132,7 +132,7 @@ def api_string():
     })
 
 
-MAX_CODE_LENGTH = 2000
+MAX_CODE_LENGTH = 5000
 
 @app.route('/api/code')
 def api_code():

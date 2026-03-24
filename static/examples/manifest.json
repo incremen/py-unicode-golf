@@ -1,0 +1,6 @@
+[
+  {"name": "hello_world",    "label": "hello world"},
+  {"name": "rickroll",       "label": "rickroll"},
+  {"name": "calculator",     "label": "calculator"},
+  {"name": "compiler",       "label": "self-replicating"}
+]

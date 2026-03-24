@@ -1,58 +1,40 @@
-const EXAMPLES = {
-  calculator: `import tkinter as tk
-root = tk.Tk()
-root.title("Calculator")
-expr = tk.StringVar()
-tk.Entry(root, textvariable=expr, font=("Helvetica", 20), justify="right", bd=8).grid(row=0, column=0, columnspan=4)
-def press(val):
-    expr.set(expr.get() + val)
-def clear():
-    expr.set("")
-def evaluate():
-    try: expr.set(str(eval(expr.get())))
-    except: expr.set("Error")
-btns = ["7","8","9","/","4","5","6","*","1","2","3","-","0",".","=","+"]
-for i,b in enumerate(btns):
-    cmd = evaluate if b=="=" else lambda v=b: press(v)
-    tk.Button(root, text=b, font=("Helvetica", 16), width=4, height=2, command=cmd).grid(row=1+i//4, column=i%4)
-tk.Button(root, text="C", font=("Helvetica", 16), width=4, height=2, command=clear).grid(row=5, column=0, columnspan=4)
-root.mainloop()`,
-
-  gui: `import tkinter as tk
-root = tk.Tk()
-root.title("py-unicode-golf")
-tk.Label(root, text="Payload Executed.", font=("Helvetica", 24)).pack(padx=50, pady=50)
-root.mainloop()`,
-
-  redirect: `import webbrowser
-webbrowser.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ')`,
-
-  image: `import os, webbrowser
-html = '<img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==">'
-with open('img.html', 'w') as f:
-    f.write(html)
-webbrowser.open('file://' + os.path.realpath('img.html'))`,
-};
-
 const codeInput = document.getElementById('codeInput');
 const codeByteCount = document.getElementById('codeByteCount');
 const codeResult = document.getElementById('codeResult');
 const codeResultMeta = document.getElementById('codeResultMeta');
 const codeResultExpr = document.getElementById('codeResultExpr');
 const codeResultCopied = document.getElementById('codeResultCopied');
+const codeExamplesContainer = document.getElementById('codeExamples');
 
 let lastCodeExpr = '';
 let activeExample = null;
 
-function loadExample(name) {
-  codeInput.value = EXAMPLES[name];
+async function loadExample(name) {
+  const res = await fetch(`/static/examples/${name}.py`);
+  codeInput.value = await res.text();
   activeExample = name;
   document.querySelectorAll('.code-example-btn').forEach(b => {
-    b.classList.toggle('active', b.getAttribute('onclick') === `loadExample('${name}')`);
+    b.classList.toggle('active', b.dataset.name === name);
   });
   updateByteCount();
   codeResult.classList.remove('visible');
 }
+
+async function initExamples() {
+  const res = await fetch('/static/examples/manifest.json');
+  const examples = await res.json();
+  codeExamplesContainer.innerHTML = '';
+  for (const { name, label } of examples) {
+    const btn = document.createElement('button');
+    btn.className = 'code-example-btn';
+    btn.dataset.name = name;
+    btn.textContent = label;
+    btn.addEventListener('click', () => loadExample(name));
+    codeExamplesContainer.appendChild(btn);
+  }
+}
+
+initExamples();
 
 function updateByteCount() {
   const bytes = new TextEncoder().encode(codeInput.value).length;
