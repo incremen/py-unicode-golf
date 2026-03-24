@@ -7,6 +7,7 @@ function showMain(btn, id) {
     btn.classList.add('active');
     logoPop();
   }
+  document.querySelector('.input-row').classList.toggle('hidden', id === 'panel-code');
 }
 
 function loadStrategies() {

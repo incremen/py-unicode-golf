@@ -55,6 +55,7 @@ h1 { color: #306998; font-size: 1.6rem; margin-bottom: 0.3rem; }
   margin-bottom: 1.5rem;
   align-items: center;
 }
+.input-row.hidden { display: none; }
 input[type="text"] {
   background: #1a1e28;
   border: 2px solid #2a3040;
