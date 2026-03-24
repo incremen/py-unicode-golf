@@ -7,7 +7,9 @@ function showMain(btn, id) {
     btn.classList.add('active');
     logoPop();
   }
-  document.querySelector('.input-row').classList.toggle('hidden', id === 'panel-code');
+  const onCode = id === 'panel-code';
+  document.querySelector('.input-row').classList.toggle('hidden', onCode);
+  document.querySelector('.result-wrapper').classList.toggle('hidden', onCode);
 }
 
 function loadStrategies() {

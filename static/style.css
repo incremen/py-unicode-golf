@@ -134,6 +134,7 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
   position: relative;
   margin-bottom: 2rem;
 }
+.result-wrapper.hidden { display: none; }
 .result {
   background: #12151e;
   border: none;
