@@ -5,7 +5,7 @@ import json
 import unicodedata
 from urllib.parse import unquote
 from flask import Flask, jsonify, send_from_directory, request
-from core.anchors import build_char, build_string, BASE_ANCHORS
+from core.anchors import build_char, build_string, build_n, BASE_ANCHORS
 from core.visualize import evaluate_steps, evaluate_string_steps
 
 app = Flask(__name__, static_folder='static')
@@ -130,6 +130,21 @@ def api_string():
         'depth': expr.count('('),
         'len': len(expr),
     })
+
+
+MAX_CODE_LENGTH = 2000
+
+@app.route('/api/code')
+def api_code():
+    code = request.args.get('code', '')
+    if not code:
+        return jsonify({'error': 'Missing code parameter'}), 400
+    if len(code) > MAX_CODE_LENGTH:
+        return jsonify({'error': f'Max {MAX_CODE_LENGTH} characters'}), 400
+    raw_bytes = code.encode('utf-8')
+    rev_exprs = [f'reversed(range({build_n(b + 1)}))' for b in raw_bytes]
+    expr = f'exec(bytes(next(zip({",".join(rev_exprs)}))))'
+    return jsonify({'expr': expr, 'bytes': len(raw_bytes), 'len': len(expr)})
 
 
 @app.route('/api/visualize')

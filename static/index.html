@@ -58,6 +58,7 @@
   <button class="main-tab" onclick="showMain(this, 'panel-optimizations')">optimizations</button>
   <button class="main-tab" onclick="showMain(this, 'panel-db')">database</button>
   <button class="main-tab" onclick="showMain(this, 'panel-strings')">strings</button>
+  <button class="main-tab" onclick="showMain(this, 'panel-code')">code</button>
 </div>
 
 <!-- ── What? ── -->
@@ -494,12 +495,47 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 
 </div>
 
-<!-- Load order: utils → logo → prefetch → main → visualize → panels -->
+<!-- ── Code ── -->
+<div class="main-panel" id="panel-code">
+  <p>
+    The strings technique uses <code>eval(bytes(next(zip(...))))</code> to reconstruct a string literal.
+    The same trick works for full Python scripts: swap <code>eval</code> for <code>exec</code> and feed it
+    the raw UTF-8 bytes of any script. The result is a single line of pure builtin-call arithmetic that
+    executes arbitrary code when pasted into a Python REPL.
+  </p>
+
+  <div class="divider"></div>
+
+  <p><strong>Examples</strong></p>
+  <div class="code-examples">
+    <button class="code-example-btn" onclick="loadExample('calculator')">calculator</button>
+    <button class="code-example-btn" onclick="loadExample('gui')">hello gui</button>
+    <button class="code-example-btn" onclick="loadExample('redirect')">rickroll</button>
+    <button class="code-example-btn" onclick="loadExample('image')">image</button>
+  </div>
+
+  <div class="code-editor-wrap">
+    <textarea id="codeInput" class="code-editor" spellcheck="false" placeholder="# paste any Python script here"></textarea>
+    <div class="code-editor-footer">
+      <span id="codeByteCount" class="code-byte-count"></span>
+      <button class="btn code-compile-btn" onclick="compileCode()">compile →</button>
+    </div>
+  </div>
+
+  <div id="codeResult" class="code-result">
+    <div class="code-result-meta" id="codeResultMeta"></div>
+    <div class="result-expr" id="codeResultExpr" onclick="copyCodeExpr()"></div>
+    <div class="copied" id="codeResultCopied"></div>
+  </div>
+</div>
+
+<!-- Load order: utils → logo → prefetch → main → visualize → panels → code -->
 <script src="/static/js/utils.js"></script>
 <script src="/static/js/logo.js"></script>
 <script src="/static/js/prefetch.js"></script>
 <script src="/static/js/main.js"></script>
 <script src="/static/js/visualize.js"></script>
 <script src="/static/js/panels.js"></script>
+<script src="/static/js/code.js"></script>
 </body>
 </html>
