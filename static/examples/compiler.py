@@ -60,7 +60,14 @@ def build_n(n):
     memo[n] = expr
     return expr
 
-src = input("script> ").encode()
+print("enter script line by line, type END to compile:")
+lines = []
+while True:
+    line = input("... " if lines else ">>> ")
+    if line == "END":
+        break
+    lines.append(line)
+src = "\n".join(lines).encode()
 
 parts = [f'reversed(range({build_n(b + 1)}))' for b in src]
 print(f'exec(bytes(next(zip({",".join(parts)}))))')
