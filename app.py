@@ -134,6 +134,11 @@ def api_string():
 
 MAX_CODE_LENGTH = 5000
 
+def _zip_ast(data: bytes) -> str:
+    parts = [f'reversed(range({build_n(b + 1)}))' for b in data]
+    return f'bytes(next(zip({",".join(parts)})))'
+
+
 @app.route('/api/code')
 def api_code():
     code = request.args.get('code', '')
@@ -142,8 +147,14 @@ def api_code():
     if len(code) > MAX_CODE_LENGTH:
         return jsonify({'error': f'Max {MAX_CODE_LENGTH} characters'}), 400
     raw_bytes = code.encode('utf-8')
-    rev_exprs = [f'reversed(range({build_n(b + 1)}))' for b in raw_bytes]
-    expr = f'exec(bytes(next(zip({",".join(rev_exprs)}))))'
+    builtins_ast = _zip_ast(b'__builtins__')
+    exec_ast     = _zip_ast(b'exec')
+    payload_ast  = _zip_ast(raw_bytes)
+    expr = (
+        f'vars(vars().get({builtins_ast}.decode()))'
+        f'.get({exec_ast}.decode())'
+        f'({payload_ast})'
+    )
     return jsonify({'expr': expr, 'bytes': len(raw_bytes), 'len': len(expr)})
 
 

@@ -499,10 +499,21 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 <!-- ── exec() ── -->
 <div class="main-panel" id="panel-code">
   <p>
-    The strings technique uses <code>eval(bytes(next(zip(...))))</code> to reconstru  ct a string literal.
-    The same trick works for full Python  scripts: swap <code>eval</code> for <code>exec</code> and feed it
-    the raw UTF-8 bytes of any script. The result is a single line of pure builtin-call arithmetic that
-    executes arbitrary code when pasted into a Python REPL.
+    The strings technique uses <code>eval(bytes(next(zip(...))))</code> to reconstruct a string — but
+    the word <code>eval</code> is right there in the output. For scripts, the naive version writes
+    <code>exec(...)</code> literally too.
+  </p>
+  <p>
+    If we allow method calls (<code>.decode()</code>, <code>.get()</code>), we can extract
+    <code>exec</code> from <code>__builtins__</code> without ever writing either word in the output.
+    The generated expression looks like this:
+  </p>
+  <p><code>vars(vars().get(bytes(...).decode())).get(bytes(...).decode())(bytes(...))</code></p>
+  <p>
+    The three <code>bytes(...)</code> blobs encode: the string <code>"__builtins__"</code>,
+    the string <code>"exec"</code>, and the actual payload script — all as pure
+    <code>reversed(range(...))</code> arithmetic. The interpreter reconstructs and calls
+    <code>exec</code> entirely from its own memory, with no reserved words in sight.
   </p>
 
   <div class="divider"></div>

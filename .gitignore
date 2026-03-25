@@ -3,4 +3,4 @@ __pycache__/
 venv/
 prep.md
 img.html
-payloads/*.txt
+payloads/
