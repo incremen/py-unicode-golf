@@ -1,6 +1,7 @@
 """Flask web app for py-unicode-golf"""
 
 import os
+import sys
 import json
 import unicodedata
 from urllib.parse import unquote
@@ -15,24 +16,24 @@ MAX_STRING_LENGTH = 200
 DB_EXPRS = None
 DB_AVAILABLE = False
 
+# expressions.json  — flat JSON export, used in production (Vercel) and by default locally
+# expressions.db    — full SQLite database, used locally when passed --db flag
+USE_SQLITE = '--db' in sys.argv
+
 def load_db():
     global DB_EXPRS, DB_AVAILABLE
+    base = os.path.dirname(os.path.abspath(__file__))
     try:
-        base = os.path.dirname(os.path.abspath(__file__))
-        json_path = os.path.join(base, 'expressions.json')
-        db_path = os.path.join(base, 'expressions.db')
-
-        if os.path.exists(json_path):
-            with open(json_path) as f:
-                DB_EXPRS = json.load(f)
-            DB_AVAILABLE = True
-        elif os.path.exists(db_path):
+        if USE_SQLITE:
             from core.db import get_conn
             conn = get_conn()
             rows = conn.execute('SELECT n, expr FROM numbers').fetchall()
             conn.close()
             DB_EXPRS = {str(r[0]): r[1] for r in rows}
-            DB_AVAILABLE = True
+        else:
+            with open(os.path.join(base, 'expressions.json')) as f:
+                DB_EXPRS = json.load(f)
+        DB_AVAILABLE = True
     except Exception as e:
         print(f"Warning: could not load db: {e}")
 
