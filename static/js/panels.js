@@ -20,7 +20,6 @@ function showMain(btn, id) {
     result.classList.remove('visible');
 
     vizBtn().classList.remove('visible');
-    history.replaceState(null, '', window.location.pathname);
   }
 }
 

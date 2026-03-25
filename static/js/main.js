@@ -26,7 +26,6 @@ function setMode(isString) {
   lastData = null;
   result.classList.remove('visible');
   vizBtn().classList.remove('visible');
-  history.replaceState(null, '', window.location.pathname);
   if (stringMode) {
     charInput.removeAttribute('maxlength');
     charInput.classList.add('wide');
@@ -132,7 +131,6 @@ function showResult(data) {
   copiedMsg.textContent = '';
   result.classList.add('visible');
   vizBtn().classList.add('visible');
-  history.replaceState(null, '', `?c=${encodeURIComponent(data.char)}`);
 }
 
 function showStringResult(data) {
@@ -143,33 +141,7 @@ function showStringResult(data) {
   copiedMsg.textContent = '';
   result.classList.add('visible');
   vizBtn().classList.add('visible');
-  history.replaceState(null, '', `?s=${encodeURIComponent(data.text)}`);
 }
 
-// Auto-load from URL params
-(function loadFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-  const c = params.get('c');
-  const s = params.get('s');
-  if (s) {
-    setTimeout(() => {
-      setMode(true);
-      charInput.value = s;
-      charInput.size = Math.min(40, Math.max(10, s.length + 2));
-      fetch(`/api/string?s=${encodeURIComponent(s)}`)
-        .then(r => r.json())
-        .then(data => { if (!data.error) showStringResult(data); });
-    }, 0);
-  } else if (c) {
-    setTimeout(() => {
-      charInput.value = c;
-      charInput.classList.remove('wide');
-      charInput.size = 1;
-      fetch(`/api/char?c=${encodeURIComponent(c)}`)
-        .then(r => r.json())
-        .then(data => { if (!data.error) { lastData = data; showResult(data); } });
-    }, 0);
-  }
-})();
 
 try { charInput.focus(); } catch (e) { /* ignore */ }
