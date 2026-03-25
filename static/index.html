@@ -498,23 +498,33 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 
 <!-- ── exec() ── -->
 <div class="main-panel" id="panel-code">
+ <div>
   <p>
-    The strings technique uses <code>eval(bytes(next(zip(...))))</code> to reconstruct a string — but
-    the word <code>eval</code> is right there in the output. For scripts, the naive version writes
-    <code>exec(...)</code> literally too.
+    The strings technique uses <code>eval(bytes(next(zip(...))))</code> to reconstruct a string.
+    Similarly, we can convert an entire python script into a string, and then run <code>exec()</code> on it.
+    However, I don't like that the word <code>exec</code> is right there in the output. It makes it too obvious what's going on - <br>
+    I think it's funnier if it's not clear at all how we actually end up executing the code.
   </p>
   <p>
-    If we allow method calls (<code>.decode()</code>, <code>.get()</code>), we can extract
-    <code>exec</code> from <code>__builtins__</code> without ever writing either word in the output.
-    The generated expression looks like this:
+    The best way to do this uses method calls <code>:(</code> but it still looks cool I think:
+    To get <code>exec</code> without writing it, we can extract it from <code>__builtins__</code> (which is a dict of all built-in functions). Here is how the chain works:
   </p>
+  <ul>
+    <li><code>vars()</code> gives us a dict of the current environment.</li>
+    <li><code>.get("__builtins__")</code> pulls the builtins module out of that dict.</li>
+    <li>Calling <code>vars(...)</code> on that module gives us a dict of every single built-in function.</li>
+    <li><code>.get("exec")</code> pulls the actual exec function out of that second dict.</li>
+  </ul>
+  <p>Put it all together and pass a payload to it, and it looks like this:</p>
+  <p><code>vars(vars().get("__builtins__")).get("exec")(b"print('payload')")</code></p>
+  <p>Swap the strings and payload for our bytes trick, and we get the final output:</p>
   <p><code>vars(vars().get(bytes(...).decode())).get(bytes(...).decode())(bytes(...))</code></p>
   <p>
     The three <code>bytes(...)</code> blobs encode: the string <code>"__builtins__"</code>,
-    the string <code>"exec"</code>, and the actual payload script — all as pure
-    <code>reversed(range(...))</code> arithmetic. The interpreter reconstructs and calls
-    <code>exec</code> entirely from its own memory, with no reserved words in sight.
+    the string <code>"exec"</code>, and the actual payload script. The interpreter reconstructs and calls
+    <code>exec</code> entirely from its own memory, which I think is cool!
   </p>
+</div>
 
   <div class="divider"></div>
 
