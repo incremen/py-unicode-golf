@@ -58,7 +58,7 @@
   <button class="main-tab" onclick="showMain(this, 'panel-optimizations')">optimizations</button>
   <button class="main-tab" onclick="showMain(this, 'panel-db')">database</button>
   <button class="main-tab" onclick="showMain(this, 'panel-strings')">strings</button>
-  <button class="main-tab" onclick="showMain(this, 'panel-code')">code</button>
+  <button class="main-tab" onclick="showMain(this, 'panel-code')">exec()</button>
 </div>
 
 <!-- ── What? ── -->
@@ -495,7 +495,7 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 
 </div>
 
-<!-- ── Code ── -->
+<!-- ── exec() ── -->
 <div class="main-panel" id="panel-code">
   <p>
     The strings technique uses <code>eval(bytes(next(zip(...))))</code> to reconstruct a string literal.
