@@ -6,7 +6,6 @@ const resultChar = document.getElementById('resultChar');
 const resultMeta = document.getElementById('resultMeta');
 const resultExpr = document.getElementById('resultExpr');
 const copiedMsg = document.getElementById('copiedMsg');
-const shareBtn = document.getElementById('shareBtn');
 
 let lastExpr = '';
 let lastData = null;
@@ -26,7 +25,6 @@ function setMode(isString) {
   lastExpr = '';
   lastData = null;
   result.classList.remove('visible');
-  shareBtn.classList.remove('visible');
   vizBtn().classList.remove('visible');
   history.replaceState(null, '', window.location.pathname);
   if (stringMode) {
@@ -50,7 +48,6 @@ charInput.addEventListener('input', async () => {
   if (!val) {
     if (stringMode) { charInput.size = 20; } else { charInput.classList.add('wide'); charInput.size = 11; }
     result.classList.remove('visible');
-    shareBtn.classList.remove('visible');
     vizBtn().classList.remove('visible');
     return;
   }
@@ -131,10 +128,7 @@ function showResult(data) {
   lastExpr = src.expr;
   copiedMsg.textContent = '';
   result.classList.add('visible');
-  shareBtn.classList.add('visible');
   vizBtn().classList.add('visible');
-  shareBtn.classList.remove('copied');
-  shareBtn.innerHTML = `share <span class="share-char">${escapeHtml(data.char)}</span>`;
   history.replaceState(null, '', `?c=${encodeURIComponent(data.char)}`);
 }
 
@@ -145,21 +139,8 @@ function showStringResult(data) {
   lastExpr = data.expr;
   copiedMsg.textContent = '';
   result.classList.add('visible');
-  shareBtn.classList.add('visible');
   vizBtn().classList.add('visible');
-  shareBtn.classList.remove('copied');
-  const preview = data.text.length > 15 ? data.text.slice(0, 15) + '\u2026' : data.text;
-  shareBtn.innerHTML = `share <span class="share-char">${escapeHtml(preview)}</span>`;
   history.replaceState(null, '', `?s=${encodeURIComponent(data.text)}`);
-}
-
-let shareResetTimer = null;
-function shareChar() {
-  const url = window.location.href;
-  navigator.clipboard.writeText(url);
-  clearTimeout(shareResetTimer);
-  shareBtn.classList.add('copied');
-  shareBtn.textContent = 'copied!';
 }
 
 // Auto-load from URL params

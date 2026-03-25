@@ -18,7 +18,7 @@ function showMain(btn, id) {
     lastExpr = '';
     lastData = null;
     result.classList.remove('visible');
-    shareBtn.classList.remove('visible');
+
     vizBtn().classList.remove('visible');
     history.replaceState(null, '', window.location.pathname);
   }
