@@ -88,4 +88,7 @@ function copyCodeExpr() {
   navigator.clipboard.writeText(lastCodeExpr);
   codeResultCopied.textContent = 'copied';
   setTimeout(() => codeResultCopied.textContent = '', 1500);
+  codeResultExpr.classList.remove('copied-flash');
+  void codeResultExpr.offsetWidth;
+  codeResultExpr.classList.add('copied-flash');
 }

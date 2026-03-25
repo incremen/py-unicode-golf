@@ -177,6 +177,12 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
   border: none;
 }
 .result-expr:hover { box-shadow: 0 0 0 2px #306998; }
+@keyframes copied-flash {
+  0%   { box-shadow: 0 0 0 2px #FFD43B; }
+  60%  { box-shadow: 0 0 0 4px #FFD43B44; }
+  100% { box-shadow: none; }
+}
+.result-expr.copied-flash { animation: copied-flash 0.5s ease-out forwards; }
 .result-sidebar {
   position: absolute;
   top: 0;

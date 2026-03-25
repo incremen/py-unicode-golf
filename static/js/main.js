@@ -87,6 +87,9 @@ function copyExpr() {
   navigator.clipboard.writeText(lastExpr);
   copiedMsg.textContent = 'copied';
   setTimeout(() => copiedMsg.textContent = '', 1500);
+  resultExpr.classList.remove('copied-flash');
+  void resultExpr.offsetWidth;
+  resultExpr.classList.add('copied-flash');
 }
 
 function randomChar() {
