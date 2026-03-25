@@ -498,66 +498,78 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 
 <!-- ── exec() ── -->
 <div class="main-panel" id="panel-code">
- <div>
-  <p>
-    <b>TLDR:</b> you can run arbitrary python code. Write it at the bottom of this page and click "compile".
-  </p>
-  <p>
-    The strings technique uses <code>eval(bytes(next(zip(...))))</code> to reconstruct a string.
-    Similarly, we can convert an entire python script into a string, and then run <code>exec()</code> on it.
-    However, I don't like that the word <code>exec</code> is right there in the output. It makes it too obvious what's going on - <br>
-    I think it's funnier if it's not clear at all how we actually end up executing the code.
-  </p>
-  <p>
-    The best way to do this uses method calls <code>:(</code> but it still looks cool I think:
-    To get <code>exec</code> without writing it, we can extract it from <code>__builtins__</code> (which is a dict of all built-in functions). Here is how the chain works:
-  </p>
-  <ul>
-    <li><code>vars()</code> gives us a dict of the current environment.</li>
-    <li><code>.get("__builtins__")</code> pulls the builtins module out of that dict.</li>
-    <li>Calling <code>vars(...)</code> on that module gives us a dict of every single built-in function.</li>
-    <li><code>.get("exec")</code> pulls the actual exec function out of that second dict.</li>
-  </ul>
-  <p>Put it all together and pass a payload to it, and it looks like this:</p>
-  <p><code>vars(vars().get("__builtins__")).get("exec")(b"print('payload')")</code></p>
-  <p>Swap the strings and payload for our bytes trick, and we get the final output:</p>
-  <p><code>vars(vars().get(bytes(...).decode())).get(bytes(...).decode())(bytes(...))</code></p>
-  <p>
-    The three <code>bytes(...)</code> blobs encode: the string <code>"__builtins__"</code>,
-    the string <code>"exec"</code>, and the actual payload script. The interpreter reconstructs and calls
-    <code>exec</code> entirely from its own memory, which I think is cool!
-  </p>
-  <p>Below you can test this out, try writing some python code in this REPL: <br>
-    Note that you can import modules: the "calculator" example imports tkinter.
-  </p>
-</div>
+  
+  <blockquote class="tldr-box">
+    <p>
+      <b>TL;DR:</b> You can run arbitrary python code. Write it at the bottom of this page and click "compile".
+    </p>
+  </blockquote>
+
+  <div class="explanation-section">
+    <p>
+      The strings technique uses <code>eval(bytes(next(zip(...))))</code> to reconstruct a string.
+      Similarly, we can convert an entire python script into a string, and then run <code>exec()</code> on it.
+      However, I don't like that the word <br>
+      <code>exec</code> is right there in the output. It makes it too obvious what's going on - <br>
+      I think it's funnier if it's not clear at all how we actually end up executing the code.
+    </p>
+    <p>
+      The best way (I found) to do this uses method calls <code>:(</code> but it still looks cool I think: <br>
+      To get <code>exec</code> without writing it, we can extract it from <code>__builtins__</code> (which is a dict of all built-in functions). Here is how the chain works:
+    </p>
+    <ul>
+      <li><code>vars()</code> gives us a dict of the current environment.</li>
+      <li><code>.get("__builtins__")</code> pulls the builtins module out of that dict.</li>
+      <li>Calling <code>vars(...)</code> on that module gives us a dict of every single built-in function.</li>
+      <li><code>.get("exec")</code> pulls the actual exec function out of that second dict.</li>
+    </ul>
+    
+    <p>Put it all together and pass a payload to it, and it looks like this:</p>
+    <pre><code>vars(vars().get("__builtins__")).get("exec")(b"print('payload')")</code></pre>
+    
+    <p>Swap the strings and payload for our bytes trick, and we get the final output:</p>
+    <pre><code>vars(vars().get(bytes(...).decode())).get(bytes(...).decode())(bytes(...))</code></pre>
+    
+    <p>
+      The three <code>bytes(...)</code> blobs encode: the string <code>"__builtins__"</code>,
+      the string <code>"exec"</code>, and the actual payload script. The interpreter reconstructs and calls
+      <code>exec</code> entirely from its own memory, which I think is cool!
+    </p>
+  </div>
 
   <div class="divider"></div>
 
-  <p><strong>Examples</strong></p>
-  <div class="code-examples" id="codeExamples"></div>
+  <div class="interactive-section">
+    <p>Below you can test this out, try writing some python code in this REPL: <br>
+      <i>Note that you can import modules: the "calculator" example imports tkinter.</i>
+    </p>
 
-  <div class="code-editor-wrap">
-    <div class="code-editor-titlebar">
-      <span class="titlebar-dot dot-red"></span>
-      <span class="titlebar-dot dot-yellow"></span>
-      <span class="titlebar-dot dot-green"></span>
-      <span class="titlebar-filename">script.py</span>
+    <p><strong>Examples</strong></p>
+    <div class="code-examples" id="codeExamples"></div>
+
+    <div class="code-editor-wrap">
+      <div class="code-editor-titlebar">
+        <span class="titlebar-dot dot-red"></span>
+        <span class="titlebar-dot dot-yellow"></span>
+        <span class="titlebar-dot dot-green"></span>
+        <span class="titlebar-filename">script.py</span>
+      </div>
+      <textarea id="codeInput" class="code-editor" spellcheck="false" placeholder="# paste any Python script here"></textarea>
+      <div class="code-editor-footer">
+        <span id="codeByteCount" class="code-byte-count"></span>
+        <button class="btn code-compile-btn" onclick="compileCode()">compile →</button>
+      </div>
     </div>
-    <textarea id="codeInput" class="code-editor" spellcheck="false" placeholder="# paste any Python script here"></textarea>
-    <div class="code-editor-footer">
-      <span id="codeByteCount" class="code-byte-count"></span>
-      <button class="btn code-compile-btn" onclick="compileCode()">compile →</button>
+
+    <div id="codeResult" class="code-result">
+      <div class="code-result-inner">
+        <div class="code-result-meta" id="codeResultMeta"></div>
+        <div class="result-expr" id="codeResultExpr" onclick="copyCodeExpr()"></div>
+        <div class="copied" id="codeResultCopied"></div>
+      </div>
     </div>
   </div>
 
-  <div id="codeResult" class="code-result">
-    <div class="code-result-inner">
-      <div class="code-result-meta" id="codeResultMeta"></div>
-      <div class="result-expr" id="codeResultExpr" onclick="copyCodeExpr()"></div>
-      <div class="copied" id="codeResultCopied"></div>
-    </div>
-  </div>
 </div>
 
 <!-- Load order: utils → logo → prefetch → main → visualize → panels → code -->
