@@ -9,14 +9,15 @@ let vizPaused = false;
 let vizRunning = false;
 let vizCancelled = false;
 
-const vizBtn = () => document.getElementById('visualizeBtn');
+const vizBtn = () => document.getElementById('visualizeBtn').closest('.viz-wrap');
+const vizBtnEl = () => document.getElementById('visualizeBtn');
 const stepCounter = document.getElementById('stepCounter');
 
 function stopVisualization() {
   vizCancelled = true;
   vizPaused = false;
   vizRunning = false;
-  vizBtn().textContent = 'visualize';
+  vizBtnEl().textContent = 'visualize';
   stepCounter.textContent = '';
   stepCounter.classList.remove('active', 'bump');
   resultExpr.style.cursor = 'pointer';
@@ -249,7 +250,7 @@ async function visualize() {
 
   if (vizRunning) {
     vizPaused = !vizPaused;
-    vizBtn().textContent = vizPaused ? 'resume' : 'pause';
+    vizBtnEl().textContent = vizPaused ? 'resume' : 'pause';
     if (vizPaused) logoPause(); else logoResume();
     return;
   }
@@ -257,7 +258,7 @@ async function visualize() {
   vizRunning = true;
   vizPaused = false;
   vizCancelled = false;
-  vizBtn().textContent = 'pause';
+  vizBtnEl().textContent = 'pause';
 
   try {
     if (stringMode) {
