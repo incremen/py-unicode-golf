@@ -501,26 +501,26 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   
   <blockquote class="tldr-box">
     <p>
-      <b>TL;DR:</b> You can run arbitrary python code. Write it at the bottom of this page and click "compile".
+      <b>TL;DR:</b> you can run arbitrary python code. Write it at the bottom of this page and click "compile".
     </p>
   </blockquote>
+  <br> <br>
 
   <div class="explanation-section">
     <p>
       The strings technique uses <code>eval(bytes(next(zip(...))))</code> to reconstruct a string.
       Similarly, we can convert an entire python script into a string, and then run <code>exec()</code> on it.
-      However, I don't like that the word <br>
-      <code>exec</code> is right there in the output. It makes it too obvious what's going on - <br>
+      However, I don't like that the word <code>exec</code> is right there in the output. It makes it too obvious what's going on - <br>
       I think it's funnier if it's not clear at all how we actually end up executing the code.
     </p>
     <p>
-      The best way (I found) to do this uses method calls <code>:(</code> but it still looks cool I think: <br>
-      To get <code>exec</code> without writing it, we can extract it from <code>__builtins__</code> (which is a dict of all built-in functions). Here is how the chain works:
+      The best way to do this uses method calls <code>:(</code> but it still looks cool I think:
+      To get <code>exec</code> without writing it, we can extract it from the <code>builtins</code> module. Here is how the chain works:
     </p>
     <ul>
       <li><code>vars()</code> gives us a dict of the current environment.</li>
-      <li><code>.get("__builtins__")</code> pulls the builtins module out of that dict.</li>
-      <li>Calling <code>vars(...)</code> on that module gives us a dict of every single built-in function.</li>
+      <li><code>.get("__builtins__")</code> pulls the builtins <b>module</b> itself out of that dict.</li>
+      <li>Calling <code>vars(...)</code> on that module rips out its internal dictionary of every single built-in function.</li>
       <li><code>.get("exec")</code> pulls the actual exec function out of that second dict.</li>
     </ul>
     
@@ -541,7 +541,7 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 
   <div class="interactive-section">
     <p>Below you can test this out, try writing some python code in this REPL: <br>
-      <i>Note that you can import modules: the "calculator" example imports tkinter.</i>
+      <i>Note that you can import modules just fine. (The "calculator" example imports tkinter to make a simple calculator)</i>
     </p>
 
     <p><strong>Examples</strong></p>
