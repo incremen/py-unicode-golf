@@ -10,6 +10,18 @@ function showMain(btn, id) {
   const onCode = id === 'panel-code';
   document.querySelector('.input-row').classList.toggle('hidden', onCode);
   document.querySelector('.result-wrapper').classList.toggle('hidden', onCode);
+  if (onCode) {
+    if (vizRunning) stopVisualization();
+    charInput.value = '';
+    charInput.classList.add('wide');
+    charInput.size = stringMode ? 20 : 11;
+    lastExpr = '';
+    lastData = null;
+    result.classList.remove('visible');
+    shareBtn.classList.remove('visible');
+    vizBtn().classList.remove('visible');
+    history.replaceState(null, '', window.location.pathname);
+  }
 }
 
 function loadStrategies() {
