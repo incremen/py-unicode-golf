@@ -162,7 +162,7 @@
     At each step, build ceil(n/3), triple it, then subtract the remainder (0, 1, or 2).
     Stop when you reach a base anchor &mdash; a small number you can construct
     directly (like <code>len(str(not()))</code> = 4).
-    *note: The only base anchors you actually need is <code>1 = int(not()). Every natural number can be built from interweaving <code>1, f(x)=3x, g(x)=x-1</code>.
+    *note: The only base anchors you actually need is <code>1 = int(not())</code>. Every natural number can be built from interweaving <code>1, f(x)=3x, g(x)=x-1</code>.
   </p>
 
 <pre>function build(n):
