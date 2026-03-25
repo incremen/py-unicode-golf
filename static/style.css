@@ -227,6 +227,7 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
   align-items: center;
 }
 .viz-wrap.visible { display: flex; }
+.viz-wrap.hide-arrow::after { display: none; }
 .viz-wrap::after {
   content: '↑';
   position: absolute;

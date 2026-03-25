@@ -259,6 +259,7 @@ async function visualize() {
   vizPaused = false;
   vizCancelled = false;
   vizBtnEl().textContent = 'pause';
+  vizBtn().classList.add('hide-arrow');
 
   try {
     if (stringMode) {

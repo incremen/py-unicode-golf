@@ -131,6 +131,7 @@ function showResult(data) {
   copiedMsg.textContent = '';
   result.classList.add('visible');
   vizBtn().classList.add('visible');
+  vizBtn().classList.remove('hide-arrow');
 }
 
 function showStringResult(data) {
@@ -141,7 +142,7 @@ function showStringResult(data) {
   copiedMsg.textContent = '';
   result.classList.add('visible');
   vizBtn().classList.add('visible');
+  vizBtn().classList.remove('hide-arrow');
 }
-
 
 try { charInput.focus(); } catch (e) { /* ignore */ }

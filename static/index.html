@@ -499,7 +499,7 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 <!-- ── exec() ── -->
 <div class="main-panel" id="panel-code">
   <p>
-    The strings technique uses <code>eval(bytes(next(zip(...))))</code> to reconstruct a string literal.
+    The strings technique uses <code>eval(bytes(next(zip(...))))</code> to reconstru  ct a string literal.
     The same trick works for full Python  scripts: swap <code>eval</code> for <code>exec</code> and feed it
     the raw UTF-8 bytes of any script. The result is a single line of pure builtin-call arithmetic that
     executes arbitrary code when pasted into a Python REPL.
