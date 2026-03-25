@@ -1,9 +1,14 @@
 """
 Payload compiler for py-unicode-golf.
 
-Converts a raw Python script into an exec(bytes(next(zip(...)))) expression
-built entirely from zero-argument builtin function calls and base-3 arithmetic.
-Writes output to .txt files (expressions are too large for the terminal).
+Converts a raw Python script into a vars()-inception expression that extracts
+exec from __builtins__ dynamically — the words eval/exec never appear in output.
+
+Architecture:
+  vars(vars().get(<"__builtins__">.decode())).get(<"exec">.decode())(<payload>)
+
+Each string is encoded as bytes(next(zip(reversed(range(b+1)), ...)))
+using the base-3 arithmetic pipeline.
 """
 
 import sys
@@ -14,11 +19,28 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from core.anchors import build_n
 
 
+def _zip_ast(data: bytes) -> str:
+    """Build bytes(next(zip(reversed(range(b+1)), ...))) for the given bytes."""
+    parts = [f"reversed(range({build_n(b + 1)}))" for b in data]
+    return f"bytes(next(zip({','.join(parts)})))"
+
+
 def compile_payload(script: str) -> str:
-    """Encode script as UTF-8, then build the exec(bytes(next(zip(...)))) expression."""
-    raw_bytes = script.encode("utf-8")
-    rev_exprs = [f"reversed(range({build_n(b + 1)}))" for b in raw_bytes]
-    return f'exec(bytes(next(zip({",".join(rev_exprs)}))))'
+    """exec(bytes(...)) — the word exec appears literally in the output."""
+    payload_ast = _zip_ast(script.encode("utf-8"))
+    return f"exec({payload_ast})"
+
+
+def compile_payload_stealth(script: str) -> str:
+    """vars()-inception — extracts exec from __builtins__, no exec/eval literals in output."""
+    builtins_ast = _zip_ast(b"__builtins__")
+    exec_ast     = _zip_ast(b"exec")
+    payload_ast  = _zip_ast(script.encode("utf-8"))
+    return (
+        f"vars(vars().get({builtins_ast}.decode()))"
+        f".get({exec_ast}.decode())"
+        f"({payload_ast})"
+    )
 
 
 PAYLOAD_IMAGE = """\
@@ -69,7 +91,7 @@ PAYLOADS = [
 if __name__ == "__main__":
     for filename, script in PAYLOADS:
         print(f"Compiling {filename} ({len(script.encode('utf-8'))} bytes)...", end=" ", flush=True)
-        expr = compile_payload(script)
+        expr = compile_payload_stealth(script)
         out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
         with open(out_path, "w") as f:
             f.write(expr)
