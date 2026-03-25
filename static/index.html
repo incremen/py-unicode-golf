@@ -500,6 +500,9 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 <div class="main-panel" id="panel-code">
  <div>
   <p>
+    <b>TLDR:</b> you can run arbitrary python code. Write it at the bottom of this page and click "compile".
+  </p>
+  <p>
     The strings technique uses <code>eval(bytes(next(zip(...))))</code> to reconstruct a string.
     Similarly, we can convert an entire python script into a string, and then run <code>exec()</code> on it.
     However, I don't like that the word <code>exec</code> is right there in the output. It makes it too obvious what's going on - <br>
@@ -523,6 +526,9 @@ ascii(ascii(that))    = ...                      len = 23</pre>
     The three <code>bytes(...)</code> blobs encode: the string <code>"__builtins__"</code>,
     the string <code>"exec"</code>, and the actual payload script. The interpreter reconstructs and calls
     <code>exec</code> entirely from its own memory, which I think is cool!
+  </p>
+  <p>Below you can test this out, try writing some python code in this REPL: <br>
+    Note that you can import modules: the "calculator" example imports tkinter.
   </p>
 </div>
 
