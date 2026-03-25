@@ -6,6 +6,7 @@ import unicodedata
 from urllib.parse import unquote
 from flask import Flask, jsonify, send_from_directory, request
 from core.anchors import build_char, build_string, build_n, BASE_ANCHORS
+from core.compile import compile_payload_stealth
 from core.visualize import evaluate_steps, evaluate_string_steps
 
 app = Flask(__name__, static_folder='static')
@@ -134,11 +135,6 @@ def api_string():
 
 MAX_CODE_LENGTH = 5000
 
-def _zip_ast(data: bytes) -> str:
-    parts = [f'reversed(range({build_n(b + 1)}))' for b in data]
-    return f'bytes(next(zip({",".join(parts)})))'
-
-
 @app.route('/api/code')
 def api_code():
     code = request.args.get('code', '')
@@ -147,14 +143,7 @@ def api_code():
     if len(code) > MAX_CODE_LENGTH:
         return jsonify({'error': f'Max {MAX_CODE_LENGTH} characters'}), 400
     raw_bytes = code.encode('utf-8')
-    builtins_ast = _zip_ast(b'__builtins__')
-    exec_ast     = _zip_ast(b'exec')
-    payload_ast  = _zip_ast(raw_bytes)
-    expr = (
-        f'vars(vars().get({builtins_ast}.decode()))'
-        f'.get({exec_ast}.decode())'
-        f'({payload_ast})'
-    )
+    expr = compile_payload_stealth(code)
     return jsonify({'expr': expr, 'bytes': len(raw_bytes), 'len': len(expr)})
 
 
