@@ -25,6 +25,9 @@ PHASE_MAP = {
     'dijkstra (metric=depth)':               'dijkstra (depth)',
     'dijkstra (depth)':                      'dijkstra (depth)',
     'dijkstra (metric=length)':              'dijkstra (length)',
+    'new strategies (depth)':               'new strategies (depth)',
+    'new strategies (length)':              'new strategies (length)',
+    'new strategies discovered':            'new strategies (depth)',
 }
 
 HISTORY_ORDER = [
@@ -34,6 +37,8 @@ HISTORY_ORDER = [
     'deep search (offset \u2264 10)',
     'dijkstra (depth)',
     'dijkstra (length)',
+    'new strategies (depth)',
+    'new strategies (length)',
 ]
 
 
@@ -60,15 +65,15 @@ def export():
 
     # Optimization history — deduplicated by phase, last run wins
     history_rows = conn.execute(
-        'SELECT label, avg_depth, max_depth, avg_len FROM optimization_log ORDER BY id'
+        'SELECT label, avg_depth, max_depth, avg_len, max_len FROM optimization_log ORDER BY id'
     ).fetchall()
     conn.close()
 
     seen = {}
-    for label, avg_d, max_d, avg_l in history_rows:
+    for label, avg_d, max_d, avg_l, max_l in history_rows:
         phase = next((v for k, v in PHASE_MAP.items() if label.startswith(k)), label)
         seen[phase] = {'label': phase, 'avg_depth': round(avg_d, 4),
-                       'max_depth': max_d, 'avg_len': round(avg_l, 4)}
+                       'max_depth': max_d, 'avg_len': round(avg_l, 4), 'max_len': max_l}
     history = [seen[p] for p in HISTORY_ORDER if p in seen]
 
     # Formula stats (base-3 algorithm, no optimizations, sampled)
