@@ -25,6 +25,7 @@ PAREN_LIMIT = 200
 
 
 def run_dijkstra():
+    print("started dijkstra")
     priority_queue = []
     
     # target_number -> (primary_cost, secondary_cost)

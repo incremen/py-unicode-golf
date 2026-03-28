@@ -55,7 +55,7 @@ def init_db():
         ''')
 
 
-def merge_best(graph, metric):
+def merge_best(graph, metric, write=True):
     """Update DB entries only where graph found a strictly better representation.
 
     metric: 'depth' compares graph[n]['depth'] vs numbers.depth
@@ -88,15 +88,16 @@ def merge_best(graph, metric):
         elif new_primary > (old_primary or 0):
             regressed.append((n, old_primary, new_primary))
 
-    if inserts:
-        conn.executemany(
-            'INSERT OR IGNORE INTO numbers (n, expr, depth, len, strategy, parent) VALUES (?,?,?,?,?,?)', inserts)
-    if updates:
-        if metric == 'depth':
-            conn.executemany('UPDATE numbers SET expr=?, depth=?, len=?, strategy=?, parent=? WHERE n=?', updates)
-        else:
-            conn.executemany('UPDATE numbers SET expr_len=?, depth_len=?, len_len=? WHERE n=?', updates)
-    conn.commit()
+    if write:
+        if inserts:
+            conn.executemany(
+                'INSERT OR IGNORE INTO numbers (n, expr, depth, len, strategy, parent) VALUES (?,?,?,?,?,?)', inserts)
+        if updates:
+            if metric == 'depth':
+                conn.executemany('UPDATE numbers SET expr=?, depth=?, len=?, strategy=?, parent=? WHERE n=?', updates)
+            else:
+                conn.executemany('UPDATE numbers SET expr_len=?, depth_len=?, len_len=? WHERE n=?', updates)
+        conn.commit()
     conn.close()
     return improved, regressed
 
