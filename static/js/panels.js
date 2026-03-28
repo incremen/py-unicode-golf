@@ -31,15 +31,21 @@ function loadStrategies() {
 }
 
 function loadHistory() {
-  document.getElementById('historyBody').innerHTML = OPTIMIZATION_HISTORY.map(e => `
-    <tr>
-      <td>${e.label}</td>
+  // rows ending in (depth) start a new group; rows ending in (length) are the pair's second half
+  document.getElementById('historyBody').innerHTML = OPTIMIZATION_HISTORY.map(e => {
+    const cls = e.label.endsWith('(depth)')  ? ' class="group-start"'
+              : e.label.endsWith('(length)') ? ' class="pair-second"'
+              : '';
+    const label = e.label.replace(' (depth)', ' <span class="metric-tag">depth</span>')
+                         .replace(' (length)', ' <span class="metric-tag">length</span>');
+    return `<tr${cls}>
+      <td>${label}</td>
       <td class="num">${e.avg_depth.toFixed(2)}</td>
       <td class="num">${e.max_depth}</td>
       <td class="num">${e.avg_len.toFixed(1)}</td>
       <td class="num">${e.max_len ?? '—'}</td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
 }
 
 function loadDbStats() {

@@ -376,6 +376,8 @@ ascii(ascii(that))    = ...                      len = 23</pre>
     <em>Full algorithm</em> = base-3 with all 44 base anchors.
     <em>Optimizer / deep search</em> = the old iterative DP approach (now replaced).
     <em>Dijkstra</em> = current method — single forward-search pass, globally optimal for the strategy set.
+    Each Dijkstra run appears twice: <em>depth</em> optimizes for fewest function calls (parens),
+    <em>length</em> optimizes for shortest expression string — both are stored in the database.
   </p>
   <table>
     <thead>

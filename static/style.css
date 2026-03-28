@@ -321,6 +321,17 @@ table {
 th { text-align: left; color: #888; padding: 0.4rem 0.8rem; border-bottom: 1px solid #ddd; }
 td { padding: 0.4rem 0.8rem; border-bottom: 1px solid #e8e8e0; }
 td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
+tr.group-start td { border-top: 2px solid #bbb; }
+tr.pair-second td { border-top: 1px dashed #ddd; }
+.metric-tag {
+  font-size: 0.72rem;
+  background: #f0f0e8;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 0 4px;
+  color: #666;
+  vertical-align: middle;
+}
 
 .op-table { margin: 0.5rem 0; }
 .op-table td { padding: 0.3rem 0.8rem; font-size: 0.8rem; }
