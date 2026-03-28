@@ -18,36 +18,34 @@ function showMain(btn, id) {
     topWrap.style.transition = ''; topWrap.style.height = h + 'px';
   }));
 
-  if (onCode) {
-    // 1. Measure what will disappear (while still visible)
-    const comboH  = inputRow.offsetHeight + resultWrap.offsetHeight;
-    const contentH = topWrap.scrollHeight;
+  const leavingCode = topWrap.offsetHeight > 0 && !onCode;
 
-    // 2. Snap topCodeWrap to comboH, hide input area — tabs don't move
+  if (onCode) {
+    // Entering exec(): measure what disappears, compensate, then animate to code height
+    const comboH   = inputRow.offsetHeight + resultWrap.offsetHeight;
+    const contentH = topWrap.scrollHeight;
     snap(comboH);
     inputRow.classList.add('hidden');
     resultWrap.classList.add('hidden');
-
-    // 3. Animate to code editor height
     anim(contentH);
-  } else {
-    // 1. Temporarily unhide to measure what will reappear
+  } else if (leavingCode) {
+    // Leaving exec(): animate down to input height, then swap cleanly
     inputRow.classList.remove('hidden');
     resultWrap.classList.remove('hidden');
     const comboH = inputRow.offsetHeight + resultWrap.offsetHeight;
     inputRow.classList.add('hidden');
     resultWrap.classList.add('hidden');
-
-    // 2. Animate topCodeWrap down to comboH
     anim(comboH);
-
-    // 3. When done: swap topCodeWrap→0, show input — heights match so no jump
     topWrap.addEventListener('transitionend', () => {
       snap(0);
       inputRow.classList.remove('hidden');
       resultWrap.classList.remove('hidden');
       requestAnimationFrame(() => requestAnimationFrame(() => { topWrap.style.transition = ''; }));
     }, { once: true });
+  } else {
+    // Normal tab switch: no animation, just show/hide instantly
+    inputRow.classList.toggle('hidden', false);
+    resultWrap.classList.toggle('hidden', false);
   }
   if (onCode) {
     leaveStringsPanel();
