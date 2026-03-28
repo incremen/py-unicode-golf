@@ -27,7 +27,7 @@ function loadStrategies(sortKey = 'chain_entries') {
   document.querySelectorAll('.strategy-sort-btn').forEach(b =>
     b.classList.toggle('active', b.getAttribute('onclick').includes(`'${sortKey}'`))
   );
-  const sorted = [...STRATEGY_BREAKDOWN].sort((a, b) => b[sortKey] - a[sortKey]);
+  const sorted = [...STRATEGY_BREAKDOWN].filter(st => st.name !== 'base').sort((a, b) => b[sortKey] - a[sortKey]);
   document.getElementById('strategiesList').innerHTML = sorted.map(st =>
     `<span class="strategy-tag tip">${st.name} <span class="count">${st[sortKey].toLocaleString()}</span>` +
     `<span class="tiptext">` +
