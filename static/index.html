@@ -307,9 +307,14 @@ ascii(ascii(that))    = ...                      len = 23</pre>
     So instead of guessing and checking backwards, we just use <strong>Dijkstra's Algorithm</strong>. 
     You can think of putting a starting node <code>s</code> with with an edge to all the base anchors according to the base anchors' length of representation. <br>
     And we want to find the distance from <code>s</code> to every other node in <code>{0, 1, ..., 200000}</code>.<br>
-    We can actually weight the edges differently - by weight or depth, depending on what we want.
+    We can actually weight the edges differently - by length or depth, depending on what we want. <br>
     (Depth - the number of function calls in the representation, Length - the character count of the representation string).
-    So each directed edge from decrement (<code>max(range(n))</code>) has a depth of 2 and a length of 12.
+    So each directed edge <code>n -> n-1</code> from decrement (<code>max(range(n))</code>) has a depth of 2 and a length of 12.
+    Additionally, we can use a mix of both to break up ties between two representations with the same depth but different lengths or vice versa.<br>
+    <br>
+
+    Dijksta guarantees that we find the best paths for each node. <code>:)</code>
+
   </p>
 
   <div class="divider"></div>
