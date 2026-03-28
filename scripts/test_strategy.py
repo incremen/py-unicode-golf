@@ -6,8 +6,9 @@ Usage: paste your forward function and inverse function below, then run.
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from scripts.optimize import load_entries, find_improvements, MAX_N
-from core.db import init_db, STRATEGIES as DB_STRATEGIES
+from scripts.optimize_iterative import load_entries, find_improvements
+from core.db import init_db, MAX_N
+from core.strategies import STRATEGIES as DB_STRATEGIES
 
 MAX_OFFSET = 2
 

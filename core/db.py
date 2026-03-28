@@ -1,69 +1,13 @@
-"""SQLite database for storing optimal builtin-only expressions for integers.
-
-Each number stores HOW it was built (strategy + parent), so improvements
-to a parent automatically cascade to all its dependents.
-
-Tracks optimization history so you can compare before/after.
-"""
+"""SQLite database for storing optimal builtin-only expressions for integers."""
 
 import sqlite3
 import json
 import os
 from datetime import datetime
 
-from core.anchors import BASE_ANCHORS, build_n
-
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'expressions.db')
 MAX_N = 200_000
 
-
-# ── Strategy application ─────────────────────────────────────────────────
-
-STRATEGIES = {
-    'base':           lambda p: p,
-    'decrement':      lambda p: p,
-    'triple':         lambda p: f'len(str(list(bytes({p}))))',
-    'quad_plus_3':    lambda p: f'len(str(bytes({p})))',
-    'quint_plus_5':   lambda p: f'len(ascii(str(bytes({p}))))',
-    'triangular':     lambda p: f'sum(range({p}))',
-    'enum_list_8x':   lambda p: f'len(str(list(enumerate(bytes({p})))))',
-    'slice_offset':   lambda p: f'len(str(slice({p})))',
-    'complex_offset': lambda p: f'len(str(complex({p})))',
-}
-
-
-def apply_parametrized_strategy(strategy, parent_expr):
-    """Handle strategies with a numeric suffix like ascii_exp_3 or zip_chain_2."""
-    if strategy.startswith('ascii_exp_'):
-        k = int(strategy.split('_')[-1])
-        inner = f'str(bytes({parent_expr}))'
-        for _ in range(k):
-            inner = f'ascii({inner})'
-        return f'len({inner})'
-    if strategy.startswith('zip_chain_'):
-        k = int(strategy.split('_')[-1])
-        inner = f'bytes({parent_expr})'
-        for _ in range(k):
-            inner = f'zip({inner})'
-        return f'len(str(list({inner})))'
-    return None
-
-
-def apply_strategy(strategy, parent_expr, offset):
-    """Given a strategy name, parent expression, and offset, build the full expression."""
-    if strategy in STRATEGIES:
-        expr = STRATEGIES[strategy](parent_expr)
-    else:
-        expr = apply_parametrized_strategy(strategy, parent_expr)
-        if expr is None:
-            raise ValueError(f"Unknown strategy: {strategy}")
-
-    for _ in range(offset):
-        expr = f'max(range({expr}))'
-    return expr
-
-
-# ── Database operations ──────────────────────────────────────────────────
 
 def get_conn():
     return sqlite3.connect(DB_PATH)
@@ -100,6 +44,26 @@ def init_db():
         ''')
 
 
+def bulk_write(nodes_dict):
+    """Clear the numbers table and bulk-insert all entries from nodes_dict.
+
+    nodes_dict: {n: {expr, depth, len, strategy, parent, offset}}
+    """
+    rows = [
+        (n, d['expr'], d['depth'], d['len'], d['strategy'], d['parent'], d['offset'])
+        for n, d in sorted(nodes_dict.items())
+    ]
+    conn = get_conn()
+    conn.execute('DELETE FROM numbers')
+    conn.executemany(
+        'INSERT INTO numbers (n, expr, depth, len, strategy, parent, offset) VALUES (?,?,?,?,?,?,?)',
+        rows,
+    )
+    conn.commit()
+    conn.close()
+    return len(rows)
+
+
 def get(n):
     """Look up a number. Returns dict or None."""
     with get_conn() as conn:
@@ -125,11 +89,10 @@ def dependents(n):
 def snapshot(label, improvements=0):
     """Record current database stats to optimization_log."""
     with get_conn() as conn:
-        stats = conn.execute('''
-            SELECT COUNT(*), AVG(depth), MAX(depth), AVG(len), MAX(len)
-            FROM numbers
-        ''').fetchone()
-        total, avg_depth, max_depth, avg_len, max_len = stats
+        row = conn.execute(
+            'SELECT COUNT(*), AVG(depth), MAX(depth), AVG(len), MAX(len) FROM numbers'
+        ).fetchone()
+        total, avg_depth, max_depth, avg_len, max_len = row
 
         strategy_rows = conn.execute(
             'SELECT strategy, COUNT(*) FROM numbers GROUP BY strategy'
@@ -141,14 +104,9 @@ def snapshot(label, improvements=0):
             (timestamp, label, improvements, total_entries, avg_depth, max_depth, avg_len, max_len, strategy_counts)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
-            datetime.now().isoformat(),
-            label,
-            improvements,
-            total,
-            round(avg_depth, 2),
-            max_depth,
-            round(avg_len, 2),
-            max_len,
+            datetime.now().isoformat(), label, improvements,
+            total, round(avg_depth, 2), max_depth,
+            round(avg_len, 2), max_len,
             json.dumps(strategy_counts),
         ))
         conn.commit()
@@ -158,7 +116,8 @@ def get_log():
     """Return optimization history."""
     with get_conn() as conn:
         rows = conn.execute(
-            'SELECT id, timestamp, label, improvements, total_entries, avg_depth, max_depth, avg_len, max_len, strategy_counts '
+            'SELECT id, timestamp, label, improvements, total_entries, '
+            'avg_depth, max_depth, avg_len, max_len, strategy_counts '
             'FROM optimization_log ORDER BY id'
         ).fetchall()
     return [{
@@ -177,81 +136,19 @@ def stats():
             'SELECT COUNT(*), AVG(depth), MAX(depth), AVG(len), MAX(len) FROM numbers'
         ).fetchone()
 
-    print(f"Entries: {total}")
-    print(f"Depth:  avg={avg_depth:.1f}  max={max_depth}")
-    print(f"Length: avg={avg_len:.0f}  max={max_len}")
+    print(f'Entries: {total}')
+    print(f'Depth:  avg={avg_depth:.1f}  max={max_depth}')
+    print(f'Length: avg={avg_len:.0f}  max={max_len}')
 
     log = get_log()
     if not log:
         return
-    print(f"\nOptimization history ({len(log)} entries):")
+    print(f'\nOptimization history ({len(log)} entries):')
     for entry in log:
         print(f"  [{entry['id']}] {entry['label']}: "
-                f"avg_depth={entry['avg_depth']}, max_depth={entry['max_depth']}, "
-                f"avg_len={entry['avg_len']}, improvements={entry['improvements']}")
+              f"avg_depth={entry['avg_depth']}, max_depth={entry['max_depth']}, "
+              f"avg_len={entry['avg_len']}, improvements={entry['improvements']}")
 
-
-# ── Populate ─────────────────────────────────────────────────────────────
-
-INSERT_SQL = (
-    'INSERT OR IGNORE INTO numbers (n, expr, depth, len, strategy, parent, offset) '
-    'VALUES (?, ?, ?, ?, ?, ?, ?)'
-)
-
-
-def _insert(conn, n, expr, strategy, parent=None, offset=0):
-    conn.execute(INSERT_SQL, (n, expr, expr.count('('), len(expr), strategy, parent, offset))
-
-
-def populate_anchors(conn):
-    for n, expr in BASE_ANCHORS.items():
-        _insert(conn, n, expr, 'base')
-
-
-def populate_gaps(conn):
-    sorted_anchors = sorted(BASE_ANCHORS.keys())
-    for i, anchor in enumerate(sorted_anchors):
-        prev = sorted_anchors[i - 1] + 1 if i > 0 else 0
-        for n in range(prev, anchor):
-            if n in BASE_ANCHORS:
-                continue
-            gap = anchor - n
-            expr = apply_strategy('decrement', BASE_ANCHORS[anchor], gap)
-            _insert(conn, n, expr, 'decrement', parent=anchor, offset=gap)
-
-
-def populate_base3(conn, max_n):
-    max_anchor = max(BASE_ANCHORS.keys())
-    for n in range(max_anchor + 1, max_n + 1):
-        if n in BASE_ANCHORS:
-            continue
-        q = -(-n // 3)
-        r = 3 * q - n
-        _insert(conn, n, build_n(n), 'triple', parent=q, offset=r)
-
-
-def populate(max_n=MAX_N):
-    """Fill the database with the base-3 algorithm."""
-    init_db()
-
-    with get_conn() as conn:
-        populate_anchors(conn)
-        populate_gaps(conn)
-        populate_base3(conn, max_n)
-        conn.commit()
-
-    with get_conn() as conn:
-        count = conn.execute('SELECT COUNT(*) FROM numbers').fetchone()[0]
-    print(f"Populated {count} entries (0 to {max_n})")
-    snapshot('initial (base-3)', improvements=0)
-
-
-# ── CLI ──────────────────────────────────────────────────────────────────
 
 if __name__ == '__main__':
-    import sys
-    if len(sys.argv) > 1 and sys.argv[1] == 'stats':
-        stats()
-    else:
-        populate()
-        stats()
+    stats()

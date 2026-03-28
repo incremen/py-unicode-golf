@@ -1,187 +1,145 @@
-"""Run improvement passes over the expressions database.
+"""Dijkstra-based optimizer for py-unicode-golf.
 
-Tries every applicable strategy on every number and updates the db
-when a shorter expression is found.
+Builds the entire 0..MAX_N integer graph from BASE_ANCHORS using a
+forward-search shortest-path algorithm, then bulk-writes to SQLite.
+
+Usage:
+    python scripts/optimize.py [--metric depth|length]
 """
 
-import sys, os
+import sys, os, heapq
+from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-import math
-from core.db import get_conn, apply_strategy, snapshot, stats, init_db, MAX_N
+from core.anchors import BASE_ANCHORS
+from core.db import init_db, snapshot, stats, bulk_write, MAX_N
+from core.strategies import apply_strategy
 
 
-MAX_OFFSET = 2
+# ── Configuration ─────────────────────────────────────────────────────────
+
+METRIC      = 'depth'   # 'depth' or 'length'
+PAREN_LIMIT = 200
 
 
-# ── Inverse functions ────────────────────────────────────────────────
-# Given a target number, each returns (parent, offset) or None.
+# ── Forward strategy table ────────────────────────────────────────────────
 
-def inverse_linear(target, multiplier, constant):
-    """Invert target = multiplier * parent - offset + constant."""
-    for offset in range(MAX_OFFSET + 1):
-        numerator = target + offset - constant
-        if numerator > 0 and numerator % multiplier == 0:
-            parent = numerator // multiplier
-            if parent >= 1:
-                return parent, offset
-    return None
-
-
-def inverse_triangular(target):
-    """Invert target = parent * (parent - 1) / 2 - offset."""
-    for offset in range(MAX_OFFSET + 1):
-        val = target + offset
-        disc = 1 + 8 * val
-        sqrt_disc = math.isqrt(disc)
-        if sqrt_disc * sqrt_disc == disc and (1 + sqrt_disc) % 2 == 0:
-            parent = (1 + sqrt_disc) // 2
-            if parent >= 2 and parent * (parent - 1) // 2 == val:
-                return parent, offset
-    return None
-
-
-def inverse_enum_list(target):
-    """Invert target = 8 * parent - offset (only for parent <= 10)."""
-    for offset in range(MAX_OFFSET + 1):
-        val = target + offset
-        if val > 0 and val % 8 == 0:
-            parent = val // 8
-            if 1 <= parent <= 10:
-                return parent, offset
-    return None
-
-
-def inverse_digit_offset(target, base_len):
-    """Invert target = digits(parent) + base_len - offset, using smallest parent with d digits."""
-    for offset in range(MAX_OFFSET + 1):
-        d = target + offset - base_len
-        if d < 1 or d > 6:
-            continue
-        parent = 1 if d == 1 else 10 ** (d - 1)
-        if len(str(parent)) == d:
-            return parent, offset
-    return None
-
-
-def inverse_slice(target):
-    """Invert len(str(slice(n))) = digits(n) + 19."""
-    result = inverse_digit_offset(target, 19)
-    if result and len(str(slice(result[0]))) == target:
-        return result
-    return None
-
-
-def inverse_complex(target):
-    """Invert len(str(complex(n))) = digits(n) + 5."""
-    result = inverse_digit_offset(target, 5)
-    if result is None:
-        return None
-    try:
-        if len(str(complex(result[0]))) == target:
-            return result
-    except (OverflowError, ValueError):
-        pass
-    return None
-
-
-# ── Strategy table ───────────────────────────────────────────────────
-
-def build_strategies():
-    strategies = [
-        ('triple',         lambda t: inverse_linear(t, 3, 0)),
-        ('quad_plus_3',    lambda t: inverse_linear(t, 4, 3)),
-        ('quint_plus_5',   lambda t: inverse_linear(t, 5, 5)),
-        ('triangular',     inverse_triangular),
-        ('enum_list_8x',   inverse_enum_list),
-        ('slice_offset',   inverse_slice),
-        ('complex_offset', inverse_complex),
+def build_forward_strategies():
+    strategies_list = [
+        ('decrement',      lambda n: n - 1),
+        ('triple',         lambda n: 3 * n),
+        ('quad_plus_3',    lambda n: 4 * n + 3),
+        ('quint_plus_5',   lambda n: 5 * n + 5),
+        ('triangular',     lambda n: n * (n - 1) // 2),
+        ('enum_list_8x',   lambda n: 8 * n if 1 <= n <= 10 else -1),
+        ('slice_offset',   lambda n: len(str(n)) + 19 if n > 0 else -1),
+        ('complex_offset', lambda n: len(str(n)) + 5  if n > 0 else -1),
     ]
-
     for k in range(1, 6):
-        mult = 3 * (k + 1)
-        strategies.append((f'zip_chain_{k}', lambda t, m=mult: inverse_linear(t, m, 0)))
-
+        strategies_list.append((f'zip_chain_{k}', lambda n, m=3*(k+1): m * n))
     for k in range(1, 12):
-        mult = (1 << k) + 3
-        const = (1 << (k + 1)) + 1
-        strategies.append((f'ascii_exp_{k}', lambda t, m=mult, c=const: inverse_linear(t, m, c)))
+        strategies_list.append((f'ascii_exp_{k}', lambda n, m=(1<<k)+3, c=(1<<(k+1))+1: m * n + c))
+    return strategies_list
 
-    return strategies
-
-
-STRATEGIES = build_strategies()
+STRATEGIES = build_forward_strategies()
 
 
-# ── Optimization pass ────────────────────────────────────────────────
+# ── Path tracker ──────────────────────────────────────────────────────────
 
-def load_entries():
-    conn = get_conn()
-    rows = conn.execute('SELECT n, expr, depth, len FROM numbers').fetchall()
-    conn.close()
-    return {n: {'expr': expr, 'depth': depth, 'len': length} for n, expr, depth, length in rows}
+class PathTracker:
+    def __init__(self, metric='depth'):
+        self.metric = metric
+        self.priority_queue       = []
+        self.best_primary_cost    = {}
+        self.best_secondary_cost  = {}
+        self.graph_nodes          = {}
+
+    def add_path(self, target_number, expression_string, strategy_name='base', parent_number=None, decrement_count=0):
+        depth  = expression_string.count('(')
+        length = len(expression_string)
+        p, s   = (depth, length) if self.metric == 'depth' else (length, depth)
+
+        cur_p = self.best_primary_cost.get(target_number, float('inf'))
+        cur_s = self.best_secondary_cost.get(target_number, float('inf'))
+
+        if p < cur_p or (p == cur_p and s < cur_s):
+            self.best_primary_cost[target_number]   = p
+            self.best_secondary_cost[target_number] = s
+            self.graph_nodes[target_number] = {
+                'expr': expression_string, 'depth': depth, 'len': length,
+                'strategy': strategy_name, 'parent': parent_number, 'offset': decrement_count,
+            }
+            heapq.heappush(self.priority_queue, (p, s, target_number))
+
+    def pop_best_unexplored_node(self):
+        while self.priority_queue:
+            p, s, n = heapq.heappop(self.priority_queue)
+            if (p <= self.best_primary_cost.get(n, float('inf')) and
+                    s <= self.best_secondary_cost.get(n, float('inf'))):
+                node = self.graph_nodes[n]
+                return n, node['expr'], node['depth']
+        return None, None, None
 
 
-def find_improvements(entries, max_n, strategies=None):
-    if strategies is None:
-        strategies = STRATEGIES
-    improvements = []
+# ── Dijkstra ──────────────────────────────────────────────────────────────
 
-    for target in range(max_n + 1):
-        if target not in entries:
-            continue
-        current = entries[target]
+def run_dijkstra():
+    tracker = PathTracker(metric=METRIC)
 
-        for strategy_name, inverse_fn in strategies:
-            result = inverse_fn(target)
-            if result is None:
+    for anchor_value, anchor_expression in BASE_ANCHORS.items():
+        tracker.add_path(anchor_value, anchor_expression)
+
+    while True:
+        source_number, source_expression, source_depth = tracker.pop_best_unexplored_node()
+        if source_number is None:
+            break
+
+        for strategy_name, forward_fn in STRATEGIES:
+            target_number = forward_fn(source_number)
+
+            if not (0 <= target_number <= MAX_N):
                 continue
 
-            parent_n, offset = result
-            if parent_n not in entries:
+            # Lower-bound depth pruning: every strategy adds ≥ 2 parens
+            if source_depth + 2 >= tracker.best_primary_cost.get(target_number, float('inf')):
                 continue
 
             try:
-                candidate = apply_strategy(strategy_name, entries[parent_n]['expr'], offset)
+                target_expression = apply_strategy(strategy_name, source_expression, offset=0)
+                if target_expression.count('(') >= PAREN_LIMIT:
+                    continue
+                tracker.add_path(
+                    target_number=target_number,
+                    expression_string=target_expression,
+                    strategy_name=strategy_name,
+                    parent_number=source_number,
+                    decrement_count=1 if strategy_name == 'decrement' else 0,
+                )
             except ValueError:
-                continue
+                pass
 
-            depth = candidate.count('(')
-            if depth >= 200 or depth >= current['depth']:
-                continue
-
-            length = len(candidate)
-            entries[target] = {'expr': candidate, 'depth': depth, 'len': length}
-            current = entries[target]
-            improvements.append((candidate, depth, length, strategy_name, parent_n, offset, target))
-
-    return improvements
+    return tracker.graph_nodes
 
 
-def write_improvements(improvements):
-    if not improvements:
-        return
-    conn = get_conn()
-    conn.executemany(
-        'UPDATE numbers SET expr=?, depth=?, len=?, strategy=?, parent=?, offset=? WHERE n=?',
-        improvements,
-    )
-    conn.commit()
-    conn.close()
-
-
-def run_pass(max_n=MAX_N):
-    entries = load_entries()
-    improvements = find_improvements(entries, max_n)
-    write_improvements(improvements)
-    return len(improvements)
-
+# ── Main ──────────────────────────────────────────────────────────────────
 
 if __name__ == '__main__':
+    if '--metric' in sys.argv:
+        METRIC = sys.argv[sys.argv.index('--metric') + 1]
+    assert METRIC in ('depth', 'length'), f'Unknown metric: {METRIC}'
+
     init_db()
-    print("Running optimization pass...")
-    n = run_pass()
-    print(f"Improved {n} entries.")
-    snapshot(f'optimization pass (+{n})', improvements=n)
-    print()
+    print(f'Running Dijkstra graph search (metric={METRIC})...')
+    t0 = datetime.now()
+
+    final_graph = run_dijkstra()
+
+    elapsed = (datetime.now() - t0).total_seconds()
+    print(f'Search completed in {elapsed:.1f}s. Found paths for {len(final_graph):,} numbers.')
+
+    print('Writing graph to database...')
+    written = bulk_write(final_graph)
+    print(f'Inserted {written:,} rows.')
+
+    snapshot(f'dijkstra ({METRIC})', improvements=written)
     stats()
