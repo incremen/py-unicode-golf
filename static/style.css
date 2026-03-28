@@ -450,6 +450,14 @@ tr.pair-second td { border-top: 1px dashed #ddd; }
   color: #8a94a8;
 }
 .strategy-tag .count { color: #FFD43B; font-weight: bold; }
+.strategy-sort-bar { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.7rem; }
+.strategy-sort-btn {
+  font-family: inherit; font-size: 0.75rem; cursor: pointer;
+  padding: 0.2rem 0.6rem; border-radius: 4px;
+  background: none; border: 1px solid #ccc; color: #888;
+}
+.strategy-sort-btn:hover { border-color: #306998; color: #306998; }
+.strategy-sort-btn.active { border-color: #306998; color: #306998; font-weight: 600; }
 
 .divider { border-top: 1px solid #e0e0d8; margin: 1.2rem 0; }
 

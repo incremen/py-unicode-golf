@@ -362,9 +362,11 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   </div>
 
   <p><strong>Strategy breakdown</strong></p>
-  <p class="note">
-    How many numbers use each strategy as their shortest representation, in the final database.
-  </p>
+  <div class="strategy-sort-bar">
+    <span class="note">sort by:</span>
+    <button class="strategy-sort-btn active" onclick="loadStrategies('chain_entries')">in chains</button>
+    <button class="strategy-sort-btn" onclick="loadStrategies('total_uses')">total uses</button>
+  </div>
   <div class="strategies" id="strategiesList"></div>
 
   <div class="divider"></div>

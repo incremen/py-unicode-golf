@@ -46,12 +46,34 @@ def export():
     init_db()
     conn = get_conn()
 
-    # Strategy breakdown
+    # Strategy breakdown — final count + chain stats
     strategy_rows = conn.execute('''
         SELECT strategy, COUNT(*), ROUND(AVG(depth), 1)
         FROM numbers GROUP BY strategy ORDER BY COUNT(*) DESC
     ''').fetchall()
-    strategies = [{'name': r[0], 'count': r[1], 'avg_depth': r[2]} for r in strategy_rows]
+
+    # Walk every node's parent chain to count chain_entries and total_uses per strategy
+    from collections import Counter
+    all_nodes = {r[0]: (r[1], r[2]) for r in conn.execute('SELECT n, strategy, parent FROM numbers').fetchall()}
+    chain_entries = Counter()
+    total_uses    = Counter()
+    for n, (strat, parent) in all_nodes.items():
+        seen = set()
+        cur = n
+        while cur is not None:
+            s, p = all_nodes.get(cur, (None, None))
+            if s is None:
+                break
+            total_uses[s] += 1
+            seen.add(s)
+            cur = p
+        for s in seen:
+            chain_entries[s] += 1
+
+    strategies = [{'name': r[0], 'count': r[1], 'avg_depth': r[2],
+                   'chain_entries': chain_entries[r[0]],
+                   'total_uses': total_uses[r[0]]}
+                  for r in strategy_rows]
 
     # Database stats
     total, avg_depth, max_depth, avg_len, max_len = conn.execute('''

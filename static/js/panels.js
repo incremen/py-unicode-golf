@@ -23,10 +23,19 @@ function showMain(btn, id) {
   }
 }
 
-function loadStrategies() {
-  document.getElementById('strategiesList').innerHTML = STRATEGY_BREAKDOWN.map(st =>
-    `<span class="strategy-tag tip">${st.name} <span class="count">${st.count.toLocaleString()}</span>` +
-    `<span class="tiptext">${st.count.toLocaleString()} numbers use ${st.name} (avg depth ${st.avg_depth})</span></span>`
+function loadStrategies(sortKey = 'chain_entries') {
+  document.querySelectorAll('.strategy-sort-btn').forEach(b =>
+    b.classList.toggle('active', b.getAttribute('onclick').includes(`'${sortKey}'`))
+  );
+  const sorted = [...STRATEGY_BREAKDOWN].sort((a, b) => b[sortKey] - a[sortKey]);
+  document.getElementById('strategiesList').innerHTML = sorted.map(st =>
+    `<span class="strategy-tag tip">${st.name} <span class="count">${st[sortKey].toLocaleString()}</span>` +
+    `<span class="tiptext">` +
+      `<b>final:</b> ${st.count.toLocaleString()} &nbsp;` +
+      `<b>in chains:</b> ${st.chain_entries.toLocaleString()} &nbsp;` +
+      `<b>total uses:</b> ${st.total_uses.toLocaleString()}<br>` +
+      `avg depth ${st.avg_depth}` +
+    `</span></span>`
   ).join('');
 }
 
