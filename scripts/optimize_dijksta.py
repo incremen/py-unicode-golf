@@ -17,15 +17,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from core.anchors import BASE_ANCHORS
 from core.db import init_db, snapshot, stats, bulk_write, MAX_N
-from core.strategies import apply_strategy, FORWARD_STRATEGIES
-
+from core.strategies import apply_strategy, STRATEGIES
 
 METRIC      = 'depth'   # 'depth' or 'length'
 PAREN_LIMIT = 200
-
-
-
-STRATEGIES = FORWARD_STRATEGIES
 
 
 
@@ -65,7 +60,7 @@ def run_dijkstra():
         source_expression = source_node['expr']
         source_depth = source_node['depth']
 
-        for strategy_name, forward_function in STRATEGIES:
+        for strategy_name, (forward_function, _) in STRATEGIES.items():
             target_number = forward_function(source_number)
 
             if not (0 <= target_number <= MAX_N):
