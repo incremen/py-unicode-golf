@@ -66,6 +66,15 @@ function showMain(btn, id) {
   }
 }
 
+function expandTopWrap() {
+  const topWrap = document.getElementById('topCodeWrap');
+  if (!topWrap) return;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    topWrap.style.transition = '';
+    topWrap.style.height = topWrap.scrollHeight + 'px';
+  }));
+}
+
 function loadStrategies(sortKey = 'chain_entries') {
   document.querySelectorAll('.strategy-sort-btn').forEach(b =>
     b.classList.toggle('active', b.getAttribute('onclick').includes(`'${sortKey}'`))

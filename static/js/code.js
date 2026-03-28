@@ -74,9 +74,11 @@ async function compileCode() {
       codeResultCopied.textContent = '';
     }
     codeResult.classList.add('visible');
+    expandTopWrap();
   } catch (e) {
     codeResultMeta.textContent = `error: ${e.message}`;
     codeResult.classList.add('visible');
+    expandTopWrap();
   } finally {
     compileBtn.textContent = 'compile →';
     compileBtn.disabled = false;
