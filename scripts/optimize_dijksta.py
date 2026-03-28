@@ -79,7 +79,7 @@ def run_dijkstra():
 
             try:
                 # Evaluate the edge
-                target_expression = apply_strategy(strategy_name, source_expression, offset=0)
+                target_expression = apply_strategy(strategy_name, source_expression)
                 target_depth = target_expression.count('(')
                 
                 if target_depth >= PAREN_LIMIT:
