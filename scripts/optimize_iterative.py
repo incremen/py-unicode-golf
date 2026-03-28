@@ -145,7 +145,7 @@ def find_improvements(entries, max_n, strategies=None):
             length = len(candidate)
             entries[target] = {'expr': candidate, 'depth': depth, 'len': length}
             current = entries[target]
-            improvements.append((candidate, depth, length, strategy_name, parent_n, offset, target))
+            improvements.append((candidate, depth, length, strategy_name, parent_n, target))
 
     return improvements
 
@@ -155,7 +155,7 @@ def write_improvements(improvements):
         return
     conn = get_conn()
     conn.executemany(
-        'UPDATE numbers SET expr=?, depth=?, len=?, strategy=?, parent=?, offset=? WHERE n=?',
+        'UPDATE numbers SET expr=?, depth=?, len=?, strategy=?, parent=? WHERE n=?',
         improvements,
     )
     conn.commit()

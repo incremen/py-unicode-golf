@@ -21,6 +21,7 @@ def get_conn():
 def init_db():
     """Create tables if they don't exist."""
     with get_conn() as conn:
+        conn.execute('DROP TABLE IF EXISTS numbers')
         conn.execute('''
             CREATE TABLE IF NOT EXISTS numbers (
                 n INTEGER PRIMARY KEY,
@@ -28,8 +29,7 @@ def init_db():
                 depth INTEGER NOT NULL,
                 len INTEGER NOT NULL,
                 strategy TEXT NOT NULL,
-                parent INTEGER,
-                offset INTEGER DEFAULT 0
+                parent INTEGER
             )
         ''')
         conn.execute('CREATE INDEX IF NOT EXISTS idx_parent ON numbers(parent)')
@@ -52,16 +52,16 @@ def init_db():
 def bulk_write(nodes_dict):
     """Clear the numbers table and bulk-insert all entries from nodes_dict.
 
-    nodes_dict: {n: {expr, depth, len, strategy, parent, offset}}
+    nodes_dict: {n: {expr, depth, len, strategy, parent}}
     """
     rows = [
-        (n, d['expr'], d['depth'], d['len'], d['strategy'], d['parent'], d['offset'])
+        (n, d['expr'], d['depth'], d['len'], d['strategy'], d['parent'])
         for n, d in sorted(nodes_dict.items())
     ]
     conn = get_conn()
     conn.execute('DELETE FROM numbers')
     conn.executemany(
-        'INSERT INTO numbers (n, expr, depth, len, strategy, parent, offset) VALUES (?,?,?,?,?,?,?)',
+        'INSERT INTO numbers (n, expr, depth, len, strategy, parent) VALUES (?,?,?,?,?,?)',
         rows,
     )
     conn.commit()
@@ -73,14 +73,14 @@ def get(n):
     """Look up a number. Returns dict or None."""
     with get_conn() as conn:
         row = conn.execute(
-            'SELECT n, expr, depth, len, strategy, parent, offset FROM numbers WHERE n = ?',
+            'SELECT n, expr, depth, len, strategy, parent FROM numbers WHERE n = ?',
             (n,)
         ).fetchone()
     if row is None:
         return None
     return {
         'n': row[0], 'expr': row[1], 'depth': row[2], 'len': row[3],
-        'strategy': row[4], 'parent': row[5], 'offset': row[6],
+        'strategy': row[4], 'parent': row[5],
     }
 
 
@@ -155,10 +155,10 @@ def stats():
               f"avg_len={entry['avg_len']}, improvements={entry['improvements']}")
 
 
-def _insert(conn, n, expr, strategy, parent=None, offset=0):
+def _insert(conn, n, expr, strategy, parent=None):
     conn.execute(
-        'INSERT OR IGNORE INTO numbers (n, expr, depth, len, strategy, parent, offset) VALUES (?,?,?,?,?,?,?)',
-        (n, expr, expr.count('('), len(expr), strategy, parent, offset),
+        'INSERT OR IGNORE INTO numbers (n, expr, depth, len, strategy, parent) VALUES (?,?,?,?,?,?)',
+        (n, expr, expr.count('('), len(expr), strategy, parent),
     )
 
 
@@ -226,14 +226,14 @@ def populate(max_n=MAX_N):
                     continue
                 gap = anchor - n
                 expr = apply_strategy('decrement', BASE_ANCHORS[anchor], gap - 1)
-                _insert(conn, n, expr, 'decrement', parent=anchor, offset=gap)
+                _insert(conn, n, expr, 'decrement', parent=anchor)
 
         # Base-3 for everything above the last anchor
         max_anchor = max(BASE_ANCHORS.keys())
         for n in range(max_anchor + 1, max_n + 1):
             if n in BASE_ANCHORS:
                 continue
-            _insert(conn, n, build_n(n), 'triple', parent=None, offset=0)
+            _insert(conn, n, build_n(n), 'triple', parent=None)
 
         conn.commit()
 

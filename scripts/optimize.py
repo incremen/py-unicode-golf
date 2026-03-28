@@ -74,7 +74,7 @@ def run_dijkstra():
         weights[anchor_value] = (primary_cost, secondary_cost)
         best_incoming_edges[anchor_value] = {
             'expr': anchor_expression, 'depth': depth_cost, 'len': length_cost,
-            'strategy': 'base', 'parent': None, 'offset': 0
+            'strategy': 'base', 'parent': None,
         }
         heapq.heappush(priority_queue, (primary_cost, secondary_cost, anchor_value))
 
@@ -122,7 +122,6 @@ def run_dijkstra():
                     best_incoming_edges[target_number] = {
                         'expr': target_expression, 'depth': target_depth, 'len': target_length,
                         'strategy': strategy_name, 'parent': source_number,
-                        'offset': 1 if strategy_name == 'decrement' else 0,
                     }
                     heapq.heappush(priority_queue, (candidate_primary_cost, candidate_secondary_cost, target_number))
 
