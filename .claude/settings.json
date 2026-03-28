@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(python payload_compiler.py)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(python -c \":*)",
+      "Bash(python scripts/optimize_dijkstra.py)"
     ]
   }
 }
