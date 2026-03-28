@@ -364,8 +364,8 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   <p><strong>Strategy breakdown</strong></p>
   <div class="strategy-sort-bar">
     <span class="note">sort by:</span>
-    <button class="strategy-sort-btn active" onclick="loadStrategies('chain_entries')">nums reached</button>
-    <button class="strategy-sort-btn" onclick="loadStrategies('total_uses')">times used</button>
+    <span class="tip"><button class="strategy-sort-btn active" onclick="loadStrategies('chain_entries')">nums reached</button><span class="tiptext">how many numbers have this strategy anywhere in their expression</span></span>
+    <span class="tip"><button class="strategy-sort-btn" onclick="loadStrategies('total_uses')">times used</button><span class="tiptext">total times this strategy appears across all the representations</span></span>
   </div>
   <div class="strategies" id="strategiesList"></div>
 
