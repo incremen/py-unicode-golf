@@ -11,6 +11,7 @@ function showMain(btn, id) {
   const onStrings = id === 'panel-strings';
   document.querySelector('.input-row').classList.toggle('hidden', onCode);
   document.querySelector('.result-wrapper').classList.toggle('hidden', onCode);
+  document.getElementById('topCodeWrap').classList.toggle('hidden', !onCode);
   if (onCode) {
     leaveStringsPanel();
     if (vizRunning) stopVisualization();

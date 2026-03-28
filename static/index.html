@@ -46,6 +46,31 @@
   </div>
 </div>
 
+<!-- ── Top code editor (shown when exec() tab is active) ── -->
+<div id="topCodeWrap" class="top-code-wrap hidden">
+  <div class="code-examples" id="codeExamples"></div>
+  <div class="code-editor-wrap">
+    <div class="code-editor-titlebar">
+      <span class="titlebar-dot dot-red"></span>
+      <span class="titlebar-dot dot-yellow"></span>
+      <span class="titlebar-dot dot-green"></span>
+      <span class="titlebar-filename">script.py</span>
+    </div>
+    <textarea id="codeInput" class="code-editor code-editor-compact" spellcheck="false" placeholder="# paste any Python script here"></textarea>
+    <div class="code-editor-footer">
+      <span id="codeByteCount" class="code-byte-count"></span>
+      <button class="btn code-compile-btn" onclick="compileCode()">compile →</button>
+    </div>
+  </div>
+  <div id="codeResult" class="code-result">
+    <div class="code-result-inner">
+      <div class="code-result-meta" id="codeResultMeta"></div>
+      <div class="result-expr" id="codeResultExpr" onclick="copyCodeExpr()"></div>
+      <div class="copied" id="codeResultCopied"></div>
+    </div>
+  </div>
+</div>
+
 <div class="main-tabs">
   <button class="main-tab" onclick="showMain(this, 'panel-what')">what?</button>
   <button class="main-tab" onclick="showMain(this, 'panel-why')">why?</button>
@@ -515,11 +540,11 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   
   <blockquote class="tldr-box">
     <p>
-      <b>TL;DR:</b> you can run arbitrary python code. Write it at the bottom of this page and click "compile". <br>
-      You can run it the same way you run the rest: put it in a python file and run it, or paste it into the python console.
+      <b>TL;DR:</b> you can run arbitrary python code. Paste it into the editor above and click "compile".
+      Copy the output into any Python REPL or file and run it.
     </p>
   </blockquote>
-  <br> <br>
+  <br>
 
   <div class="explanation-section">
     <p>
@@ -552,38 +577,6 @@ ascii(ascii(that))    = ...                      len = 23</pre>
     </p>
   </div>
 
-  <div class="divider"></div>
-
-  <div class="interactive-section">
-    <p>Below you can test this out, try writing some python code in this REPL: <br>
-      <i>Note that you can import modules just fine. (The "calculator" example imports tkinter to make a simple calculator)</i>
-    </p>
-
-    <p><strong>Examples</strong></p>
-    <div class="code-examples" id="codeExamples"></div>
-
-    <div class="code-editor-wrap">
-      <div class="code-editor-titlebar">
-        <span class="titlebar-dot dot-red"></span>
-        <span class="titlebar-dot dot-yellow"></span>
-        <span class="titlebar-dot dot-green"></span>
-        <span class="titlebar-filename">script.py</span>
-      </div>
-      <textarea id="codeInput" class="code-editor" spellcheck="false" placeholder="# paste any Python script here"></textarea>
-      <div class="code-editor-footer">
-        <span id="codeByteCount" class="code-byte-count"></span>
-        <button class="btn code-compile-btn" onclick="compileCode()">compile →</button>
-      </div>
-    </div>
-
-    <div id="codeResult" class="code-result">
-      <div class="code-result-inner">
-        <div class="code-result-meta" id="codeResultMeta"></div>
-        <div class="result-expr" id="codeResultExpr" onclick="copyCodeExpr()"></div>
-        <div class="copied" id="codeResultCopied"></div>
-      </div>
-    </div>
-  </div>
 
 </div>
 
