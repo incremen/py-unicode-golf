@@ -106,24 +106,31 @@ if __name__ == '__main__':
         METRIC = sys.argv[sys.argv.index('--metric') + 1]
     assert METRIC in ('depth', 'length'), f'Unknown metric: {METRIC}'
 
-    from core.db import get_conn
+    from core.db import get_conn, generate_json
     init_db()
 
     conn = get_conn()
     baseline = {r[0]: r[1] for r in conn.execute('SELECT n, depth FROM numbers').fetchall()}
     conn.close()
 
-    print(f'Running Dijkstra graph search (metric={METRIC})...')
-    start_time = datetime.now()
-    final_graph = run_dijkstra()
-    elapsed_time = (datetime.now() - start_time).total_seconds()
-    print(f'Search completed in {elapsed_time:.1f}s. Found paths for {len(final_graph):,} numbers.')
+    print('Running Dijkstra (metric=depth)...')
+    t0 = datetime.now()
+    METRIC = 'depth'
+    depth_graph = run_dijkstra()
+    print(f'  done in {(datetime.now()-t0).total_seconds():.1f}s')
 
-    print('Writing graph to database...')
-    bulk_write(final_graph)
+    print('Running Dijkstra (metric=length)...')
+    t0 = datetime.now()
+    METRIC = 'length'
+    length_graph = run_dijkstra()
+    print(f'  done in {(datetime.now()-t0).total_seconds():.1f}s')
 
-    improved  = [(n, baseline[n], final_graph[n]['depth']) for n in final_graph if n in baseline and final_graph[n]['depth'] < baseline[n]]
-    regressed = [(n, baseline[n], final_graph[n]['depth']) for n in final_graph if n in baseline and final_graph[n]['depth'] > baseline[n]]
+    print('Writing to database...')
+    bulk_write(depth_graph, length_graph)
+    generate_json()
+
+    improved  = [(n, baseline[n], depth_graph[n]['depth']) for n in depth_graph if n in baseline and depth_graph[n]['depth'] < baseline[n]]
+    regressed = [(n, baseline[n], depth_graph[n]['depth']) for n in depth_graph if n in baseline and depth_graph[n]['depth'] > baseline[n]]
 
     print(f'\nImprovements: {len(improved):,}  Regressions: {len(regressed):,}')
 
@@ -139,7 +146,7 @@ if __name__ == '__main__':
         for n, old, new in regressed[:10]:
             print(f'  n={n:>7}  depth {old} → {new}  (+{new - old})')
 
-    snapshot(f'dijkstra (metric={METRIC})', improvements=len(improved))
+    snapshot('dijkstra (depth+length)', improvements=len(improved))
 
     with get_conn() as conn:
         rows = conn.execute(

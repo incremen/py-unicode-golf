@@ -32,7 +32,9 @@ def load_db():
             DB_EXPRS = {str(r[0]): r[1] for r in rows}
         else:
             with open(os.path.join(base, 'expressions.json')) as f:
-                DB_EXPRS = json.load(f)
+                raw = json.load(f)
+            # support both old format {n: expr} and new format {n: {depth: expr, length: expr}}
+            DB_EXPRS = {k: (v['depth'] if isinstance(v, dict) else v) for k, v in raw.items()}
         DB_AVAILABLE = True
     except Exception as e:
         print(f"Warning: could not load db: {e}")

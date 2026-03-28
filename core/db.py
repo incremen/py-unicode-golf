@@ -29,7 +29,10 @@ def init_db():
                 depth INTEGER NOT NULL,
                 len INTEGER NOT NULL,
                 strategy TEXT NOT NULL,
-                parent INTEGER
+                parent INTEGER,
+                expr_len TEXT,
+                depth_len INTEGER,
+                len_len INTEGER
             )
         ''')
         conn.execute('CREATE INDEX IF NOT EXISTS idx_parent ON numbers(parent)')
@@ -49,19 +52,25 @@ def init_db():
         ''')
 
 
-def bulk_write(nodes_dict):
-    """Clear the numbers table and bulk-insert all entries from nodes_dict.
+def bulk_write(depth_dict, length_dict=None):
+    """Clear the numbers table and bulk-insert both optimized representations.
 
-    nodes_dict: {n: {expr, depth, len, strategy, parent}}
+    depth_dict:  {n: {expr, depth, len, strategy, parent}}  — depth-optimized (required)
+    length_dict: {n: {expr, depth, len, strategy, parent}}  — length-optimized (optional)
     """
-    rows = [
-        (n, d['expr'], d['depth'], d['len'], d['strategy'], d['parent'])
-        for n, d in sorted(nodes_dict.items())
-    ]
+    rows = []
+    for n, d in sorted(depth_dict.items()):
+        l = length_dict.get(n) if length_dict else None
+        rows.append((
+            n, d['expr'], d['depth'], d['len'], d['strategy'], d['parent'],
+            l['expr'] if l else None,
+            l['depth'] if l else None,
+            l['len'] if l else None,
+        ))
     conn = get_conn()
     conn.execute('DELETE FROM numbers')
     conn.executemany(
-        'INSERT INTO numbers (n, expr, depth, len, strategy, parent) VALUES (?,?,?,?,?,?)',
+        'INSERT INTO numbers (n, expr, depth, len, strategy, parent, expr_len, depth_len, len_len) VALUES (?,?,?,?,?,?,?,?,?)',
         rows,
     )
     conn.commit()
@@ -73,15 +82,20 @@ def get(n):
     """Look up a number. Returns dict or None."""
     with get_conn() as conn:
         row = conn.execute(
-            'SELECT n, expr, depth, len, strategy, parent FROM numbers WHERE n = ?',
+            'SELECT n, expr, depth, len, strategy, parent, expr_len, depth_len, len_len FROM numbers WHERE n = ?',
             (n,)
         ).fetchone()
     if row is None:
         return None
-    return {
+    result = {
         'n': row[0], 'expr': row[1], 'depth': row[2], 'len': row[3],
         'strategy': row[4], 'parent': row[5],
     }
+    if row[6] is not None:
+        result['expr_len']   = row[6]
+        result['depth_len']  = row[7]
+        result['len_len']    = row[8]
+    return result
 
 
 def dependents(n):
@@ -153,6 +167,22 @@ def stats():
         print(f"  [{entry['id']}] {entry['label']}: "
               f"avg_depth={entry['avg_depth']}, max_depth={entry['max_depth']}, "
               f"avg_len={entry['avg_len']}, improvements={entry['improvements']}")
+
+
+JSON_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'expressions.json')
+
+def generate_json():
+    """Export expressions to expressions.json for Vercel deployment."""
+    with get_conn() as conn:
+        rows = conn.execute(
+            'SELECT n, expr, expr_len FROM numbers ORDER BY n'
+        ).fetchall()
+    data = {}
+    for n, expr_depth, expr_length in rows:
+        data[str(n)] = {'depth': expr_depth, 'length': expr_length} if expr_length else expr_depth
+    with open(JSON_PATH, 'w') as f:
+        json.dump(data, f, separators=(',', ':'))
+    print(f'Exported {len(data):,} entries to expressions.json')
 
 
 def _insert(conn, n, expr, strategy, parent=None):
