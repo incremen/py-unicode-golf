@@ -83,19 +83,26 @@
 
 <div class="main-panel" id="panel-what">
   <p>
+    Basically, this is a code golf challenge to represent each unicode character in a weird way, in python. <br>
     Python has built-in functions like <code>len()</code>, <code>str()</code>, <code>not()</code>, <code>chr()</code>, etc.
-    This site builds any Unicode character using only those functions: no numbers, no strings, no variables, only one paramater. <br>
+    This site builds unicode characters using these functions, and also follows these rules: <br>
+    <li>The final function must take in no parameters, like <code>not()</code>.</li>
+    <li>Each function can only take in one parameter; <code>pow(a,b)</code> isn't allowed.</li>
+    <li>Represent each Unicode character as a composition of these functions.</li>
+  </ul>
     Just nested function calls.
     </p>
     <p>
     For example, <code>chr(max(range(ord(min(str(bytes()))))))</code> evaluates to <code>&</code>. <br>
 </p>
 <p>
-    Try pasting the expression into a python console (or using print() on it in a python file). <br>
+    Try pasting the expression into a python console (by running this after <code>python3</code>, or printing this value in a python file. <br>
     After you enter a character, the visualize button works you through the evaluation step by step. <br> <br>
-
-    Also (new!) this works for strings too, but we allow multiple parameters. <br>
-    
+  </p>
+  <p>
+    I made this work for strings as well, by allowing multiple arguments (works in strings tab).
+    And by allowing multiple arguments as well as methods, you can actually run arbitrary python code! (works in exec() tab).
+     Paste any python script into the editor and click compile to see it represented in this weird way.
   </p>
 
 </div>
@@ -108,13 +115,6 @@
      This was an amazing discovery. But (unfortunately), I immediately tried to generalize it. <br>
      Could any Unicode character (there's ~160,000) be represented like this?
   </p>
-
-  <p>The rules are, to be clear: (as I made them up):</p>
-  <ul>
-    <li>The final function must take in no parameters, like <code>not()</code>.</li>
-    <li>Each function can only take in one parameter; <code>pow(a,b)</code> isn't allowed.</li>
-    <li>Represent each Unicode character as a composition of these functions.</li>
-  </ul>
 
   <p>
     Since we only aim to find the Unicode value of the character and then
