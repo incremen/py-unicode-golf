@@ -117,16 +117,33 @@ if not NEW_STRATEGIES:
     print('No strategies defined. Add entries to NEW_STRATEGIES and re-run.')
     sys.exit(0)
 
+from core.db import get_conn
+conn = get_conn()
+prev_avg_depth, prev_avg_len = conn.execute('SELECT AVG(depth), AVG(len) FROM numbers').fetchone()
+conn.close()
+print(f'current db:  avg_depth={prev_avg_depth:.4f}  avg_len={prev_avg_len:.4f}\n')
+
 STRATEGIES.update(NEW_STRATEGIES)
 
 for test_metric in ('depth', 'length'):
     opt.METRIC = test_metric
     optimized_graph = opt.run_dijkstra()
-    
+
+    avg_depth = sum(n['depth'] for n in optimized_graph.values()) / len(optimized_graph)
+    avg_len   = sum(n['len']   for n in optimized_graph.values()) / len(optimized_graph)
+
     improved_nodes, regressed_nodes = merge_best(optimized_graph, test_metric, write=False)
     improved_nodes.sort(key=lambda item: (item[1] or 0) - item[2], reverse=True)
-    
-    print(f'{test_metric}: improvements={len(improved_nodes):,}  regressions={len(regressed_nodes):,}')
+
+    d_delta = avg_depth - prev_avg_depth
+    l_delta = avg_len   - prev_avg_len
+    print(f'metric={test_metric}:')
+    print(f'  avg_depth {prev_avg_depth:.4f} → {avg_depth:.4f}  ({d_delta:+.4f})')
+    print(f'  avg_len   {prev_avg_len:.4f} → {avg_len:.4f}  ({l_delta:+.4f})')
+    print(f'  improvements={len(improved_nodes):,}  regressions={len(regressed_nodes):,}')
+    for n, old, new in improved_nodes[:5]:
+        print(f'    n={n:>7}  {test_metric} {old} → {new}')
+    print()
     
     for node_number, old_score, new_score in improved_nodes[:5]:
         print(f'  number={node_number:>7}  {test_metric} {old_score} → {new_score}')
