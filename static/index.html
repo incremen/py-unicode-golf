@@ -132,28 +132,33 @@
 </div>
 
 <div class="main-panel" id="panel-formula">
-  <p>My initial attempt used three tools:</p>
-  <ul>
-    <li>A few initial seeds, like <code>len(bin(len(str(not()))))</code> = 5</li>
-    <li><code>sum(range(n))</code> = n(n-1)/2 &mdash; to jump up quickly</li>
-    <li><code>max(range(n))</code> = n-1 &mdash; to step back down</li>
-  </ul>
-  <p>
-    The idea: apply <code>sum(range())</code> a few times to overshoot your target,
-    then decrement back down with <code>max(range())</code>.
-  </p>
-  <p>For example, to get to 6:</p>
+  <div class="divider"></div>
+  <details class="strategies-disclosure">
+    <summary><strong>My initial attempt</strong></summary>
+    <p style="margin-top:0.6rem">My initial attempt used three tools:</p>
+    <ul>
+      <li>A few initial seeds, like <code>len(bin(len(str(not()))))</code> = 5</li>
+      <li><code>sum(range(n))</code> = n(n-1)/2 &mdash; to jump up quickly</li>
+      <li><code>max(range(n))</code> = n-1 &mdash; to step back down</li>
+    </ul>
+    <p>
+      The idea: apply <code>sum(range())</code> a few times to overshoot your target,
+      then decrement back down with <code>max(range())</code>.
+    </p>
+    <p>For example, to get to 6:</p>
 <pre>5 = len(bin(len(str(not()))))
 10 = sum(range(5)) = sum(range(len(bin(len(str(not()))))))
 6 = max(range(max(range(max(range(max(range(10))))))))</pre>
+    <p>
+      This algorithm works, but for bigger numbers it eventually can't fit Python's
+      200 parentheses limit. In this example, to reach 100, you'd have to use
+      sum(range()) thrice on 5 to get 990, and then do 890 decrements!
+      Even if you have many initial seeds, the quadratic growth is much too sparse
+      to reach arbitrarily large numbers within the parentheses budget.
+    </p>
+  </details>
+  <div class="divider"></div>
 
-  <p>
-    This algorithm works, but for bigger numbers it eventually can't fit Python's
-    200 parentheses limit. In this example, to reach 100, you'd have to use
-    sum(range()) thrice on 5 to get 990, and then do 890 decrements!
-    Even if you have many initial seeds, the quadratic growth is much too sparse
-    to reach arbitrarily large numbers within the parentheses budget.
-  </p>
   <p>
     I went looking for many formulas to get from a number n to f(n), and found many,
     but credit to Gemini for finding the key! A direct function that turns n into 3n.
