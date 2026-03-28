@@ -10,10 +10,6 @@ def _build_registry():
     Format: (strategy_name, forward_math_function, string_builder_function)
     """
     registry = [
-        ('base', 
-         lambda n: n, 
-         lambda expression: expression),
-         
         ('decrement',      
          lambda n: n - 1,
          lambda expression: f'max(range({expression}))'),
@@ -69,9 +65,8 @@ _STRATEGY_REGISTRY = _build_registry()
 
 
 FORWARD_STRATEGIES = [
-    (strategy_name, math_function) 
-    for strategy_name, math_function, _ in _STRATEGY_REGISTRY 
-    if strategy_name != 'base'
+    (strategy_name, math_function)
+    for strategy_name, math_function, _ in _STRATEGY_REGISTRY
 ]
 
 # Quick lookup dictionary used by apply_strategy
