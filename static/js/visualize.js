@@ -262,8 +262,8 @@ async function visualize() {
   vizBtn().classList.add('hide-arrow');
 
   try {
-    if (stringMode) {
-      const text = charInput.value;
+    if (strMode) {
+      const text = lastStrText;
       const res = await fetch(`/api/visualize_string?s=${encodeURIComponent(text)}`);
       const data = await res.json();
       if (!data.error && !vizCancelled) await animateStringTracks(data);

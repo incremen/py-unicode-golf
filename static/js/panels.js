@@ -7,19 +7,24 @@ function showMain(btn, id) {
     btn.classList.add('active');
     logoPop();
   }
-  const onCode = id === 'panel-code';
-  document.querySelector('.input-row').classList.toggle('hidden', onCode);
+  const onCode    = id === 'panel-code';
+  const onStrings = id === 'panel-strings';
+  document.querySelector('.input-row').classList.toggle('hidden', onCode || onStrings);
   document.querySelector('.result-wrapper').classList.toggle('hidden', onCode);
-  if (onCode) {
-    if (vizRunning) stopVisualization();
-    charInput.value = '';
-    charInput.classList.add('wide');
-    charInput.size = stringMode ? 20 : 11;
-    lastExpr = '';
-    lastData = null;
-    result.classList.remove('visible');
-
-    vizBtn().classList.remove('visible');
+  if (onCode || onStrings) {
+    if (onStrings) { enterStringsPanel(); } else { leaveStringsPanel(); }
+    if (onCode) {
+      if (vizRunning) stopVisualization();
+      charInput.value = '';
+      charInput.classList.add('wide');
+      charInput.size = 11;
+      lastExpr = '';
+      lastData = null;
+      result.classList.remove('visible');
+      vizBtn().classList.remove('visible');
+    }
+  } else {
+    leaveStringsPanel();
   }
 }
 

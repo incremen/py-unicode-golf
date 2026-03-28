@@ -502,6 +502,18 @@ tr.pair-second td { border-top: 1px dashed #ddd; }
 .code-example-btn:hover { border-color: #306998; color: #FFD43B; }
 .code-example-btn.active { border-color: #FFD43B; color: #FFD43B; }
 
+.str-input-row { display: flex; gap: 0.6rem; align-items: center; margin-bottom: 0.8rem; }
+.str-input {
+  flex: 1; font-family: inherit; font-size: 1rem;
+  padding: 0.5rem 0.8rem; border-radius: 6px;
+  border: 1px solid #ddd; outline: none;
+  background: #fff; color: #222;
+}
+.str-input:focus { border-color: #306998; box-shadow: 0 0 0 3px rgba(48,105,152,0.15); }
+.str-result { display: none; margin-top: 0.5rem; }
+.str-result.visible { display: block; }
+.str-result-meta { color: #7a8ba8; font-size: 0.8rem; margin-bottom: 0.4rem; }
+
 .code-editor-wrap {
   background: #12151e;
   border-radius: 8px;

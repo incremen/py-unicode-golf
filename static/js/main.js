@@ -9,78 +9,41 @@ const copiedMsg = document.getElementById('copiedMsg');
 
 let lastExpr = '';
 let lastData = null;
-let stringMode = false;
 
 charInput.size = 9;
-
-function setMode(isString) {
-  if (stringMode === isString) return;
-  if (vizRunning) stopVisualization();
-  stringMode = isString;
-  document.querySelectorAll('.mode-opt').forEach((el, i) => {
-    el.classList.toggle('active', i === (stringMode ? 1 : 0));
-  });
-  dbToggle.style.display = stringMode ? 'none' : '';
-  charInput.value = '';
-  lastExpr = '';
-  lastData = null;
-  result.classList.remove('visible');
-  vizBtn().classList.remove('visible');
-  if (stringMode) {
-    charInput.removeAttribute('maxlength');
-    charInput.classList.add('wide');
-    charInput.size = 20;
-    charInput.placeholder = 'type a string';
-  } else {
-    charInput.maxLength = 2;
-    charInput.classList.add('wide');
-    charInput.size = 11;
-    charInput.placeholder = 'type here';
-  }
-  charInput.focus();
-}
 
 charInput.addEventListener('input', async () => {
   if (vizRunning) stopVisualization();
   const val = charInput.value;
 
   if (!val) {
-    if (stringMode) { charInput.size = 20; } else { charInput.classList.add('wide'); charInput.size = 11; }
+    charInput.classList.add('wide');
+    charInput.size = 11;
     result.classList.remove('visible');
     vizBtn().classList.remove('visible');
     return;
   }
 
-  if (stringMode) {
-    charInput.size = Math.min(40, Math.max(10, val.length + 2));
-    try {
-      const res = await fetch(`/api/string?s=${encodeURIComponent(val)}`);
-      const data = await res.json();
-      if (data.error) return;
-      showStringResult(data);
-    } catch (e) { console.error(e); }
-  } else {
-    const c = [...val].pop();
-    charInput.value = c;
-    charInput.classList.remove('wide');
-    charInput.size = 1;
-    try {
-      const res = await fetch(`/api/char?c=${encodeURIComponent(c)}`);
-      const data = await res.json();
-      if (data.error) return;
-      lastData = data;
-      showResult(data);
-    } catch (e) {
-      console.error(e);
-      resultChar.textContent = 'error';
-      resultMeta.textContent = e.message;
-      resultExpr.textContent = '';
-      result.classList.add('visible');
-    }
+  const c = [...val].pop();
+  charInput.value = c;
+  charInput.classList.remove('wide');
+  charInput.size = 1;
+  try {
+    const res = await fetch(`/api/char?c=${encodeURIComponent(c)}`);
+    const data = await res.json();
+    if (data.error) return;
+    lastData = data;
+    showResult(data);
+  } catch (e) {
+    console.error(e);
+    resultChar.textContent = 'error';
+    resultMeta.textContent = e.message;
+    resultExpr.textContent = '';
+    result.classList.add('visible');
   }
 });
 
-useDb.addEventListener('change', () => { if (lastData && !stringMode) showResult(lastData); });
+useDb.addEventListener('change', () => { if (lastData) showResult(lastData); });
 
 function copyExpr() {
   navigator.clipboard.writeText(lastExpr);
@@ -94,27 +57,18 @@ function copyExpr() {
 function randomChar() {
   if (vizRunning) stopVisualization();
   logoPop();
-  if (stringMode) {
-    const len = 1 + Math.floor(Math.random() * 10);
-    let s = '';
-    for (let i = 0; i < len; i++) s += String.fromCodePoint(randomCodePoint());
-    charInput.value = s;
-    charInput.size = Math.min(40, Math.max(10, s.length + 2));
-    charInput.dispatchEvent(new Event('input'));
+  const cached = prefetchQueue.shift();
+  if (cached) {
+    charInput.value = cached.char;
+    charInput.classList.remove('wide');
+    charInput.size = 1;
+    lastData = cached.data;
+    showResult(cached.data);
+    fillPrefetchQueue();
   } else {
-    const cached = prefetchQueue.shift();
-    if (cached) {
-      charInput.value = cached.char;
-      charInput.classList.remove('wide');
-      charInput.size = 1;
-      lastData = cached.data;
-      showResult(cached.data);
-      fillPrefetchQueue();
-    } else {
-      const cp = randomCodePoint();
-      charInput.value = String.fromCodePoint(cp);
-      charInput.dispatchEvent(new Event('input'));
-    }
+    const cp = randomCodePoint();
+    charInput.value = String.fromCodePoint(cp);
+    charInput.dispatchEvent(new Event('input'));
   }
 }
 
@@ -128,17 +82,6 @@ function showResult(data) {
   resultMeta.textContent = `${src.depth} calls \xb7 ${src.len} chars \xb7 ${label}`;
   resultExpr.innerHTML = syntaxHighlight(src.expr);
   lastExpr = src.expr;
-  copiedMsg.textContent = '';
-  result.classList.add('visible');
-  vizBtn().classList.add('visible');
-  vizBtn().classList.remove('hide-arrow');
-}
-
-function showStringResult(data) {
-  resultChar.textContent = `"${data.text}"`;
-  resultMeta.textContent = `${data.depth} calls \xb7 ${data.len} chars`;
-  resultExpr.innerHTML = syntaxHighlight(data.expr);
-  lastExpr = data.expr;
   copiedMsg.textContent = '';
   result.classList.add('visible');
   vizBtn().classList.add('visible');

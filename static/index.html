@@ -23,10 +23,6 @@
 <div class="input-row">
   <input type="text" id="charInput" class="wide" maxlength="2" placeholder="type here" autofocus>
   <button class="btn" onclick="randomChar()">random</button>
-  <div class="mode-toggle" id="modeToggle">
-    <button class="mode-opt active" onclick="setMode(false)">char</button>
-    <button class="mode-opt" onclick="setMode(true)">string</button>
-  </div>
   <div class="toggle" id="dbToggle">
     <input type="checkbox" id="useDb" checked>
     <label for="useDb">use optimized database</label>
@@ -512,6 +508,19 @@ ascii(ascii(that))    = ...                      len = 23</pre>
     And it still comes out looking pretty cool I think.
   </p>
 
+  <div class="divider"></div>
+
+  <div class="str-input-row">
+    <input type="text" id="strInput" class="str-input" placeholder="type a string" spellcheck="false">
+    <button class="btn" onclick="randomString()">random</button>
+  </div>
+
+  <div id="strResult" class="str-result">
+    <div class="str-result-meta" id="strResultMeta"></div>
+    <div class="result-expr" id="strResultExpr" onclick="copyStrExpr()"></div>
+    <div class="copied" id="strCopied"></div>
+  </div>
+
 </div>
 
 <div class="main-panel" id="panel-code">
@@ -596,6 +605,7 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 <script src="/static/js/main.js"></script>
 <script src="/static/js/visualize.js"></script>
 <script src="/static/js/panels.js"></script>
+<script src="/static/js/strings.js"></script>
 <script src="/static/js/code.js"></script>
 </body>
 </html>
