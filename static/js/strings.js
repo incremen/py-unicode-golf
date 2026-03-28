@@ -1,45 +1,47 @@
-const strInput      = document.getElementById('strInput');
-const strResult     = document.getElementById('strResult');
-const strResultMeta = document.getElementById('strResultMeta');
-const strResultExpr = document.getElementById('strResultExpr');
-const strCopied     = document.getElementById('strCopied');
-
-// Read by visualize.js to know which mode to run
+// strMode is read by visualize.js and main.js
 let strMode = false;
 let lastStrText = '';
 
-strInput.addEventListener('input', async () => {
+function enterStringsPanel() {
+  if (strMode) return;
+  strMode = true;
   if (vizRunning) stopVisualization();
-  const val = strInput.value;
-  if (!val) {
-    strResult.classList.remove('visible');
-    return;
-  }
-  try {
-    const res = await fetch(`/api/string?s=${encodeURIComponent(val)}`);
-    const data = await res.json();
-    if (data.error) return;
-    showStringResult(data);
-  } catch (e) { console.error(e); }
-});
+  charInput.value = '';
+  lastExpr = '';
+  lastData = null;
+  result.classList.remove('visible');
+  vizBtn().classList.remove('visible');
+  charInput.removeAttribute('maxlength');
+  charInput.classList.add('wide');
+  charInput.size = 20;
+  charInput.placeholder = 'type a string';
+  charInput.focus();
+}
+
+function leaveStringsPanel() {
+  if (!strMode) return;
+  strMode = false;
+  lastStrText = '';
+  charInput.value = '';
+  lastExpr = '';
+  result.classList.remove('visible');
+  vizBtn().classList.remove('visible');
+  charInput.maxLength = 2;
+  charInput.classList.add('wide');
+  charInput.size = 11;
+  charInput.placeholder = 'type here';
+}
 
 function showStringResult(data) {
   lastStrText = data.text;
-  lastExpr = data.expr;   // shared with visualize.js
-  strResultMeta.textContent = `${data.depth} calls \xb7 ${data.len} chars`;
-  strResultExpr.innerHTML = syntaxHighlight(data.expr);
-  strCopied.textContent = '';
-  strResult.classList.add('visible');
-}
-
-function copyStrExpr() {
-  if (!lastExpr) return;
-  navigator.clipboard.writeText(lastExpr);
-  strCopied.textContent = 'copied';
-  setTimeout(() => strCopied.textContent = '', 1500);
-  strResultExpr.classList.remove('copied-flash');
-  void strResultExpr.offsetWidth;
-  strResultExpr.classList.add('copied-flash');
+  lastExpr = data.expr;
+  resultChar.textContent = `"${data.text}"`;
+  resultMeta.textContent = `${data.depth} calls \xb7 ${data.len} chars`;
+  resultExpr.innerHTML = syntaxHighlight(data.expr);
+  copiedMsg.textContent = '';
+  result.classList.add('visible');
+  vizBtn().classList.add('visible');
+  vizBtn().classList.remove('hide-arrow');
 }
 
 function randomString() {
@@ -47,27 +49,7 @@ function randomString() {
   const len = 1 + Math.floor(Math.random() * 10);
   let s = '';
   for (let i = 0; i < len; i++) s += String.fromCodePoint(randomCodePoint());
-  strInput.value = s;
-  strInput.dispatchEvent(new Event('input'));
-}
-
-function enterStringsPanel() {
-  strMode = true;
-  if (vizRunning) stopVisualization();
-  // reset char state
-  charInput.value = '';
-  charInput.classList.add('wide');
-  charInput.size = 11;
-  lastData = null;
-  lastExpr = '';
-  result.classList.remove('visible');
-  vizBtn().classList.remove('visible');
-}
-
-function leaveStringsPanel() {
-  strMode = false;
-  lastStrText = '';
-  lastExpr = '';
-  strInput.value = '';
-  strResult.classList.remove('visible');
+  charInput.value = s;
+  charInput.size = Math.min(40, Math.max(10, s.length + 2));
+  charInput.dispatchEvent(new Event('input'));
 }

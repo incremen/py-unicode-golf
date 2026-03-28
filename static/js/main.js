@@ -17,10 +17,20 @@ charInput.addEventListener('input', async () => {
   const val = charInput.value;
 
   if (!val) {
-    charInput.classList.add('wide');
-    charInput.size = 11;
+    if (strMode) { charInput.size = 20; } else { charInput.classList.add('wide'); charInput.size = 11; }
     result.classList.remove('visible');
     vizBtn().classList.remove('visible');
+    return;
+  }
+
+  if (strMode) {
+    charInput.size = Math.min(40, Math.max(10, val.length + 2));
+    try {
+      const res = await fetch(`/api/string?s=${encodeURIComponent(val)}`);
+      const data = await res.json();
+      if (data.error) return;
+      showStringResult(data);
+    } catch (e) { console.error(e); }
     return;
   }
 

@@ -9,20 +9,20 @@ function showMain(btn, id) {
   }
   const onCode    = id === 'panel-code';
   const onStrings = id === 'panel-strings';
-  document.querySelector('.input-row').classList.toggle('hidden', onCode || onStrings);
+  document.querySelector('.input-row').classList.toggle('hidden', onCode);
   document.querySelector('.result-wrapper').classList.toggle('hidden', onCode);
-  if (onCode || onStrings) {
-    if (onStrings) { enterStringsPanel(); } else { leaveStringsPanel(); }
-    if (onCode) {
-      if (vizRunning) stopVisualization();
-      charInput.value = '';
-      charInput.classList.add('wide');
-      charInput.size = 11;
-      lastExpr = '';
-      lastData = null;
-      result.classList.remove('visible');
-      vizBtn().classList.remove('visible');
-    }
+  if (onCode) {
+    leaveStringsPanel();
+    if (vizRunning) stopVisualization();
+    charInput.value = '';
+    charInput.classList.add('wide');
+    charInput.size = 11;
+    lastExpr = '';
+    lastData = null;
+    result.classList.remove('visible');
+    vizBtn().classList.remove('visible');
+  } else if (onStrings) {
+    enterStringsPanel();
   } else {
     leaveStringsPanel();
   }
