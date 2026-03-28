@@ -331,10 +331,10 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 
 <div class="main-panel" id="panel-db">
   <p>
-    A simple sqllite database stores the shortest known expression for each number from 0 to 200,000.
-    Each entry records which strategy produced it and which smaller number it depends on.
-    So, for example, if we did formula_5(20) = 50, and we found a smaller formula for 20, we automatically plug that in,
-    and get a smaller representation for 50.
+    A SQLite database stores the shortest known expression for each integer from 0 to 200,000.
+    Each entry records which strategy produced it and which parent number it was derived from.
+    The whole database is built in one shot by running Dijkstra's algorithm over the integer graph —
+    each strategy is a set of directed edges, and Dijkstra guarantees the globally shortest path to every node.
   </p>
 
   <p style="margin-top:1rem"><strong>Current stats</strong></p>
@@ -371,12 +371,11 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 
   <p><strong>Optimization history</strong></p>
   <p class="note">
-    Each row shows the state of the database after a round of improvements.
-    <em>Minimal</em> = only seeds 0 and 1.
-    <em>Full algorithm</em> = adds 44 base anchors.
-    <em>Optimizer</em> = tries every strategy on every number and keeps the shortest.
-    <em>Deep search</em> = same, but allows up to 10 extra decrements to bridge gaps
-    (instead of 2).
+    Each row shows the database state at a snapshot in time.
+    <em>Minimal</em> = base-3 algorithm seeded with only 0 and 1.
+    <em>Full algorithm</em> = base-3 with all 44 base anchors.
+    <em>Optimizer / deep search</em> = the old iterative DP approach (now replaced).
+    <em>Dijkstra</em> = current method — single forward-search pass, globally optimal for the strategy set.
   </p>
   <table>
     <thead>
