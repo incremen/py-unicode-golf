@@ -111,18 +111,38 @@ if __name__ == '__main__':
         METRIC = sys.argv[sys.argv.index('--metric') + 1]
     assert METRIC in ('depth', 'length'), f'Unknown metric: {METRIC}'
 
+    from core.db import get_conn
     init_db()
+
+    conn = get_conn()
+    baseline = {r[0]: r[1] for r in conn.execute('SELECT n, depth FROM numbers').fetchall()}
+    conn.close()
+
     print(f'Running Dijkstra graph search (metric={METRIC})...')
-    
     start_time = datetime.now()
     final_graph = run_dijkstra()
     elapsed_time = (datetime.now() - start_time).total_seconds()
-    
     print(f'Search completed in {elapsed_time:.1f}s. Found paths for {len(final_graph):,} numbers.')
 
     print('Writing graph to database...')
-    rows_inserted = bulk_write(final_graph)
-    print(f'Inserted {rows_inserted:,} rows.')
+    bulk_write(final_graph)
 
-    snapshot(f'dijkstra (metric={METRIC})', improvements=rows_inserted)
+    improved  = [(n, baseline[n], final_graph[n]['depth']) for n in final_graph if n in baseline and final_graph[n]['depth'] < baseline[n]]
+    regressed = [(n, baseline[n], final_graph[n]['depth']) for n in final_graph if n in baseline and final_graph[n]['depth'] > baseline[n]]
+
+    print(f'\nImprovements: {len(improved):,}  Regressions: {len(regressed):,}')
+
+    if improved:
+        improved.sort(key=lambda x: x[1] - x[2], reverse=True)
+        print('Top improvements:')
+        for n, old, new in improved[:10]:
+            print(f'  n={n:>7}  depth {old} → {new}  (-{old - new})')
+
+    if regressed:
+        regressed.sort(key=lambda x: x[2] - x[1], reverse=True)
+        print('Regressions:')
+        for n, old, new in regressed[:10]:
+            print(f'  n={n:>7}  depth {old} → {new}  (+{new - old})')
+
+    snapshot(f'dijkstra (metric={METRIC})', improvements=len(improved))
     stats()
