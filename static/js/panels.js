@@ -19,6 +19,10 @@ function showMain(btn, id) {
   }));
 
   const leavingCode = topWrap.offsetHeight > 0 && !onCode;
+  console.log('[showMain]', { id, onCode, onStrings, leavingCode,
+    topWrapOffsetH: topWrap.offsetHeight,
+    topWrapStyleH: topWrap.style.height,
+    topWrapScrollH: topWrap.scrollHeight });
 
   if (onCode) {
     // Entering exec(): measure what disappears, compensate, then animate to code height
@@ -29,19 +33,45 @@ function showMain(btn, id) {
     resultWrap.classList.add('hidden');
     anim(contentH);
   } else if (leavingCode) {
-    // Leaving exec(): animate down to input height, then swap cleanly
+    document.getElementById('codeInput').value = '';
+    document.getElementById('codeResult').classList.remove('visible');
+
     inputRow.classList.remove('hidden');
     resultWrap.classList.remove('hidden');
     const comboH = inputRow.offsetHeight + resultWrap.offsetHeight;
     inputRow.classList.add('hidden');
     resultWrap.classList.add('hidden');
-    anim(comboH);
-    topWrap.addEventListener('transitionend', () => {
+
+    console.log('[leavingCode]', {
+      computedH: getComputedStyle(topWrap).height,
+      offsetH: topWrap.offsetHeight,
+      scrollH: topWrap.scrollHeight,
+      styleH: topWrap.style.height,
+      transition: topWrap.style.transition,
+      comboH,
+      hasText: document.getElementById('codeInput').value.length > 0
+    });
+
+    console.log('[leavingCode] calling anim, target:', comboH);
+    requestAnimationFrame(() => {
+      console.log('[rAF 1] height now:', topWrap.style.height, 'transition:', topWrap.style.transition);
+      requestAnimationFrame(() => {
+        topWrap.style.transition = '';
+        topWrap.style.height = comboH + 'px';
+        console.log('[rAF 2] set height to', comboH, '| computedH:', getComputedStyle(topWrap).height, '| transition:', topWrap.style.transition);
+      });
+    });
+
+    const onHeightDone = e => {
+      console.log('[transitionend]', { propertyName: e.propertyName, elapsedTime: e.elapsedTime, heightNow: topWrap.offsetHeight });
+      if (e.propertyName !== 'height') return;
+      topWrap.removeEventListener('transitionend', onHeightDone);
       snap(0);
       inputRow.classList.remove('hidden');
       resultWrap.classList.remove('hidden');
       requestAnimationFrame(() => requestAnimationFrame(() => { topWrap.style.transition = ''; }));
-    }, { once: true });
+    };
+    topWrap.addEventListener('transitionend', onHeightDone);
   } else {
     // Normal tab switch: no animation, just show/hide instantly
     inputRow.classList.toggle('hidden', false);
