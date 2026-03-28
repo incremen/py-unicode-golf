@@ -62,7 +62,7 @@ def run_dijkstra():
     weights = {}
     
     # target_number -> {expr, depth, len, strategy, parent, offset}
-    incoming_edges = {}
+    best_incoming_edges = {}
 
     # 1. Seed the queue with starting anchors
     for anchor_value, anchor_expression in BASE_ANCHORS.items():
@@ -72,7 +72,7 @@ def run_dijkstra():
         primary_cost, secondary_cost = (depth_cost, length_cost) if METRIC == 'depth' else (length_cost, depth_cost)
         
         weights[anchor_value] = (primary_cost, secondary_cost)
-        incoming_edges[anchor_value] = {
+        best_incoming_edges[anchor_value] = {
             'expr': anchor_expression, 'depth': depth_cost, 'len': length_cost,
             'strategy': 'base', 'parent': None, 'offset': 0
         }
@@ -87,7 +87,7 @@ def run_dijkstra():
         if current_primary_cost > best_known_primary or (current_primary_cost == best_known_primary and current_secondary_cost > best_known_secondary):
             continue
 
-        source_node = incoming_edges[source_number]
+        source_node = best_incoming_edges[source_number]
         source_expression = source_node['expr']
         source_depth = source_node['depth']
 
@@ -119,7 +119,7 @@ def run_dijkstra():
                 if candidate_primary_cost < target_best_primary or (candidate_primary_cost == target_best_primary and candidate_secondary_cost < target_best_secondary):
                     weights[target_number] = (candidate_primary_cost, candidate_secondary_cost)
                     
-                    incoming_edges[target_number] = {
+                    best_incoming_edges[target_number] = {
                         'expr': target_expression, 'depth': target_depth, 'len': target_length,
                         'strategy': strategy_name, 'parent': source_number,
                         'offset': 1 if strategy_name == 'decrement' else 0,
@@ -129,7 +129,7 @@ def run_dijkstra():
             except ValueError:
                 pass
 
-    return incoming_edges
+    return best_incoming_edges
 
 
 
