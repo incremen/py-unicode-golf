@@ -9,17 +9,45 @@ function showMain(btn, id) {
   }
   const onCode    = id === 'panel-code';
   const onStrings = id === 'panel-strings';
-  document.querySelector('.input-row').classList.toggle('hidden', onCode);
-  document.querySelector('.result-wrapper').classList.toggle('hidden', onCode);
-  const topWrap = document.getElementById('topCodeWrap');
+  const topWrap      = document.getElementById('topCodeWrap');
+  const inputRow     = document.querySelector('.input-row');
+  const resultWrap   = document.querySelector('.result-wrapper');
+
+  const snap = h => { topWrap.style.transition = 'none'; topWrap.style.height = h + 'px'; };
+  const anim = h => requestAnimationFrame(() => requestAnimationFrame(() => {
+    topWrap.style.transition = ''; topWrap.style.height = h + 'px';
+  }));
+
   if (onCode) {
-    // Measure natural height, then animate to it
-    topWrap.style.height = 'auto';
-    const target = topWrap.scrollHeight;
-    topWrap.style.height = '0';
-    requestAnimationFrame(() => requestAnimationFrame(() => { topWrap.style.height = target + 'px'; }));
+    // 1. Measure what will disappear (while still visible)
+    const comboH  = inputRow.offsetHeight + resultWrap.offsetHeight;
+    const contentH = topWrap.scrollHeight;
+
+    // 2. Snap topCodeWrap to comboH, hide input area — tabs don't move
+    snap(comboH);
+    inputRow.classList.add('hidden');
+    resultWrap.classList.add('hidden');
+
+    // 3. Animate to code editor height
+    anim(contentH);
   } else {
-    topWrap.style.height = '0';
+    // 1. Temporarily unhide to measure what will reappear
+    inputRow.classList.remove('hidden');
+    resultWrap.classList.remove('hidden');
+    const comboH = inputRow.offsetHeight + resultWrap.offsetHeight;
+    inputRow.classList.add('hidden');
+    resultWrap.classList.add('hidden');
+
+    // 2. Animate topCodeWrap down to comboH
+    anim(comboH);
+
+    // 3. When done: swap topCodeWrap→0, show input — heights match so no jump
+    topWrap.addEventListener('transitionend', () => {
+      snap(0);
+      inputRow.classList.remove('hidden');
+      resultWrap.classList.remove('hidden');
+      requestAnimationFrame(() => requestAnimationFrame(() => { topWrap.style.transition = ''; }));
+    }, { once: true });
   }
   if (onCode) {
     leaveStringsPanel();
