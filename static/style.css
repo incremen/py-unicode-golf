@@ -565,8 +565,11 @@ tr.pair-second td { border-top: 1px dashed #ddd; }
 }
 .code-editor::placeholder { color: #3a4050; }
 .code-editor-compact { min-height: 100px; max-height: 180px; overflow-y: auto; resize: none; }
-.top-code-wrap { margin-bottom: 0.8rem; }
-.top-code-wrap.hidden { display: none; }
+.top-code-wrap {
+  height: 0;
+  overflow: hidden;
+  transition: height 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
 .top-code-wrap .code-examples { margin-bottom: 0.6rem; }
 .code-editor-footer {
   display: flex;

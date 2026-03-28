@@ -11,7 +11,16 @@ function showMain(btn, id) {
   const onStrings = id === 'panel-strings';
   document.querySelector('.input-row').classList.toggle('hidden', onCode);
   document.querySelector('.result-wrapper').classList.toggle('hidden', onCode);
-  document.getElementById('topCodeWrap').classList.toggle('hidden', !onCode);
+  const topWrap = document.getElementById('topCodeWrap');
+  if (onCode) {
+    // Measure natural height, then animate to it
+    topWrap.style.height = 'auto';
+    const target = topWrap.scrollHeight;
+    topWrap.style.height = '0';
+    requestAnimationFrame(() => requestAnimationFrame(() => { topWrap.style.height = target + 'px'; }));
+  } else {
+    topWrap.style.height = '0';
+  }
   if (onCode) {
     leaveStringsPanel();
     if (vizRunning) stopVisualization();
