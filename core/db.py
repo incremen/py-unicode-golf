@@ -21,7 +21,6 @@ def get_conn():
 def init_db():
     """Create tables if they don't exist."""
     with get_conn() as conn:
-        conn.execute('DROP TABLE IF EXISTS numbers')
         conn.execute('''
             CREATE TABLE IF NOT EXISTS numbers (
                 n INTEGER PRIMARY KEY,
@@ -36,6 +35,10 @@ def init_db():
             )
         ''')
         conn.execute('CREATE INDEX IF NOT EXISTS idx_parent ON numbers(parent)')
+        existing = {r[1] for r in conn.execute('PRAGMA table_info(numbers)').fetchall()}
+        for col, typedef in [('expr_len', 'TEXT'), ('depth_len', 'INTEGER'), ('len_len', 'INTEGER')]:
+            if col not in existing:
+                conn.execute(f'ALTER TABLE numbers ADD COLUMN {col} {typedef}')
         conn.execute('''
             CREATE TABLE IF NOT EXISTS optimization_log (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,6 +53,52 @@ def init_db():
                 strategy_counts TEXT NOT NULL
             )
         ''')
+
+
+def merge_best(graph, metric):
+    """Update DB entries only where graph found a strictly better representation.
+
+    metric: 'depth' compares graph[n]['depth'] vs numbers.depth
+            'length' compares graph[n]['len']   vs numbers.len_len
+    Returns (improved, regressed) lists of (n, old_val, new_val).
+    """
+    conn = get_conn()
+    if metric == 'depth':
+        current = {r[0]: (r[1], r[2]) for r in conn.execute('SELECT n, depth, len FROM numbers').fetchall()}
+    else:
+        current = {r[0]: (r[1], r[2]) for r in conn.execute('SELECT n, len_len, depth_len FROM numbers').fetchall()}
+
+    improved, regressed, updates, inserts = [], [], [], []
+    for n, node in graph.items():
+        new_primary   = node['depth'] if metric == 'depth' else node['len']
+        new_secondary = node['len']   if metric == 'depth' else node['depth']
+
+        if n not in current:
+            inserts.append((n, node['expr'], node['depth'], node['len'], node['strategy'], node['parent']))
+            improved.append((n, None, new_primary))
+            continue
+
+        old_primary, old_secondary = current[n]
+        if old_primary is None or new_primary < old_primary or (new_primary == old_primary and new_secondary < (old_secondary or float('inf'))):
+            improved.append((n, old_primary, new_primary))
+            if metric == 'depth':
+                updates.append((node['expr'], node['depth'], node['len'], node['strategy'], node['parent'], n))
+            else:
+                updates.append((node['expr'], node['depth'], node['len'], n))
+        elif new_primary > (old_primary or 0):
+            regressed.append((n, old_primary, new_primary))
+
+    if inserts:
+        conn.executemany(
+            'INSERT OR IGNORE INTO numbers (n, expr, depth, len, strategy, parent) VALUES (?,?,?,?,?,?)', inserts)
+    if updates:
+        if metric == 'depth':
+            conn.executemany('UPDATE numbers SET expr=?, depth=?, len=?, strategy=?, parent=? WHERE n=?', updates)
+        else:
+            conn.executemany('UPDATE numbers SET expr_len=?, depth_len=?, len_len=? WHERE n=?', updates)
+    conn.commit()
+    conn.close()
+    return improved, regressed
 
 
 def bulk_write(depth_dict, length_dict=None):

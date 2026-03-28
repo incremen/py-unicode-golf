@@ -106,47 +106,27 @@ if __name__ == '__main__':
         METRIC = sys.argv[sys.argv.index('--metric') + 1]
     assert METRIC in ('depth', 'length'), f'Unknown metric: {METRIC}'
 
-    from core.db import get_conn, generate_json
+    from core.db import get_conn, merge_best, generate_json
     init_db()
 
-    conn = get_conn()
-    baseline = {r[0]: r[1] for r in conn.execute('SELECT n, depth FROM numbers').fetchall()}
-    conn.close()
+    def run_and_merge(metric):
+        global METRIC
+        METRIC = metric
+        print(f'Running Dijkstra (metric={metric})...')
+        t0 = datetime.now()
+        graph = run_dijkstra()
+        print(f'  done in {(datetime.now()-t0).total_seconds():.1f}s — merging...')
+        improved, regressed = merge_best(graph, metric)
+        improved.sort(key=lambda x: (x[1] or 0) - x[2], reverse=True)
+        print(f'  depth improvements: {len(improved):,}  regressions: {len(regressed):,}')
+        if improved[:5]:
+            for n, old, new in improved[:5]:
+                print(f'    n={n:>7}  {metric} {old} → {new}')
+        return len(improved)
 
-    print('Running Dijkstra (metric=depth)...')
-    t0 = datetime.now()
-    METRIC = 'depth'
-    depth_graph = run_dijkstra()
-    print(f'  done in {(datetime.now()-t0).total_seconds():.1f}s')
-
-    print('Running Dijkstra (metric=length)...')
-    t0 = datetime.now()
-    METRIC = 'length'
-    length_graph = run_dijkstra()
-    print(f'  done in {(datetime.now()-t0).total_seconds():.1f}s')
-
-    print('Writing to database...')
-    bulk_write(depth_graph, length_graph)
+    total = run_and_merge('depth') + run_and_merge('length')
     generate_json()
-
-    improved  = [(n, baseline[n], depth_graph[n]['depth']) for n in depth_graph if n in baseline and depth_graph[n]['depth'] < baseline[n]]
-    regressed = [(n, baseline[n], depth_graph[n]['depth']) for n in depth_graph if n in baseline and depth_graph[n]['depth'] > baseline[n]]
-
-    print(f'\nImprovements: {len(improved):,}  Regressions: {len(regressed):,}')
-
-    if improved:
-        improved.sort(key=lambda x: x[1] - x[2], reverse=True)
-        print('Top improvements:')
-        for n, old, new in improved[:10]:
-            print(f'  n={n:>7}  depth {old} → {new}  (-{old - new})')
-
-    if regressed:
-        regressed.sort(key=lambda x: x[2] - x[1], reverse=True)
-        print('Regressions:')
-        for n, old, new in regressed[:10]:
-            print(f'  n={n:>7}  depth {old} → {new}  (+{new - old})')
-
-    snapshot('dijkstra (depth+length)', improvements=len(improved))
+    snapshot('dijkstra (depth+length)', improvements=total)
 
     with get_conn() as conn:
         rows = conn.execute(
