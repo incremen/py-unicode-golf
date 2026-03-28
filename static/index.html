@@ -297,7 +297,7 @@ ascii(ascii(that))    = ...                      len = 23</pre>
     For example, to see if we can find a shorter representation from the <code>triple</code> strategy for <code>n=150</code>, we would check how long it would be to do <code>triple(best_representation_for_50)</code>. If it was an improvement, we'd keep it. It worked, but it was clunky and required running multiple passes until things stopped getting shorter.
   </p>
   <p>
-    But as I was practicing algorithms exams, I realized — this is literally just a directed graph!
+    But as I was practicing algorithms exams, I realized — this is just a directed graph!
   </p>
   <p>
     We can treat each number 0...200,000 as a node. And each strategy is just a set of edges connecting them!
@@ -305,7 +305,11 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   </p>
   <p>
     So instead of guessing and checking backwards, we just use <strong>Dijkstra's Algorithm</strong>. 
-    We start at our "base anchors" (small numbers we can build from scratch, like <code>4 = len(str(not()))</code>) and just pathfind our way up the integer line. Because of how Dijkstra works, the very first time the algorithm reaches a number, we are mathematically guaranteed to have found the absolute shortest possible path (fewest nested parentheses) to build it.
+    You can think of putting a starting node <code>s</code> with with an edge to all the base anchors according to the base anchors' length of representation. <br>
+    And we want to find the distance from <code>s</code> to every other node in <code>{0, 1, ..., 200000}</code>.<br>
+    We can actually weight the edges differently - by weight or depth, depending on what we want.
+    (Depth - the number of function calls in the representation, Length - the character count of the representation string).
+    So each directed edge from decrement (<code>max(range(n))</code>) has a depth of 2 and a length of 12.
   </p>
 
   <div class="divider"></div>
