@@ -301,7 +301,8 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   </p>
   <p>
     We can treat each number 0...200,000 as a node. And each strategy is just a set of edges connecting them!
-    For example, the strategy <code>decrement</code> gives us a directed edge from each node <code>n</code> to <code>n-1</code> with a cost of 2 parentheses. The <code>triple</code> strategy is an edge from <code>n</code> to <code>3n</code> with a cost of 4 parentheses.
+    For example, the strategy <code>decrement</code> gives us a directed edge from each node <code>n</code> to <code>n-1</code>.
+     The <code>triple</code> strategy is an edge from <code>n</code> to <code>3n</code>.
   </p>
   <p>
     So instead of guessing and checking backwards, we just use <strong>Dijkstra's Algorithm</strong>. 
@@ -313,7 +314,7 @@ ascii(ascii(that))    = ...                      len = 23</pre>
     Additionally, we can use a mix of both to break up ties between two representations with the same depth but different lengths or vice versa.<br>
     <br>
 
-    Dijksta guarantees that we find the best paths for each node. <code>:)</code>
+    Dijksta guarantees that we find the absolute shortest paths from our list of strategies. <code>:)</code>
 
   </p>
 
