@@ -1,54 +1,70 @@
-"""Test a new strategy against the database.
+"""Test new Dijkstra strategies without writing to the database.
 
-Usage: paste your forward function and inverse function below, then run.
+Add candidate strategies to NEW_STRATEGIES below, then run.
+Compares depth improvements against the current DB state.
+
+CLI:
+    python scripts/test_strategy.py
 """
 
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from scripts.optimize_iterative import load_entries, find_improvements
-from core.db import init_db, MAX_N
-from core.strategies import STRATEGIES as DB_STRATEGIES
+from core.db import get_conn
+from core.strategies import STRATEGIES as STRING_BUILDERS, FORWARD_STRATEGIES
+import scripts.optimize_dijksta as opt
 
-MAX_OFFSET = 2
 
 # ┌─────────────────────────────────────────────────────────┐
-# │  PASTE YOUR STRATEGY HERE                               │
+# │  ADD YOUR STRATEGIES HERE                               │
+# │                                                         │
+# │  name:       unique strategy identifier                 │
+# │  forward_fn: n -> target int  (graph traversal)        │
+# │  string_fn:  expr -> new expr (expression building)    │
 # └─────────────────────────────────────────────────────────┘
 
-STRATEGY_NAME = 'my_new_strategy'
-
-def forward(parent_expr):
-    """Takes a parent expression string, returns the new expression string."""
-    return f'len(str(list(bytes({parent_expr}))))'  # <-- replace this
-
-def inverse(target):
-    """Takes a target number, returns (parent, offset) or None."""
-    for offset in range(MAX_OFFSET + 1):
-        val = target + offset
-        if val > 0 and val % 3 == 0:  # <-- replace this
-            parent = val // 3
-            if parent >= 1:
-                return parent, offset
-    return None
+NEW_STRATEGIES = [
+    # ('my_strategy',
+    #   lambda n: 6 * n + 1,
+    #   lambda p: f'len(str(list(zip(bytes({p})))))')
+]
 
 # ┌─────────────────────────────────────────────────────────┐
 # │  DON'T EDIT BELOW                                       │
 # └─────────────────────────────────────────────────────────┘
 
-DB_STRATEGIES[STRATEGY_NAME] = lambda p: forward(p)
+if not NEW_STRATEGIES:
+    print('No strategies defined. Add entries to NEW_STRATEGIES and re-run.')
+    sys.exit(0)
 
-init_db()
-entries = load_entries()
-results = find_improvements(entries, MAX_N, strategies=[(STRATEGY_NAME, inverse)])
+# Load current DB depths as baseline
+conn = get_conn()
+baseline = {r[0]: r[1] for r in conn.execute('SELECT n, depth FROM numbers').fetchall()}
+conn.close()
 
-print(f'\nStrategy: {STRATEGY_NAME}')
-print(f'Improvements: {len(results)} / {len(entries)} numbers')
+# Register string builders and forward functions, then run Dijkstra (no DB write)
+for name, forward_fn, string_fn in NEW_STRATEGIES:
+    STRING_BUILDERS[name] = string_fn
+    FORWARD_STRATEGIES.append((name, forward_fn))
 
-if results[:5]:
-    print(f'\nExamples (first 5):')
-    for candidate, new_depth, length, name, parent_n, offset, target in results[:5]:
-        print(f'  n={target}: depth -> {new_depth}')
+result = opt.run_dijkstra()
 
-if not results:
-    print('No improvements found.')
+# Clean up injected strategies so repeated runs don't accumulate
+for name, _, _ in NEW_STRATEGIES:
+    del STRING_BUILDERS[name]
+    FORWARD_STRATEGIES.pop()
+
+improved = [
+    (n, baseline[n], result[n]['depth'])
+    for n in result
+    if n in baseline and result[n]['depth'] < baseline[n]
+]
+improved.sort(key=lambda x: x[1] - x[2], reverse=True)
+
+print(f'Strategies tested: {[name for name, _, _ in NEW_STRATEGIES]}')
+print(f'Improved: {len(improved):,} / {len(result):,} numbers')
+
+if improved:
+    print(f'\nTop improvements:')
+    for n, old, new in improved[:20]:
+        print(f'  n={n:>7}  depth {old} → {new}  (-{old - new})')

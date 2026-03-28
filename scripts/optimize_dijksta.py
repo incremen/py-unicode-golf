@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from core.anchors import BASE_ANCHORS
 from core.db import init_db, snapshot, stats, bulk_write, MAX_N
-from core.strategies import apply_strategy
+from core.strategies import apply_strategy, FORWARD_STRATEGIES
 
 
 METRIC      = 'depth'   # 'depth' or 'length'
@@ -25,33 +25,7 @@ PAREN_LIMIT = 200
 
 
 
-def build_forward_strategies():
-    strategies_list = [
-        ('decrement',      lambda source_number: source_number - 1),
-        ('triple',         lambda source_number: 3 * source_number),
-        ('quad_plus_3',    lambda source_number: 4 * source_number + 3),
-        ('quint_plus_5',   lambda source_number: 5 * source_number + 5),
-        ('triangular',     lambda source_number: source_number * (source_number - 1) // 2),
-        ('enum_list_8x',   lambda source_number: 8 * source_number if 1 <= source_number <= 10 else -1),
-        ('slice_offset',   lambda source_number: len(str(source_number)) + 19 if source_number > 0 else -1),
-        ('complex_offset', lambda source_number: len(str(source_number)) + 5  if source_number > 0 else -1),
-    ]
-    
-    for zip_count in range(1, 6):
-        strategies_list.append((
-            f'zip_chain_{zip_count}', 
-            lambda source_number, multiplier=3*(zip_count+1): multiplier * source_number
-        ))
-        
-    for ascii_count in range(1, 12):
-        strategies_list.append((
-            f'ascii_exp_{ascii_count}', 
-            lambda source_number, multiplier=(1<<ascii_count)+3, constant_addition=(1<<(ascii_count+1))+1: multiplier * source_number + constant_addition
-        ))
-        
-    return strategies_list
-
-STRATEGIES = build_forward_strategies()
+STRATEGIES = FORWARD_STRATEGIES
 
 
 

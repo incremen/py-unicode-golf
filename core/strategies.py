@@ -1,5 +1,14 @@
-"""String-generation strategies for builtin-only integer expressions."""
+"""String-generation strategies for builtin-only integer expressions.
 
+To add a new strategy:
+  1. Add its string-builder to STRATEGIES (or apply_parametrized_strategy for k-variants)
+  2. Add its forward math function to FORWARD_STRATEGIES
+  Both are imported by the Dijkstra optimizer automatically.
+"""
+
+
+# ── String builders ──────────────────────────────────────────────────────────
+# Used by apply_strategy() to produce the actual expression string.
 
 STRATEGIES = {
     'base':           lambda p: p,
@@ -29,6 +38,36 @@ def apply_parametrized_strategy(strategy, parent_expr):
             inner = f'zip({inner})'
         return f'len(str(list({inner})))'
     return None
+
+
+# ── Forward math functions ───────────────────────────────────────────────────
+# Used by the Dijkstra optimizer to traverse the integer graph.
+# Each entry: (name, forward_fn) where forward_fn(n) -> target integer.
+
+def _build_forward_strategies():
+    strategies_list = [
+        ('decrement',      lambda n: n - 1),
+        ('triple',         lambda n: 3 * n),
+        ('quad_plus_3',    lambda n: 4 * n + 3),
+        ('quint_plus_5',   lambda n: 5 * n + 5),
+        ('triangular',     lambda n: n * (n - 1) // 2),
+        ('enum_list_8x',   lambda n: 8 * n if 1 <= n <= 10 else -1),
+        ('slice_offset',   lambda n: len(str(n)) + 19 if n > 0 else -1),
+        ('complex_offset', lambda n: len(str(n)) + 5  if n > 0 else -1),
+    ]
+    for zip_count in range(1, 6):
+        strategies_list.append((
+            f'zip_chain_{zip_count}',
+            lambda n, m=3*(zip_count+1): m * n
+        ))
+    for ascii_count in range(1, 12):
+        strategies_list.append((
+            f'ascii_exp_{ascii_count}',
+            lambda n, m=(1<<ascii_count)+3, c=(1<<(ascii_count+1))+1: m * n + c
+        ))
+    return strategies_list
+
+FORWARD_STRATEGIES = _build_forward_strategies()
 
 
 def apply_strategy(strategy, parent_expr, offset=0):
