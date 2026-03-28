@@ -1,7 +1,11 @@
 """Iterative DP optimizer for py-unicode-golf.
 
 Uses inverse functions to improve each entry in the database.
-Run multiple passes until no improvements are found.
+Requires a populated DB (run core/db.py --populate first).
+
+CLI:
+    python scripts/optimize_iterative.py                   — offset ≤ 2 (default)
+    python scripts/optimize_iterative.py --max-offset 10   — deep search
 """
 
 import sys, os
@@ -158,7 +162,12 @@ def write_improvements(improvements):
     conn.close()
 
 
-def run_pass(max_n=MAX_N):
+def run_pass(max_n=MAX_N, max_offset=None):
+    if max_offset is not None:
+        global MAX_OFFSET
+        MAX_OFFSET = max_offset
+        global STRATEGIES
+        STRATEGIES = build_strategies()
     entries = load_entries()
     improvements = find_improvements(entries, max_n)
     write_improvements(improvements)

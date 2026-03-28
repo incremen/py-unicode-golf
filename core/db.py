@@ -1,4 +1,9 @@
-"""SQLite database for storing optimal builtin-only expressions for integers."""
+"""SQLite database for storing optimal builtin-only expressions for integers.
+
+CLI:
+    python core/db.py              — print current stats
+    python core/db.py --populate   — reseed DB from base-3 algorithm (wipes existing data)
+"""
 
 import sqlite3
 import json
@@ -239,7 +244,8 @@ def populate(max_n=MAX_N):
 
 
 if __name__ == '__main__':
-    import sys
+    import sys, os as _os
+    sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
     if '--populate' in sys.argv:
         populate()
     stats()

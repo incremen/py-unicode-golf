@@ -1,10 +1,11 @@
-"""Dijkstra-based optimizer for py-unicode-golf.
+"""Dijkstra optimizer for py-unicode-golf.
 
-Builds the entire 0..MAX_N integer graph from BASE_ANCHORS using a
-forward-search shortest-path algorithm, then bulk-writes to SQLite.
+Builds the entire 0..MAX_N graph from BASE_ANCHORS and bulk-writes to SQLite.
+Does not require a pre-populated DB — runs standalone.
 
-Usage:
-    python scripts/optimize.py [--metric depth|length]
+CLI:
+    python scripts/optimize.py                    — optimize for depth (default)
+    python scripts/optimize.py --metric length    — optimize for expression length
 """
 
 import sys, os, heapq
