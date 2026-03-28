@@ -20,7 +20,6 @@
   <a href="https://github.com/incremen/py-unicode-golf" class="github-link" target="_blank">github</a>
 </p>
 
-<!-- ── Input ── -->
 <div class="input-row">
   <input type="text" id="charInput" class="wide" maxlength="2" placeholder="type here" autofocus>
   <button class="btn" onclick="randomChar()">random</button>
@@ -51,7 +50,6 @@
   </div>
 </div>
 
-<!-- ── Main tabs ── -->
 <div class="main-tabs">
   <button class="main-tab" onclick="showMain(this, 'panel-what')">what?</button>
   <button class="main-tab" onclick="showMain(this, 'panel-why')">why?</button>
@@ -62,7 +60,6 @@
   <button class="main-tab" onclick="showMain(this, 'panel-code')">exec()</button>
 </div>
 
-<!-- ── What? ── -->
 <div class="main-panel" id="panel-what">
   <p>
     Python has built-in functions like <code>len()</code>, <code>str()</code>, <code>not()</code>, <code>chr()</code>, etc.
@@ -82,7 +79,6 @@
 
 </div>
 
-<!-- ── Why? ── -->
 <div class="main-panel" id="panel-why">
   <p>
     Right around the whole among us era, it was gaining traction that
@@ -111,7 +107,6 @@
 
 </div>
 
-<!-- ── The formula ── -->
 <div class="main-panel" id="panel-formula">
   <p>My initial attempt used three tools:</p>
   <ul>
@@ -227,21 +222,10 @@
   </p>
 </div>
 
-<!-- ── Optimizations ── -->
 <div class="main-panel" id="panel-optimizations">
   <p>
     The base-3 algorithm works for everything but isn't always the shortest.
-  </p>
-  <p>
-    The idea: for each number in the database, the optimizer asks "could any strategy + some
-    smaller number produce this more cheaply?" For example, for target 51: the 3x strategy
-    inverts to 51/3 = 17. If wrapping 17's expression in <code>len(str(list(bytes(...))))</code>
-    is shorter than what we already have for 51, we replace it.
-  </p>
-  <p>
-    It does this for every number (0&ndash;200,000) and every strategy. Each pass can improve
-    expressions, and improvements cascade &mdash; if a later pass finds a shorter way to build 17,
-    everything that depends on 17 (like 51) automatically gets shorter too.
+    Besides that first algorithm, we actually found a lot of other strategies to jump between numbers.
   </p>
 
   <div class="divider"></div>
@@ -304,6 +288,25 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 
   <div class="divider"></div>
 
+  <p><strong>Finding the shortest paths</strong></p>
+  <p>
+    Initially, to optimize this whole thing, I would run a script to loop over every number, and check all possibilities for other numbers to reach it. 
+    For example, to see if we can find a shorter representation from the <code>triple</code> strategy for <code>n=150</code>, we would check how long it would be to do <code>triple(best_representation_for_50)</code>. If it was an improvement, we'd keep it. It worked, but it was clunky and required running multiple passes until things stopped getting shorter.
+  </p>
+  <p>
+    But as I was practicing algorithms exams, I realized — this is literally just a directed graph!
+  </p>
+  <p>
+    We can treat each number 0...200,000 as a node. And each strategy is just a set of edges connecting them!
+    For example, the strategy <code>decrement</code> gives us a directed edge from each node <code>n</code> to <code>n-1</code> with a cost of 2 parentheses. The <code>triple</code> strategy is an edge from <code>n</code> to <code>3n</code> with a cost of 4 parentheses.
+  </p>
+  <p>
+    So instead of guessing and checking backwards, we just use <strong>Dijkstra's Algorithm</strong>. 
+    We start at our "base anchors" (small numbers we can build from scratch, like <code>4 = len(str(not()))</code>) and just pathfind our way up the integer line. Because of how Dijkstra works, the very first time the algorithm reaches a number, we are mathematically guaranteed to have found the absolute shortest possible path (fewest nested parentheses) to build it.
+  </p>
+
+  <div class="divider"></div>
+
   <p class="note">
     Full list of strategies (many are useless): <a href="https://github.com/incremen/py-unicode-golf/blob/master/reference/strategies.py" target="_blank">strategies.py</a>
     &middot; Base anchors: <a href="https://github.com/incremen/py-unicode-golf/blob/master/core/anchors.py" target="_blank">anchors.py</a>
@@ -313,7 +316,6 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   </p>
 </div>
 
-<!-- ── Database ── -->
 <div class="main-panel" id="panel-db">
   <p>
     A simple sqllite database stores the shortest known expression for each number from 0 to 200,000.
@@ -376,7 +378,6 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   </table>
 </div>
 
-<!-- ── Strings ── -->
 <div class="main-panel" id="panel-strings">
   <p>
     So we've got single characters figured out. But what about whole strings?
@@ -496,7 +497,6 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 
 </div>
 
-<!-- ── exec() ── -->
 <div class="main-panel" id="panel-code">
   
   <blockquote class="tldr-box">
@@ -573,7 +573,6 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 
 </div>
 
-<!-- Load order: utils → logo → prefetch → main → visualize → panels → code -->
 <script src="/static/js/utils.js"></script>
 <script src="/static/js/logo.js"></script>
 <script src="/static/js/prefetch.js"></script>
