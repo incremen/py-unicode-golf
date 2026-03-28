@@ -442,6 +442,26 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
 
 .divider { border-top: 1px solid #e0e0d8; margin: 1.2rem 0; }
 
+.strategies-disclosure { margin: 0; }
+.strategies-disclosure summary {
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.strategies-disclosure summary::-webkit-details-marker { display: none; }
+.strategies-disclosure summary::before {
+  content: '▶';
+  font-size: 0.65rem;
+  color: #888;
+  transition: transform 0.15s;
+  display: inline-block;
+}
+.strategies-disclosure[open] summary::before { transform: rotate(90deg); }
+.strategies-disclosure > :not(summary) { margin-top: 0.2rem; }
+
 /* Code panel */
 .code-examples {
   display: flex;
