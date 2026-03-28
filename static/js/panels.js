@@ -29,13 +29,7 @@ function loadStrategies(sortKey = 'chain_entries') {
   );
   const sorted = [...STRATEGY_BREAKDOWN].filter(st => st.name !== 'base').sort((a, b) => b[sortKey] - a[sortKey]);
   document.getElementById('strategiesList').innerHTML = sorted.map(st =>
-    `<span class="strategy-tag tip">${st.name} <span class="count">${st[sortKey].toLocaleString()}</span>` +
-    `<span class="tiptext">` +
-      `<b>final:</b> ${st.count.toLocaleString()} &nbsp;` +
-      `<b>in chains:</b> ${st.chain_entries.toLocaleString()} &nbsp;` +
-      `<b>total uses:</b> ${st.total_uses.toLocaleString()}<br>` +
-      `avg depth ${st.avg_depth}` +
-    `</span></span>`
+    `<span class="strategy-tag">${st.name} <span class="count">${st[sortKey].toLocaleString()}</span></span>`
   ).join('');
 }
 
