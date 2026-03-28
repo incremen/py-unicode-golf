@@ -34,9 +34,9 @@ function loadHistory() {
   document.getElementById('historyBody').innerHTML = OPTIMIZATION_HISTORY.map(e => `
     <tr>
       <td>${e.label}</td>
-      <td class="num">${e.avg_depth}</td>
+      <td class="num">${e.avg_depth.toFixed(2)}</td>
       <td class="num">${e.max_depth}</td>
-      <td class="num">${e.avg_len.toLocaleString()}</td>
+      <td class="num">${e.avg_len.toFixed(1)}</td>
     </tr>
   `).join('');
 }

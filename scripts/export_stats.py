@@ -32,7 +32,17 @@ db_stats = {
     'max_len': max_len,
 }
 
+# Optimization history — one row per distinct phase, last run wins for duplicates
+history_rows = conn.execute('''
+    SELECT label, avg_depth, max_depth, avg_len FROM optimization_log ORDER BY id
+''').fetchall()
 conn.close()
+
+# Deduplicate: for repeated labels keep only the last
+seen = {}
+for label, avg_depth_h, max_depth_h, avg_len_h in history_rows:
+    seen[label] = {'label': label, 'avg_depth': avg_depth_h, 'max_depth': max_depth_h, 'avg_len': round(avg_len_h, 1)}
+history = list(seen.values())
 
 # Formula stats (base-3 algorithm, no optimizations)
 sample = list(range(0, 200_001, 10))
@@ -56,4 +66,9 @@ with open(output, 'w') as f:
     f.write(f'const DB_STATS = {json.dumps(db_stats)};\n')
     f.write(f'const FORMULA_STATS = {json.dumps(formula_stats)};\n')
 
-print(f"Exported {len(strategies)} strategies, db stats, formula stats to static/database_stats.js")
+history_output = os.path.join(STATIC_DIR, 'history.js')
+with open(history_output, 'w') as f:
+    f.write(f'const OPTIMIZATION_HISTORY = {json.dumps(history, indent=2)};\n')
+
+print(f"Exported {len(strategies)} strategies, db stats, formula stats → database_stats.js")
+print(f"Exported {len(history)} history entries → history.js")
