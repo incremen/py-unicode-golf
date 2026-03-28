@@ -105,8 +105,8 @@ def snapshot(label, improvements=0):
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             datetime.now().isoformat(), label, improvements,
-            total, round(avg_depth, 2), max_depth,
-            round(avg_len, 2), max_len,
+            total, round(avg_depth, 4), max_depth,
+            round(avg_len, 4), max_len,
             json.dumps(strategy_counts),
         ))
         conn.commit()
@@ -150,5 +150,96 @@ def stats():
               f"avg_len={entry['avg_len']}, improvements={entry['improvements']}")
 
 
+def _insert(conn, n, expr, strategy, parent=None, offset=0):
+    conn.execute(
+        'INSERT OR IGNORE INTO numbers (n, expr, depth, len, strategy, parent, offset) VALUES (?,?,?,?,?,?,?)',
+        (n, expr, expr.count('('), len(expr), strategy, parent, offset),
+    )
+
+
+def snapshot_minimal_formula(max_n=MAX_N):
+    """Compute base-3 stats using only seeds 0 and 1, without touching the numbers table."""
+    memo = {}
+    def build(n):
+        if n in memo: return memo[n]
+        if n == 0: memo[0] = 'int(not(not()))'; return memo[0]
+        if n == 1: memo[1] = 'int(not())';      return memo[1]
+        q = -(-n // 3); r = 3 * q - n
+        expr = f'len(str(list(bytes({build(q)}))))'
+        for _ in range(r): expr = f'max(range({expr}))'
+        memo[n] = expr; return expr
+
+    import sys as _sys
+    old_limit = _sys.getrecursionlimit()
+    _sys.setrecursionlimit(100_000)
+    exprs = [build(n) for n in range(max_n + 1)]
+    _sys.setrecursionlimit(old_limit)
+
+    depths = [e.count('(') for e in exprs]
+    lengths = [len(e) for e in exprs]
+    total = len(exprs)
+    avg_d = sum(depths) / total
+    avg_l = sum(lengths) / total
+
+    with get_conn() as conn:
+        strategy_counts = json.dumps({'base-3-minimal': total})
+        conn.execute('''
+            INSERT INTO optimization_log
+            (timestamp, label, improvements, total_entries, avg_depth, max_depth, avg_len, max_len, strategy_counts)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            datetime.now().isoformat(),
+            'minimal formula (seeds: 0, 1)',
+            0, total,
+            round(avg_d, 4), max(depths),
+            round(avg_l, 4), max(lengths),
+            strategy_counts,
+        ))
+        conn.commit()
+    print(f'Snapshotted minimal formula: avg_depth={avg_d:.4f}  max_depth={max(depths)}')
+
+
+def populate(max_n=MAX_N):
+    """Seed the database with base-3 expressions for all integers 0..max_n."""
+    from core.anchors import BASE_ANCHORS, build_n
+    from core.strategies import apply_strategy
+
+    init_db()
+    with get_conn() as conn:
+        conn.execute('DELETE FROM numbers')
+
+        # Base anchors
+        for n, expr in BASE_ANCHORS.items():
+            _insert(conn, n, expr, 'base')
+
+        # Fill gaps between anchors via decrement
+        sorted_anchors = sorted(BASE_ANCHORS.keys())
+        for i, anchor in enumerate(sorted_anchors):
+            prev = sorted_anchors[i - 1] + 1 if i > 0 else 0
+            for n in range(prev, anchor):
+                if n in BASE_ANCHORS:
+                    continue
+                gap = anchor - n
+                expr = apply_strategy('decrement', BASE_ANCHORS[anchor], gap - 1)
+                _insert(conn, n, expr, 'decrement', parent=anchor, offset=gap)
+
+        # Base-3 for everything above the last anchor
+        max_anchor = max(BASE_ANCHORS.keys())
+        for n in range(max_anchor + 1, max_n + 1):
+            if n in BASE_ANCHORS:
+                continue
+            _insert(conn, n, build_n(n), 'triple', parent=None, offset=0)
+
+        conn.commit()
+
+    with get_conn() as conn:
+        count = conn.execute('SELECT COUNT(*) FROM numbers').fetchone()[0]
+    print(f'Populated {count:,} entries (0 to {max_n})')
+    snapshot('base-3 (44 anchors)', improvements=0)
+
+
 if __name__ == '__main__':
+    import sys
+    if '--populate' in sys.argv:
+        populate()
     stats()

@@ -166,10 +166,13 @@ def run_pass(max_n=MAX_N):
 
 
 if __name__ == '__main__':
+    if '--max-offset' in sys.argv:
+        MAX_OFFSET = int(sys.argv[sys.argv.index('--max-offset') + 1])
     init_db()
-    print('Running iterative optimization pass...')
+    print(f'Running iterative optimization pass (MAX_OFFSET={MAX_OFFSET})...')
     n = run_pass()
     print(f'Improved {n} entries.')
-    snapshot(f'iterative pass (+{n})', improvements=n)
+    label = f'iterative optimizer (offset \u2264 {MAX_OFFSET})'
+    snapshot(label, improvements=n)
     print()
     stats()

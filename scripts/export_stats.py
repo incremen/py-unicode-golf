@@ -32,17 +32,41 @@ db_stats = {
     'max_len': max_len,
 }
 
-# Optimization history — one row per distinct phase, last run wins for duplicates
+# Optimization history — pick canonical entries by phase, preferring the most precise (latest) run
 history_rows = conn.execute('''
     SELECT label, avg_depth, max_depth, avg_len FROM optimization_log ORDER BY id
 ''').fetchall()
 conn.close()
 
-# Deduplicate: for repeated labels keep only the last
+# Map labels to canonical phase names, keep last occurrence of each phase
+PHASE_MAP = {
+    'minimal formula (seeds: 0, 1)':         'minimal formula (seeds: 0, 1)',
+    'full formula (44 base anchors)':         'full formula (44 base anchors)',
+    'base-3 (44 anchors)':                   'full formula (44 base anchors)',
+    'optimizer (offset \u2264 2)':            'iterative optimizer',
+    'iterative optimizer (offset \u2264 2)':  'iterative optimizer',
+    'iterative pass':                         'iterative optimizer',
+    'deep search (offset \u2264 10)':         'deep search (offset \u2264 10)',
+    'iterative optimizer (offset \u2264 10)': 'deep search (offset \u2264 10)',
+    'dijkstra (metric=depth)':               'dijkstra (depth)',
+    'dijkstra (depth)':                      'dijkstra (depth)',
+    'dijkstra (metric=length)':              'dijkstra (length)',
+}
+
 seen = {}
-for label, avg_depth_h, max_depth_h, avg_len_h in history_rows:
-    seen[label] = {'label': label, 'avg_depth': avg_depth_h, 'max_depth': max_depth_h, 'avg_len': round(avg_len_h, 1)}
-history = list(seen.values())
+for label, avg_d, max_d, avg_l in history_rows:
+    phase = next((v for k, v in PHASE_MAP.items() if label.startswith(k)), label)
+    seen[phase] = {'label': phase, 'avg_depth': round(avg_d, 4), 'max_depth': max_d, 'avg_len': round(avg_l, 4)}
+
+ORDER = [
+    'minimal formula (seeds: 0, 1)',
+    'full formula (44 base anchors)',
+    'iterative optimizer',
+    'deep search (offset \u2264 10)',
+    'dijkstra (depth)',
+    'dijkstra (length)',
+]
+history = [seen[p] for p in ORDER if p in seen]
 
 # Formula stats (base-3 algorithm, no optimizations)
 sample = list(range(0, 200_001, 10))

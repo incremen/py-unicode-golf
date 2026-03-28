@@ -141,5 +141,5 @@ if __name__ == '__main__':
     written = bulk_write(final_graph)
     print(f'Inserted {written:,} rows.')
 
-    snapshot(f'dijkstra ({METRIC})', improvements=written)
+    snapshot(f'dijkstra (metric={METRIC})', improvements=written)
     stats()
