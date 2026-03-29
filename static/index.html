@@ -262,16 +262,24 @@
   <details class="strategies-disclosure">
     <summary><strong>Available strategies</strong></summary>
 
-  <p style="margin-top:1rem"><strong>Exact multipliers</strong></p>
-  <p>All based on stringifying bytes objects in different ways:</p>
+  <p style="margin-top:1rem"><strong>Decrement</strong></p>
+  <table class="op-table">
+    <tr><td>max(range(n))</td><td>= n &minus; 1</td><td>2 parens</td></tr>
+  </table>
+  <p class="note">range(n) yields 0…n-1. max() picks the last element.</p>
+
+  <div class="divider"></div>
+
+  <p><strong>Exact multipliers</strong></p>
+  <p>All based on stringifying bytes/bytearray objects:</p>
   <table class="op-table">
     <tr><td>len(str(list(bytes(n))))</td><td>= 3n</td><td>4 parens</td></tr>
     <tr><td>len(str(bytes(n)))</td><td>= 4n + 3</td><td>3 parens</td></tr>
+    <tr><td>len(str(bytearray(n)))</td><td>= 4n + 14</td><td>3 parens</td></tr>
     <tr><td>len(ascii(str(bytes(n))))</td><td>= 5n + 5</td><td>4 parens</td></tr>
   </table>
   <p class="note">
-    4n+3 costs only 3 parens (cheaper than 3x), so it's often better
-    when you can land on the right value with the +3 offset.
+    bytearray(n) stringifies as <code>bytearray(b'\x00...')</code> — a 14-char prefix, then 4 chars per byte. Same paren cost as quad_plus_3 but a different constant, filling in different gaps.
   </p>
 
   <div class="divider"></div>
@@ -315,6 +323,32 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 
   <p><strong>Triangular jump</strong> &mdash; quadratic growth for 2 parens</p>
   <p><code>sum(range(n))</code> = n(n-1)/2</p>
+
+  <div class="divider"></div>
+
+  <p><strong>Super-linear (n&middot;log n)</strong> &mdash; stringify a list of integers</p>
+  <p class="note">
+    When you stringify a list like <code>[0, 1, 2, ..., n-1]</code>, the result grows faster than n
+    because numbers gain digits as they get larger. These strategies exploit that.
+  </p>
+  <table class="op-table">
+    <tr><td>len(str(list(range(n))))</td><td>&asymp; n&middot;log<sub>10</sub>(n)</td><td>4 parens</td></tr>
+    <tr><td>len(str(list(zip(range(n)))))</td><td>&asymp; n&middot;log<sub>10</sub>(n) + 5n</td><td>5 parens</td></tr>
+    <tr><td>len(str(list(enumerate(bytes(n)))))</td><td>&asymp; n&middot;log<sub>10</sub>(n) + 6n</td><td>5 parens</td></tr>
+    <tr><td>len(str(dict(enumerate(bytes(n)))))</td><td>&asymp; n&middot;log<sub>10</sub>(n) + 5n</td><td>5 parens</td></tr>
+    <tr><td>len(str(dict(enumerate(range(n)))))</td><td>&asymp; 2n&middot;log<sub>10</sub>(n)</td><td>5 parens</td></tr>
+  </table>
+
+  <div class="divider"></div>
+
+  <p><strong>Digit-count (logarithmic)</strong></p>
+  <p class="note">These grow with the number of digits of n, not n itself — extremely cheap for large n.</p>
+  <table class="op-table">
+    <tr><td>len(str(slice(n)))</td><td>= digits(n) + 19</td><td>3 parens</td></tr>
+  </table>
+  <p class="note"><code>str(slice(n))</code> → <code>"slice(None, n, None)"</code> — always 19 chars of boilerplate plus the digits of n.</p>
+
+  <p class="note" style="margin-top:1rem">There are more strategies in the codebase — only those with &gt;1,000 uses in the final database are listed here.</p>
 
   </details>
 
