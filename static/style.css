@@ -461,7 +461,7 @@ tr.pair-second td { border-top: 1px dashed #ddd; }
 
 .divider { border-top: 2px solid #c8c8be; margin: 1.2rem 0; }
 
-.openable-frame { margin: 0; border-top: 3px solid #999; border-bottom: 3px solid #999; padding: 0.6rem 0; }
+.openable-frame { margin: 1.2rem 0; border-top: 3px solid #999; border-bottom: 3px solid #999; padding: 0.6rem 0; }
 .openable-frame summary {
   cursor: pointer;
   user-select: none;
