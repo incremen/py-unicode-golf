@@ -136,6 +136,62 @@
 
 <div class="main-panel" id="panel-formula">
   <details class="openable-frame">
+    <summary><strong>Base anchors — numbers we can reach directly</strong></summary>
+    <p style="margin-top:0.6rem">
+      Before any algorithm, we need a handful of numbers we can construct
+      from zero-argument builtins alone. These become the starting points for everything else.
+    </p>
+
+    <p style="margin-top:0.8rem"><strong>Booleans → 0 and 1</strong></p>
+    <p class="note">
+      <code>not()</code> returns <code>True</code>; <code>not(not())</code> returns <code>False</code>.
+      Wrapping in <code>int()</code> converts to <b>1</b> and <b>0</b>.
+    </p>
+
+    <div class="divider"></div>
+
+    <p><strong>len(str(x)) — length of string representations</strong></p>
+    <p class="note">
+      Python objects have predictable string forms, so <code>len(str(x))</code> gives a fixed small integer.
+    </p>
+    <table class="op-table">
+      <tr><td>on <code>not()</code></td><td>→ len("True") = <b>4</b></td></tr>
+      <tr><td>on <code>int(not())</code> via bin</td><td>→ len("0b1") = <b>3</b>, len("0b100") = <b>5</b></td></tr>
+      <tr><td>on <code>frozenset()</code></td><td>→ len("frozenset()") = <b>11</b></td></tr>
+    </table>
+
+    <div class="divider"></div>
+
+    <p><strong>len(str(type(x))) — length of type name strings</strong></p>
+    <p class="note">
+      <code>str(type(x))</code> gives <code>"&lt;class 'typename'&gt;"</code>.
+      Each type has a different name length, covering a spread of values from <b>13 to 33</b>.
+    </p>
+    <table class="op-table">
+      <tr><td>on <code>int()</code>, <code>not()</code>, <code>float()</code> …</td><td>→ 13, 14, 15 …</td></tr>
+      <tr><td>on iterators: <code>iter(set())</code>, <code>iter(list())</code> …</td><td>→ 22, 23, 24, 26, 28 …</td></tr>
+      <tr><td>on reversed: <code>reversed(list())</code>, <code>reversed(dict())</code></td><td>→ 30, 33</td></tr>
+    </table>
+
+    <div class="divider"></div>
+
+    <p><strong>ord(min/max(str(x))) — ASCII codes of characters inside strings</strong></p>
+    <p class="note">
+      Every Python value has a string representation that contains specific characters.
+      <code>ord(min(str(x)))</code> picks the smallest character; <code>ord(max(...))</code> picks the largest.
+      For example, <code>str(not())</code> = <code>"True"</code> → <code>ord(min(...))</code> = <b>84</b> (<code>'T'</code>).
+    </p>
+    <table class="op-table">
+      <tr><td>on <code>not()</code>, <code>not(not())</code></td><td>→ 84 'T', 117 'u', 70 'F', 115 's'</td></tr>
+      <tr><td>on <code>float()</code>, <code>tuple()</code></td><td>→ 46 '.', 48 '0', 40 '(', 41 ')'</td></tr>
+      <tr><td>on <code>bytes()</code>, <code>list()</code>, <code>dict()</code></td><td>→ 39 "'", 98 'b', 91 '[', 93 ']', 123 '{', 125 '}'</td></tr>
+      <tr><td>on <code>complex()</code>, <code>set()</code>, <code>frozenset()</code></td><td>→ 106 'j', 116 't', 122 'z'</td></tr>
+      <tr><td>on <code>hex()</code>/<code>oct()</code> of <code>int(not())</code></td><td>→ 120 'x', 111 'o'</td></tr>
+      <tr><td>on <code>type(type(not()))</code></td><td>→ 121 'y'</td></tr>
+    </table>
+  </details>
+
+  <details class="openable-frame">
     <summary><strong>My initial attempt</strong></summary>
     <p style="margin-top:0.6rem">My initial attempt used three tools:</p>
     <ul>
