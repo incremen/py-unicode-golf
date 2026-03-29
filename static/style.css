@@ -459,10 +459,10 @@ tr.pair-second td { border-top: 1px dashed #ddd; }
 .strategy-sort-btn:hover { border-color: #306998; color: #306998; }
 .strategy-sort-btn.active { border-color: #306998; color: #306998; font-weight: 600; }
 
-.divider { border-top: 1px solid #e0e0d8; margin: 1.2rem 0; }
+.divider { border-top: 2px solid #c8c8be; margin: 1.2rem 0; }
 
-.strategies-disclosure { margin: 0; }
-.strategies-disclosure summary {
+.openable-frame { margin: 0; border-top: 3px solid #999; border-bottom: 3px solid #999; padding: 0.6rem 0; }
+.openable-frame summary {
   cursor: pointer;
   user-select: none;
   list-style: none;
@@ -470,16 +470,16 @@ tr.pair-second td { border-top: 1px dashed #ddd; }
   align-items: center;
   gap: 0.5rem;
 }
-.strategies-disclosure summary::-webkit-details-marker { display: none; }
-.strategies-disclosure summary::before {
+.openable-frame summary::-webkit-details-marker { display: none; }
+.openable-frame summary::before {
   content: '▶';
   font-size: 0.65rem;
   color: #888;
   transition: transform 0.15s;
   display: inline-block;
 }
-.strategies-disclosure[open] summary::before { transform: rotate(90deg); }
-.strategies-disclosure > :not(summary) { margin-top: 0.2rem; }
+.openable-frame[open] summary::before { transform: rotate(90deg); }
+.openable-frame > :not(summary) { margin-top: 0.2rem; }
 
 /* Code panel */
 .code-examples {
