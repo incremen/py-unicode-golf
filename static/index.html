@@ -84,16 +84,17 @@
 <div class="main-panel" id="panel-what">
   <p>
     Basically, this is a code golf challenge to represent each unicode character in a weird way, in python. <br>
-    Python has built-in functions like <code>len()</code>, <code>str()</code>, <code>not()</code>, <code>chr()</code>, etc.
-    This site builds unicode characters using these functions, and also follows these rules:
+    <br>
+    Specifically, this site builds unicode characers from python's built-in functions, like: <code>len()</code>, <code>str()</code>, <code>not()</code>, <code>chr()</code>, etc.
+    Also, it follows these rules:
   </p>
   <ul>
     <li>The final function must take in no parameters, like <code>not()</code>.</li>
     <li>Each function can only take in one parameter; <code>pow(a,b)</code> isn't allowed.</li>
-    <li>Represent each Unicode character as a composition of these functions.</li>
+    <li>Each character must be represented by a compisition - just one line.</li>
   </ul>
   <p>Just nested function calls.</p>
-    <p>
+    <p
     For example, <code>chr(max(range(ord(min(str(bytes()))))))</code> evaluates to <code>&</code>. <br>
 </p>
 <p>
