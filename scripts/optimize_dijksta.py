@@ -130,9 +130,10 @@ if __name__ == '__main__':
     snapshot('dijkstra (depth+length)', improvements=total)
 
     with get_conn() as conn:
+        how_many_snapshots = 6
         rows = conn.execute(
-            'SELECT label, avg_depth, max_depth, avg_len FROM optimization_log ORDER BY id DESC LIMIT 3'
+            f'SELECT label, avg_depth, max_depth, avg_len FROM optimization_log ORDER BY id DESC LIMIT {how_many_snapshots}'
         ).fetchall()
-    print('\nLast 3 snapshots:')
+    print(f'\nLast {how_many_snapshots} snapshots:')
     for label, avg_depth, max_depth, avg_len in reversed(rows):
         print(f'  {label}: avg_depth={avg_depth}  max_depth={max_depth}  avg_len={avg_len}')
