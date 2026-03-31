@@ -88,41 +88,35 @@ function placeEdge(sourceId, targetId, strategy) {
   }
 }
 
-/**
- * Computes radial positions for neighbors so they point outward from the focus node.
- */
-function placeNeighborsRadial(focusId, neighbors) {
+// Places neighbors in a circle around focusId, avoiding the direction of parentId.
+function placeNeighborsRadial(focusId, neighbors, parentId) {
   const focusEl  = cy.getElementById(String(focusId));
   const focusPos = focusEl.position();
   const unplaced = neighbors.filter(neighbor => !cy.getElementById(String(neighbor.id)).length);
 
   if (unplaced.length === 0) return;
 
-  // Vector from origin (0,0) to focus node
-  const radius = Math.sqrt(focusPos.x ** 2 + focusPos.y ** 2);
-  const angle  = Math.atan2(focusPos.y, focusPos.x);
+  const parentEl = parentId ? cy.getElementById(String(parentId)) : null;
 
-  const nextRadius = radius + RADIAL_DISTANCE;
+  if (parentEl && parentEl.length) {
+    // Spread away from the incoming direction
+    const parentPos  = parentEl.position();
+    const incomingAngle = Math.atan2(parentPos.y - focusPos.y, parentPos.x - focusPos.x);
+    const centerAngle   = incomingAngle + Math.PI;
+    const startAngle    = centerAngle - SWEEP_ANGLE / 2;
+    const step          = unplaced.length === 1 ? 0 : SWEEP_ANGLE / (unplaced.length - 1);
 
-  unplaced.forEach((neighbor, index) => {
-    let targetAngle;
-
-    if (radius === 0) {
-      // Root node (0,0) explodes neighbors in a full circle
-      targetAngle = (index / unplaced.length) * (Math.PI * 2);
-    } else {
-      // Neighbors splay outward in a "cone" centered on the parent's current angle
-      const spread = (unplaced.length === 1) ? 0 : SWEEP_ANGLE;
-      const startAngle = angle - spread / 2;
-      const step = (unplaced.length === 1) ? 0 : spread / (unplaced.length - 1);
-      targetAngle = startAngle + index * step;
-    }
-
-    const x = nextRadius * Math.cos(targetAngle);
-    const y = nextRadius * Math.sin(targetAngle);
-
-    placeNode(neighbor.id, x, y);
-  });
+    unplaced.forEach((neighbor, index) => {
+      const angle = startAngle + index * step;
+      placeNode(neighbor.id, focusPos.x + RADIAL_DISTANCE * Math.cos(angle), focusPos.y + RADIAL_DISTANCE * Math.sin(angle));
+    });
+  } else {
+    // No parent (root node): full circle
+    unplaced.forEach((neighbor, index) => {
+      const angle = (index / unplaced.length) * (Math.PI * 2);
+      placeNode(neighbor.id, focusPos.x + RADIAL_DISTANCE * Math.cos(angle), focusPos.y + RADIAL_DISTANCE * Math.sin(angle));
+    });
+  }
 }
 
 // ── Visibility & UI ──────────────────────────────────────────────────────────
@@ -206,7 +200,7 @@ function updateInfoBar(focusId) {
 /**
  * Fetches and renders the 1-hop neighborhood of a node.
  */
-async function expandNode(nodeId) {
+async function expandNode(nodeId, parentId = null) {
   const id = String(nodeId);
   if (expandedNodes.has(id)) return [];
 
@@ -218,7 +212,7 @@ async function expandNode(nodeId) {
   cy.getElementById(id).addClass('expanded');
 
   const beforeIds = new Set(cy.nodes().map(node => node.id()));
-  placeNeighborsRadial(data.focus, data.neighbors);
+  placeNeighborsRadial(data.focus, data.neighbors, parentId);
   const placed = new Set(cy.nodes().filter(node => !beforeIds.has(node.id())).map(node => node.id()));
   placedByExpansion.set(id, placed);
 
@@ -249,16 +243,6 @@ function evictOldest() {
     }
   });
   placedByExpansion.delete(evicted);
-
-  // Translate all remaining nodes so the new oldest is at (0, 0)
-  const newCenter = cy.getElementById(clickHistory[0]);
-  if (newCenter.length) {
-    const offset = newCenter.position();
-    cy.nodes().forEach(node => {
-      const pos = node.position();
-      node.position({ x: pos.x - offset.x, y: pos.y - offset.y });
-    });
-  }
 }
 
 /**
@@ -267,8 +251,10 @@ function evictOldest() {
 async function expandBFS(startNodeId, depth = BFS_DEPTH) {
   const id = String(startNodeId);
 
-  // Track click history; evict oldest if over limit
+  // Capture parent before pushing so we know where we came from
+  let parentId = null;
   if (!clickHistory.includes(id)) {
+    parentId = clickHistory.length > 0 ? clickHistory[clickHistory.length - 1] : null;
     clickHistory.push(id);
     if (clickHistory.length > MAX_CLICK_HISTORY) {
       evictOldest();
@@ -280,7 +266,7 @@ async function expandBFS(startNodeId, depth = BFS_DEPTH) {
     const unexpanded = currentLevel.filter(nodeId => !expandedNodes.has(String(nodeId)));
     if (unexpanded.length === 0) break;
 
-    const nextLevelResults = await Promise.all(unexpanded.map(nodeId => expandNode(nodeId)));
+    const nextLevelResults = await Promise.all(unexpanded.map(nodeId => expandNode(nodeId, parentId)));
     currentLevel = [...new Set(nextLevelResults.flat())];
   }
 
