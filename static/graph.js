@@ -15,6 +15,7 @@ const STRATEGY_COLORS = {
   zip_chain_2:      '#00838f',
   ascii_exp_4:      '#546e7a',
   zip_chain_3:      '#7f8c8d',
+  chr:              '#888888',
 };
 
 // Layout Constants
@@ -217,6 +218,14 @@ function updateInfoBar(focusId) {
 /**
  * Fetches and renders the 1-hop neighborhood of a node.
  */
+function makeChrNeighbor(nodeId) {
+  const codepoint  = Number(nodeId);
+  const raw        = String.fromCodePoint(codepoint);
+  const isPrintable = codepoint >= 32 && codepoint !== 127 && raw.trim() !== '';
+  const label      = isPrintable ? raw : `\\x${codepoint.toString(16).padStart(2, '0')}`;
+  return { id: `chr-${nodeId}`, label, isChr: true };
+}
+
 async function expandNode(nodeId, parentId = null) {
   const id = String(nodeId);
   if (expandedNodes.has(id)) return [];
@@ -228,12 +237,29 @@ async function expandNode(nodeId, parentId = null) {
 
   cy.getElementById(id).addClass('expanded');
 
+  const chrNeighbor = makeChrNeighbor(nodeId);
+  const allNeighbors = [...data.neighbors, chrNeighbor];
+
   const beforeIds = new Set(cy.nodes().map(node => node.id()));
-  placeNeighborsRings(data.focus, data.neighbors, parentId);
+  placeNeighborsRings(data.focus, allNeighbors, parentId);
+
+  // Add the chr node to the graph with its special class and label
+  const chrEl = cy.getElementById(chrNeighbor.id);
+  if (chrEl.length) chrEl.addClass('chr-node').data('label', chrNeighbor.label);
+
   const placed = new Set(cy.nodes().filter(node => !beforeIds.has(node.id())).map(node => node.id()));
   placedByExpansion.set(id, placed);
 
   data.neighbors.forEach(neighbor => placeEdge(data.focus, neighbor.id, neighbor.strategy));
+
+  // Add chr edge
+  const chrEdgeId = `e-${nodeId}-${chrNeighbor.id}-chr`;
+  if (!cy.getElementById(chrEdgeId).length) {
+    cy.add({ data: { id: chrEdgeId, source: id, target: chrNeighbor.id, strategy: 'chr', color: STRATEGY_COLORS.chr } });
+    if (!nodeIncomingEdges.has(chrNeighbor.id)) nodeIncomingEdges.set(chrNeighbor.id, []);
+    nodeIncomingEdges.get(chrNeighbor.id).push(chrEdgeId);
+  }
+
   refreshEdgeVisibility();
   refreshNodeVisibility();
 
