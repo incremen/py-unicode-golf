@@ -1,12 +1,8 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 body {
-  background: #12151e;
+  background: transparent;
   overflow: hidden;
+  padding: 0;
+  max-width: none;
 }
 
 #cy {
