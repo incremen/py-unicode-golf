@@ -56,11 +56,60 @@ function init() {
 
 // ── Graph Construction ───────────────────────────────────────────────────────
 
-function placeNode(nodeId) {
+function placeNode(nodeId, x = 0, y = 0) {
   const id = String(nodeId);
   if (!cy.getElementById(id).length) {
-    cy.add({ data: { id, label: id }, position: { x: 0, y: 0 } });
+    cy.add({ data: { id, label: id }, position: { x, y } });
   }
+}
+
+function placeNeighborsRings(focusId, neighbors, parentId) {
+  const focusEl  = cy.getElementById(String(focusId));
+  const focusPos = focusEl.position();
+  const unplaced = neighbors.filter(neighbor => !cy.getElementById(String(neighbor.id)).length);
+
+  if (unplaced.length === 0) return;
+
+  const INNER_RADIUS = 110;
+  const RING_SPACING = 85;
+  const MAX_PER_RING = 7;
+
+  const parentEl = parentId ? cy.getElementById(String(parentId)) : null;
+  let blockAngle  = null;
+  if (parentEl && parentEl.length) {
+    const parentPos = parentEl.position();
+    blockAngle = Math.atan2(parentPos.y - focusPos.y, parentPos.x - focusPos.x);
+  }
+
+  unplaced.forEach((neighbor, index) => {
+    const ringIndex    = Math.floor(index / MAX_PER_RING);
+    const indexInRing  = index % MAX_PER_RING;
+    const nodesInRing  = Math.min(MAX_PER_RING, unplaced.length - ringIndex * MAX_PER_RING);
+    const radius       = INNER_RADIUS + ringIndex * RING_SPACING;
+
+    let angle;
+    if (blockAngle !== null) {
+      if (nodesInRing === 1) {
+        angle = blockAngle + Math.PI;
+      } else {
+        const sweep      = Math.PI * 1.33;
+        const startAngle = blockAngle + Math.PI - sweep / 2;
+        const step       = sweep / (nodesInRing - 1);
+        const offset     = ringIndex % 2 === 1 ? step / 2 : 0;
+        angle = startAngle + indexInRing * step + offset;
+      }
+    } else {
+      if (nodesInRing === 1) {
+        angle = 0;
+      } else {
+        const step   = (Math.PI * 2) / nodesInRing;
+        const offset = ringIndex % 2 === 1 ? step / 2 : 0;
+        angle = indexInRing * step + offset;
+      }
+    }
+
+    placeNode(neighbor.id, focusPos.x + radius * Math.cos(angle), focusPos.y + radius * Math.sin(angle));
+  });
 }
 
 function placeEdge(sourceId, targetId, strategy) {
@@ -167,7 +216,7 @@ function updateInfoBar(focusId) {
 /**
  * Fetches and renders the 1-hop neighborhood of a node.
  */
-async function expandNode(nodeId) {
+async function expandNode(nodeId, parentId = null) {
   const id = String(nodeId);
   if (expandedNodes.has(id)) return [];
 
@@ -179,7 +228,7 @@ async function expandNode(nodeId) {
   cy.getElementById(id).addClass('expanded');
 
   const beforeIds = new Set(cy.nodes().map(node => node.id()));
-  data.neighbors.forEach(neighbor => placeNode(neighbor.id));
+  placeNeighborsRings(data.focus, data.neighbors, parentId);
   const placed = new Set(cy.nodes().filter(node => !beforeIds.has(node.id())).map(node => node.id()));
   placedByExpansion.set(id, placed);
 
@@ -216,7 +265,9 @@ function evictOldest() {
 async function expandBFS(startNodeId, depth = BFS_DEPTH) {
   const id = String(startNodeId);
 
+  let parentId = null;
   if (!clickHistory.includes(id)) {
+    parentId = clickHistory.length > 0 ? clickHistory[clickHistory.length - 1] : null;
     clickHistory.push(id);
     if (clickHistory.length > MAX_CLICK_HISTORY) {
       evictOldest();
@@ -228,48 +279,14 @@ async function expandBFS(startNodeId, depth = BFS_DEPTH) {
     const unexpanded = currentLevel.filter(nodeId => !expandedNodes.has(String(nodeId)));
     if (unexpanded.length === 0) break;
 
-    const nextLevelResults = await Promise.all(unexpanded.map(nodeId => expandNode(nodeId)));
+    const nextLevelResults = await Promise.all(unexpanded.map(nodeId => expandNode(nodeId, parentId)));
     currentLevel = [...new Set(nextLevelResults.flat())];
   }
 
-// Run the layout silently first (animate: false)
-const layout = cy.elements().layout({
-  name: 'breadthfirst',
-  directed: true,
-  spacingFactor: 1.5,
-  roots: cy.getElementById(clickHistory[0]),
-  animate: false // Turn off native animation so we can intercept the coordinates
-});
-
-layout.promiseOn('layoutstop').then(() => {
-  // 1. Inject the "Wobble" to force angled edges
-  let toggle = 1;
-  const WOBBLE_AMOUNT = 45; // Pixels to push left/right
-  
-  // Sort history so we wobble down the line sequentially
-  cy.nodes().forEach(node => {
-    const id = node.id();
-    // Apply the alternating zig-zag primarily to the main history trail
-    if (clickHistory.includes(id)) {
-      const pos = node.position();
-      node.position({ x: pos.x + (toggle * WOBBLE_AMOUNT), y: pos.y });
-      toggle *= -1; // Flip direction for the next node
-    }
-  });
-
   const visibleEles = cy.elements().filter(ele => ele.style('display') !== 'none');
-  
-  // 2. Now manually animate the camera to the new angled layout
   if (visibleEles.length > 0) {
-    cy.animate({ 
-      fit: { eles: visibleEles, padding: 80 }, 
-      duration: 400, 
-      easing: 'ease-out-cubic' 
-    });
+    cy.animate({ fit: { eles: visibleEles, padding: 80 }, duration: 400, easing: 'ease-out-cubic' });
   }
-});
-
-layout.run();
 
   updateInfoBar(startNodeId);
 }
