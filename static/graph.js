@@ -27,7 +27,9 @@ const TOP_5_STRATEGIES = new Set([
   'decrement', 'quad_plus_3', 'bytearray_4x', 'quint_plus_5', 'list_range',
 ]);
 
-const enabledStrategies = new Set(TOP_5_STRATEGIES);
+// const enabledStrategies = new Set(TOP_5_STRATEGIES);
+const enabledStrategies = new Set(Object.keys(STRATEGY_COLORS));
+
 const expandedNodes     = new Set();
 const nodeIncomingEdges = new Map(); // nodeId -> [edgeId, ...]
 const clickHistory      = [];        // oldest-first list of clicked nodeIds
