@@ -50,7 +50,7 @@ function init() {
   placeNode(0, 0, 0);
   cy.getElementById('0').addClass('focused');
   clickHistory.push('0');
-  expandBFS(0);
+  expandBFS(0).then(() => cy.center(cy.getElementById('0')));
 }
 
 // ── Graph Construction ───────────────────────────────────────────────────────
