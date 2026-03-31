@@ -166,21 +166,27 @@ def api_visualize_string():
     return jsonify(evaluate_string_steps(text))
 
 
-GRAPH_STRATEGIES = [
-    ('decrement',    lambda n: n - 1),
-    ('triple',       lambda n: 3 * n),
-    ('quad_plus_3',  lambda n: 4 * n + 3),
-    ('triangular',   lambda n: n * (n - 1) // 2),
-    ('bytearray_4x', lambda n: 4 * n + 14),
-]
+from core.strategies import STRATEGIES as ALL_STRATEGIES
+
+# Only expose strategies with >1000 uses in the final DB
+GRAPH_STRATEGY_NAMES = {
+    'decrement', 'quad_plus_3', 'bytearray_4x', 'quint_plus_5',
+    'list_range', 'triple', 'ascii_exp_2', 'dict_enum_bytes',
+    'list_enum_bytes', 'zip_range', 'zip_chain_1', 'dict_enum_range',
+    'ascii_exp_3', 'zip_chain_2', 'ascii_exp_4', 'zip_chain_3',
+}
+GRAPH_STRATEGIES = [(name, fns[0]) for name, fns in ALL_STRATEGIES.items() if name in GRAPH_STRATEGY_NAMES]
 GRAPH_MAX = 200_000
 
 @app.route('/api/neighbors/<int:node_id>')
 def api_neighbors(node_id):
     neighbors = []
     for strategy_name, forward_fn in GRAPH_STRATEGIES:
-        target = forward_fn(node_id)
-        if 0 <= target <= GRAPH_MAX and target != node_id:
+        try:
+            target = forward_fn(node_id)
+        except Exception:
+            continue
+        if isinstance(target, int) and 0 <= target <= GRAPH_MAX and target != node_id:
             neighbors.append({'id': target, 'strategy': strategy_name})
     return jsonify({'focus': node_id, 'neighbors': neighbors})
 

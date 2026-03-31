@@ -1,11 +1,23 @@
 // ── Configuration ─────────────────────────────────────────────────────────
 
 const STRATEGY_COLORS = {
-  decrement:    '#e74c3c',
-  triple:       '#2ecc71',
-  quad_plus_3:  '#5dade2',
-  triangular:   '#9b59b6',
-  bytearray_4x: '#f39c12',
+  decrement:        '#e74c3c',
+  triple:           '#2ecc71',
+  quad_plus_3:      '#5dade2',
+  triangular:       '#9b59b6',
+  bytearray_4x:     '#f39c12',
+  quint_plus_5:     '#1abc9c',
+  list_range:       '#e67e22',
+  ascii_exp_2:      '#fd79a8',
+  dict_enum_bytes:  '#a29bfe',
+  list_enum_bytes:  '#74b9ff',
+  zip_range:        '#55efc4',
+  zip_chain_1:      '#ffeaa7',
+  dict_enum_range:  '#fab1a0',
+  ascii_exp_3:      '#ff7675',
+  zip_chain_2:      '#81ecec',
+  ascii_exp_4:      '#b2bec3',
+  zip_chain_3:      '#dfe6e9',
 };
 
 const VERTICAL_SPACING   = 140;
