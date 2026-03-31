@@ -100,12 +100,14 @@ function toggleStrategy(strategy, enabled) {
     enabledStrategies.delete(strategy);
     cy.edges(`[strategy = "${strategy}"]`).style('display', 'none');
   }
+  cy.edges(`[strategy = "${strategy}"]`).forEach(edge => {
+    updateNodeVisibility(edge.target().id());
+  });
 }
 
 function placeNeighborsBelow(focusId, neighbors) {
-  const focusEl  = cy.getElementById(String(focusId));
-  const focusPos = focusEl.position();
-
+  const focusEl    = cy.getElementById(String(focusId));
+  const focusPos   = focusEl.position();
   const unplaced   = neighbors.filter(neighbor => !cy.getElementById(String(neighbor.id)).length);
   const totalWidth = (unplaced.length - 1) * HORIZONTAL_SPACING;
   const startX     = focusPos.x - totalWidth / 2;
@@ -115,10 +117,17 @@ function placeNeighborsBelow(focusId, neighbors) {
     placeNode(neighbor.id, startX + index * HORIZONTAL_SPACING, targetY);
   });
 
-  if (unplaced.length > 0) {
-    const newEles = cy.collection(unplaced.map(neighbor => cy.getElementById(String(neighbor.id))));
-    cy.animate({ center: { eles: newEles }, duration: 400, easing: 'ease-in-out-quad' });
+  return unplaced.map(neighbor => String(neighbor.id));
+}
+
+function updateNodeVisibility(nodeId) {
+  const nodeEl = cy.getElementById(String(nodeId));
+  if (expandedNodes.has(String(nodeId))) {
+    nodeEl.style('display', 'element');
+    return;
   }
+  const hasVisibleEdge = nodeEl.incomers('edge').filter(edge => !edge.hidden()).length > 0;
+  nodeEl.style('display', hasVisibleEdge ? 'element' : 'none');
 }
 
 function updateInfoBar(focusId, neighborCount) {
@@ -136,10 +145,21 @@ async function expandNode(nodeId) {
 
   cy.getElementById(id).addClass('expanded');
 
-  placeNeighborsBelow(data.focus, data.neighbors);
+  const newNodeIds = placeNeighborsBelow(data.focus, data.neighbors);
 
   for (const neighbor of data.neighbors) {
     placeEdge(data.focus, neighbor.id, neighbor.strategy);
+  }
+
+  for (const neighbor of data.neighbors) {
+    updateNodeVisibility(neighbor.id);
+  }
+
+  const newVisible = newNodeIds
+    .map(nodeId => cy.getElementById(nodeId))
+    .filter(nodeEl => !nodeEl.hidden());
+  if (newVisible.length > 0) {
+    cy.animate({ center: { eles: cy.collection(newVisible) }, duration: 400, easing: 'ease-in-out-quad' });
   }
 
   updateInfoBar(data.focus, data.neighbors.length);
