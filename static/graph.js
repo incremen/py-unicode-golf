@@ -56,6 +56,11 @@ function placeNeighborsBelow(focusId, neighbors) {
   unplaced.forEach((neighbor, index) => {
     placeNode(neighbor.id, startX + index * HORIZONTAL_SPACING, targetY);
   });
+
+  if (unplaced.length > 0) {
+    const newEles = cy.collection(unplaced.map(neighbor => cy.getElementById(String(neighbor.id))));
+    cy.animate({ center: { eles: newEles }, duration: 400, easing: 'ease-in-out-quad' });
+  }
 }
 
 function updateInfoBar(focusId, neighborCount) {
