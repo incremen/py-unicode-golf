@@ -7,12 +7,16 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #12151e; overflow: hidden; }
     #cy { width: 100vw; height: 100vh; }
-    #info { position: fixed; top: 12px; left: 12px; color: #aaa; font: 13px/1.6 monospace; }
+    #info {
+      position: fixed; top: 12px; left: 12px;
+      color: #aaa; font: 13px/1.6 monospace;
+      background: rgba(18,21,30,0.8); padding: 6px 10px; border-radius: 4px;
+    }
   </style>
 </head>
 <body>
   <div id="cy"></div>
-  <div id="info">click a node to explore</div>
+  <div id="info">click a node to expand its neighbors downward</div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.26.0/cytoscape.min.js"></script>
   <script>
@@ -24,8 +28,13 @@
       bytearray_4x: '#f39c12',
     };
 
+    const VERTICAL_SPACING   = 140;
+    const HORIZONTAL_SPACING = 110;
+
     const cy = cytoscape({
       container: document.getElementById('cy'),
+      userZoomingEnabled: true,
+      userPanningEnabled: true,
       style: [
         {
           selector: 'node',
@@ -36,20 +45,20 @@
             'color': 'white',
             'label': 'data(label)',
             'font-family': 'Courier New',
-            'font-size': '14px',
+            'font-size': '13px',
             'text-valign': 'center',
             'text-halign': 'center',
-            'width': 48,
-            'height': 48,
+            'width': 46,
+            'height': 46,
           }
         },
         {
-          selector: 'node.focus',
-          style: {
-            'background-color': '#1a6b3a',
-            'border-color': '#2ecc71',
-            'border-width': 3,
-          }
+          selector: 'node.expanded',
+          style: { 'border-color': '#2ecc71', 'border-width': 3 }
+        },
+        {
+          selector: 'node.focused',
+          style: { 'background-color': '#1a3a5c', 'border-color': '#5dade2', 'border-width': 3 }
         },
         {
           selector: 'edge',
@@ -61,7 +70,7 @@
             'curve-style': 'bezier',
             'label': 'data(strategy)',
             'font-family': 'Courier New',
-            'font-size': '10px',
+            'font-size': '9px',
             'color': 'data(color)',
             'text-background-color': '#12151e',
             'text-background-opacity': 0.85,
@@ -71,47 +80,68 @@
       ]
     });
 
-    let currentFocus = null;
+    const expandedNodes = new Set();
 
-    async function loadNeighborhood(nodeId) {
+    function placeNode(nodeId, x, y) {
+      const id = String(nodeId);
+      if (!cy.getElementById(id).length) {
+        cy.add({ data: { id, label: id }, position: { x, y } });
+      }
+    }
+
+    async function expandNode(nodeId) {
+      const id = String(nodeId);
+      if (expandedNodes.has(id)) return;
+      expandedNodes.add(id);
+
       const response = await fetch(`/api/neighbors/${nodeId}`);
       const data = await response.json();
 
-      cy.elements().remove();
+      const focusEl = cy.getElementById(id);
+      const focusPos = focusEl.position();
+      focusEl.addClass('expanded');
 
-      cy.add({ data: { id: String(data.focus), label: String(data.focus) } });
-      cy.getElementById(String(data.focus)).addClass('focus');
+      const unplaced = data.neighbors.filter(n => !cy.getElementById(String(n.id)).length);
+      const totalWidth = (unplaced.length - 1) * HORIZONTAL_SPACING;
+      const startX = focusPos.x - totalWidth / 2;
+      const targetY = focusPos.y + VERTICAL_SPACING;
+
+      unplaced.forEach((neighbor, index) => {
+        placeNode(neighbor.id, startX + index * HORIZONTAL_SPACING, targetY);
+      });
 
       for (const neighbor of data.neighbors) {
-        const neighborId = String(neighbor.id);
-        if (!cy.getElementById(neighborId).length) {
-          cy.add({ data: { id: neighborId, label: neighborId } });
+        const edgeId = `e-${data.focus}-${neighbor.id}-${neighbor.strategy}`;
+        if (!cy.getElementById(edgeId).length) {
+          cy.add({
+            data: {
+              id: edgeId,
+              source: id,
+              target: String(neighbor.id),
+              strategy: neighbor.strategy,
+              color: STRATEGY_COLORS[neighbor.strategy] || '#888',
+            }
+          });
         }
-        cy.add({
-          data: {
-            id: `${data.focus}-${neighborId}-${neighbor.strategy}`,
-            source: String(data.focus),
-            target: neighborId,
-            strategy: neighbor.strategy,
-            color: STRATEGY_COLORS[neighbor.strategy] || '#888',
-          }
-        });
       }
 
-      cy.layout({ name: 'concentric', concentric: node => node.hasClass('focus') ? 2 : 1, levelWidth: () => 1, padding: 80 }).run();
+      cy.animate({ fit: { eles: cy.nodes(), padding: 60 }, duration: 400, easing: 'ease-in-out-quad' });
 
-      currentFocus = String(data.focus);
-      document.getElementById('info').textContent = `focus: ${data.focus}  |  ${data.neighbors.length} neighbors`;
+      document.getElementById('info').textContent =
+        `node ${data.focus}  →  ${data.neighbors.length} neighbors  |  ${expandedNodes.size} expanded total`;
     }
 
     cy.on('tap', 'node', function(evt) {
-      const clickedId = evt.target.id();
-      if (clickedId !== currentFocus) {
-        loadNeighborhood(parseInt(clickedId, 10));
-      }
+      const nodeId = parseInt(evt.target.id(), 10);
+      cy.nodes().removeClass('focused');
+      evt.target.addClass('focused');
+      expandNode(nodeId);
     });
 
-    loadNeighborhood(0);
+    // Seed at top center
+    placeNode(0, window.innerWidth / 2, 80);
+    cy.nodes().first().addClass('focused');
+    expandNode(0);
   </script>
 </body>
 </html>
