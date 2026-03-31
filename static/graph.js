@@ -96,6 +96,12 @@ function placeNeighborsRadial(focusId, neighbors, parentId) {
 
   if (unplaced.length === 0) return;
 
+  // DYNAMIC MATH: Guarantee at least 55px of arc space per node
+  const nodeSpacing = 55; 
+  const sweepToUse = unplaced.length > 6 ? Math.PI : SWEEP_ANGLE; // Open up to 180° for large sets
+  const requiredRadius = (unplaced.length * nodeSpacing) / sweepToUse;
+  const dynamicRadius = Math.max(RADIAL_DISTANCE, requiredRadius);
+
   const parentEl = parentId ? cy.getElementById(String(parentId)) : null;
 
   if (parentEl && parentEl.length) {
@@ -103,18 +109,18 @@ function placeNeighborsRadial(focusId, neighbors, parentId) {
     const parentPos  = parentEl.position();
     const incomingAngle = Math.atan2(parentPos.y - focusPos.y, parentPos.x - focusPos.x);
     const centerAngle   = incomingAngle + Math.PI;
-    const startAngle    = centerAngle - SWEEP_ANGLE / 2;
-    const step          = unplaced.length === 1 ? 0 : SWEEP_ANGLE / (unplaced.length - 1);
+    const startAngle    = centerAngle - sweepToUse / 2;
+    const step          = unplaced.length === 1 ? 0 : sweepToUse / (unplaced.length - 1);
 
     unplaced.forEach((neighbor, index) => {
       const angle = startAngle + index * step;
-      placeNode(neighbor.id, focusPos.x + RADIAL_DISTANCE * Math.cos(angle), focusPos.y + RADIAL_DISTANCE * Math.sin(angle));
+      placeNode(neighbor.id, focusPos.x + dynamicRadius * Math.cos(angle), focusPos.y + dynamicRadius * Math.sin(angle));
     });
   } else {
     // No parent (root node): full circle
     unplaced.forEach((neighbor, index) => {
       const angle = (index / unplaced.length) * (Math.PI * 2);
-      placeNode(neighbor.id, focusPos.x + RADIAL_DISTANCE * Math.cos(angle), focusPos.y + RADIAL_DISTANCE * Math.sin(angle));
+      placeNode(neighbor.id, focusPos.x + dynamicRadius * Math.cos(angle), focusPos.y + dynamicRadius * Math.sin(angle));
     });
   }
 }
