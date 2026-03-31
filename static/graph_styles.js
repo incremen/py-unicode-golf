@@ -2,7 +2,7 @@ const CYTOSCAPE_STYLES = [
   {
     selector: 'node',
     style: {
-      'background-color': '#ffffff',
+      'background-color': '#d8d8d8',
       'border-color': '#333',
       'border-width': 2,
       'color': '#222',
@@ -17,11 +17,11 @@ const CYTOSCAPE_STYLES = [
   },
   {
     selector: 'node.expanded',
-    style: { 'border-color': '#333', 'border-width': 2, 'background-color': '#f0f0f0' }
+    style: { 'border-color': '#333', 'border-width': 2, 'background-color': '#c8c8c8' }
   },
   {
     selector: 'node.focused',
-    style: { 'background-color': '#ffffff', 'border-color': '#306998', 'border-width': 3 }
+    style: { 'background-color': '#d8d8d8', 'border-color': '#306998', 'border-width': 3 }
   },
   {
     selector: 'edge',
