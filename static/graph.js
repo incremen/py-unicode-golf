@@ -38,12 +38,33 @@ const cy = cytoscape({
   style: CYTOSCAPE_STYLES,
 });
 
-const expandedNodes = new Set();
+const expandedNodes  = new Set();
+const occupiedSlots  = new Set(); // tracks taken grid positions as "col,row" strings
+
+function slotKey(x, y) {
+  return `${Math.round(x / HORIZONTAL_SPACING)},${Math.round(y / VERTICAL_SPACING)}`;
+}
+
+function findFreePosition(desiredX, desiredY) {
+  const row     = Math.round(desiredY / VERTICAL_SPACING);
+  const baseCol = Math.round(desiredX / HORIZONTAL_SPACING);
+  for (let offset = 0; offset < 200; offset++) {
+    for (const delta of offset === 0 ? [0] : [offset, -offset]) {
+      const key = `${baseCol + delta},${row}`;
+      if (!occupiedSlots.has(key)) {
+        occupiedSlots.add(key);
+        return { x: (baseCol + delta) * HORIZONTAL_SPACING, y: desiredY };
+      }
+    }
+  }
+  return { x: desiredX, y: desiredY };
+}
 
 function placeNode(nodeId, x, y) {
   const id = String(nodeId);
   if (!cy.getElementById(id).length) {
-    cy.add({ data: { id, label: id }, position: { x, y } });
+    const pos = findFreePosition(x, y);
+    cy.add({ data: { id, label: id }, position: pos });
   }
 }
 
@@ -173,7 +194,10 @@ cy.on('tap', 'node', function(evt) {
 
 function init() {
   buildStrategyChecklist();
-  placeNode(0, window.innerWidth / 2, 80);
+  const startX = window.innerWidth / 2;
+  const startY = 80;
+  occupiedSlots.add(slotKey(startX, startY));
+  placeNode(0, startX, startY);
   cy.nodes().first().addClass('focused');
   expandNode(0);
 }
