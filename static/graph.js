@@ -19,7 +19,7 @@ const STRATEGY_COLORS = {
 
 // Layout Constants
 const BFS_DEPTH         = 1;
-const MAX_CLICK_HISTORY = 9;
+const MAX_CLICK_HISTORY = 4;
 
 const TOP_5_STRATEGIES = new Set([
   'decrement', 'quad_plus_3', 'bytearray_4x', 'quint_plus_5', 'list_range',
