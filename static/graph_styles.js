@@ -35,9 +35,8 @@ const CYTOSCAPE_STYLES = [
       'font-family': 'Courier New',
       'font-size': '9px',
       'color': 'data(color)',
-      'text-background-color': '#f0efe8',
-      'text-background-opacity': 0.85,
-      'text-background-padding': '2px',
+      'text-rotation': 'autorotate',
+      'text-margin-y': -8,
     }
   }
 ];
