@@ -243,7 +243,9 @@ async function expandNode(nodeId, parentId = null) {
 function evictOldest() {
   const evicted = clickHistory.shift();
   expandedNodes.delete(evicted);
-  evictionStack.push(evicted); // remember it for back navigation
+  // Save position so we can restore the node to the same spot later
+  const evictedPos = cy.getElementById(evicted).position();
+  evictionStack.push({ id: evicted, pos: { x: evictedPos.x, y: evictedPos.y } });
 
   const needed = new Set(clickHistory);
   clickHistory.forEach(id => {
@@ -280,11 +282,13 @@ async function goBack() {
   });
   placedByExpansion.delete(removed);
 
-  // Restore the previously evicted node at the front of the history
+  // Restore the previously evicted node at the front of history
   if (evictionStack.length > 0) {
-    const restored = evictionStack.pop();
+    const { id: restored, pos } = evictionStack.pop();
     clickHistory.unshift(restored);
-    await expandNode(restored, null); // re-fetch and re-place its neighbors
+    // Re-add the node to the graph at its original position before expanding
+    placeNode(restored, pos.x, pos.y);
+    await expandNode(restored, null);
   }
 
   currentFocus = clickHistory[clickHistory.length - 1];
