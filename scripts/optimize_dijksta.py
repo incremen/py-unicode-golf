@@ -126,8 +126,11 @@ if __name__ == '__main__':
         return len(improved)
 
     total = run_and_merge('depth') + run_and_merge('length')
-    generate_json()
-    snapshot('dijkstra (depth+length)', improvements=total)
+    if total == 0:
+        print('No improvements found — skipping DB write and snapshot.')
+    else:
+        generate_json()
+        snapshot('dijkstra (depth+length)', improvements=total)
 
     with get_conn() as conn:
         how_many_snapshots = 6
