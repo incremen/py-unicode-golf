@@ -28,6 +28,8 @@ const TOP_5_STRATEGIES = new Set([
 
 const enabledStrategies = new Set(TOP_5_STRATEGIES);
 const expandedNodes     = new Set();
+const nodeIncomingEdges = new Map(); // nodeId -> [edgeId, ...]
+const nodeDiscoveryEdge  = new Map(); // nodeId -> edgeId that first revealed this node
 
 // ── Initialization ───────────────────────────────────────────────────────────
 
@@ -81,6 +83,13 @@ function placeEdge(sourceId, targetId, strategy) {
     if (!enabledStrategies.has(strategy)) {
       edge.style('display', 'none');
     }
+
+    // Track all incoming edges per node
+    const targetIdStr = String(targetId);
+    if (!nodeIncomingEdges.has(targetIdStr)) {
+      nodeIncomingEdges.set(targetIdStr, []);
+    }
+    nodeIncomingEdges.get(targetIdStr).push(edgeId);
   }
 }
 
@@ -124,17 +133,12 @@ function placeNeighborsRadial(focusId, neighbors) {
 // ── Visibility & UI ──────────────────────────────────────────────────────────
 
 function updateNodeVisibility(nodeId) {
-  const nodeEl = cy.getElementById(String(nodeId));
-  
-  // Always show expanded nodes
-  if (expandedNodes.has(String(nodeId))) {
-    nodeEl.style('display', 'element');
-    return;
-  }
-  
-  // Hide fringe nodes if they have no visible incoming edges
-  const hasVisibleIncomers = nodeEl.incomers('edge').filter(edge => !edge.hidden()).length > 0;
-  nodeEl.style('display', hasVisibleIncomers ? 'element' : 'none');
+  if (String(nodeId) === '0') return; // root is always visible
+
+  const edges = nodeIncomingEdges.get(String(nodeId)) || [];
+  const hasVisibleIncoming = edges.some(edgeId => cy.getElementById(edgeId).style('display') !== 'none');
+  console.log(`Updating visibility for node ${nodeId}: hasVisibleIncoming = ${hasVisibleIncoming}`);
+  cy.getElementById(String(nodeId)).style('display', hasVisibleIncoming ? 'element' : 'none');
 }
 
 function buildStrategyChecklist() {
@@ -173,9 +177,9 @@ function toggleStrategy(strategy, enabled) {
     cy.edges(`[strategy = "${strategy}"]`).style('display', 'none');
   }
 
-  // Update visibility for all target nodes affected by this toggle
-  cy.edges(`[strategy = "${strategy}"]`).forEach(edge => {
-    updateNodeVisibility(edge.target().id());
+  // Update visibility for ALL nodes since changes can cascade to descendants
+  cy.nodes().forEach(node => {
+    updateNodeVisibility(node.id());
   });
 }
 
