@@ -50,44 +50,29 @@ for n in NODES:
     y = -row * SPACING
     g.node(str(n), str(n), pos=f'{x},{y}!')
 
-# Add edges, label only the first occurrence per strategy
-labeled = set()
+# Add edges — no labels, color only
 for name, lbl, fn, color in STRATEGIES:
     for n in NODES:
         t = fn(n)
         if 0 <= t <= MAX_N and t != n:
-            first = name not in labeled
-            if first:
-                labeled.add(name)
-            g.edge(
-                str(n), str(t),
-                label=lbl if first else '',
-                color=color, fontcolor=color,
-                penwidth='2.0',
-            )
+            g.edge(str(n), str(t), color=color, penwidth='2.0')
 
-# Legend
-with g.subgraph(name='cluster_legend') as leg:
-    leg.attr(
-        label='Strategies', style='filled',
-        fillcolor='#1a1e28', color='#4a5568',
-        fontcolor='white', fontname='Courier New', fontsize='11',
-    )
-    prev = None
-    for name, lbl, fn, color in STRATEGIES:
-        # Find one example edge
-        for n in NODES:
-            t = fn(n)
-            if 0 <= t <= MAX_N and t != n:
-                example = f'e.g. {n}→{t}'
-                break
-        full = f'{lbl}  ({example})'
-        leg.node(f'leg_{name}', full,
-                 shape='plaintext', fontcolor=color,
-                 style='', fillcolor='transparent', width='0', height='0.3')
-        if prev:
-            leg.edge(f'leg_{prev}', f'leg_{name}', style='invis')
-        prev = name
+# Legend as a single HTML table node, placed to the right of the grid
+legend_rows = ''.join(
+    f'<TR><TD ALIGN="LEFT"><FONT COLOR="{color}">■</FONT></TD>'
+    f'<TD ALIGN="LEFT"><FONT COLOR="{color}"> {lbl}</FONT></TD></TR>'
+    for name, lbl, fn, color in STRATEGIES
+)
+legend_html = f'''<
+<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="4" BGCOLOR="#1a1e28">
+  <TR><TD COLSPAN="2"><FONT COLOR="white"><B>Strategies</B></FONT></TD></TR>
+  {legend_rows}
+</TABLE>>'''
+
+legend_x = (COLS - 1) * SPACING + SPACING * 1.8
+legend_y = -((MAX_N // COLS) * SPACING) / 2
+g.node('legend', legend_html,
+       shape='plaintext', pos=f'{legend_x},{legend_y}!', margin='0')
 
 # ── Render ──────────────────────────────────────────────────────────────────
 
