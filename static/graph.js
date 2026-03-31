@@ -32,6 +32,7 @@ const expandedNodes     = new Set();
 const nodeIncomingEdges = new Map(); // nodeId -> [edgeId, ...]
 const clickHistory      = [];        // oldest-first list of clicked nodeIds
 const placedByExpansion = new Map(); // expandedNodeId -> Set of nodeIds it placed
+let   currentFocus      = '0';       // most recently clicked node
 
 // ── Initialization ───────────────────────────────────────────────────────────
 
@@ -68,7 +69,7 @@ function placeNode(nodeId, x, y) {
 function placeEdge(sourceId, targetId, strategy) {
   const edgeId = `e-${sourceId}-${targetId}-${strategy}`;
   if (!cy.getElementById(edgeId).length) {
-    const edge = cy.add({
+    cy.add({
       data: {
         id: edgeId,
         source: String(sourceId),
@@ -78,11 +79,6 @@ function placeEdge(sourceId, targetId, strategy) {
       }
     });
     
-    // Set initial visibility based on strategy checklist
-    if (!enabledStrategies.has(strategy)) {
-      edge.style('display', 'none');
-    }
-
     // Track all incoming edges per node
     const targetIdStr = String(targetId);
     if (!nodeIncomingEdges.has(targetIdStr)) {
@@ -131,12 +127,34 @@ function placeNeighborsRadial(focusId, neighbors) {
 
 // ── Visibility & UI ──────────────────────────────────────────────────────────
 
-function updateNodeVisibility(nodeId) {
-  if (String(nodeId) === '0') return; // root is always visible
+// An edge is shown if its strategy is enabled AND either:
+// - it comes from the current focus node, OR
+// - it connects two history nodes (the tail trail)
+function refreshEdgeVisibility() {
+  const historySet = new Set(clickHistory);
+  cy.edges().forEach(edge => {
+    const source = edge.data('source');
+    const target = edge.data('target');
+    const strategyOn = enabledStrategies.has(edge.data('strategy'));
+    const fromFocus = source === currentFocus;
+    const isTailEdge = historySet.has(source) && historySet.has(target);
+    edge.style('display', strategyOn && (fromFocus || isTailEdge) ? 'element' : 'none');
+  });
+}
 
-  const edges = nodeIncomingEdges.get(String(nodeId)) || [];
-  const hasVisibleIncoming = edges.some(edgeId => cy.getElementById(edgeId).style('display') !== 'none');
-  cy.getElementById(String(nodeId)).style('display', hasVisibleIncoming ? 'element' : 'none');
+// History nodes are always visible. Others are visible only if they have a
+// visible incoming edge (i.e. they are a neighbor of the current focus).
+function refreshNodeVisibility() {
+  cy.nodes().forEach(node => {
+    const id = node.id();
+    if (clickHistory.includes(id)) {
+      node.style('display', 'element');
+      return;
+    }
+    const edges = nodeIncomingEdges.get(id) || [];
+    const hasVisibleIncoming = edges.some(edgeId => cy.getElementById(edgeId).style('display') !== 'none');
+    node.style('display', hasVisibleIncoming ? 'element' : 'none');
+  });
 }
 
 function buildStrategyChecklist() {
@@ -169,16 +187,11 @@ function buildStrategyChecklist() {
 function toggleStrategy(strategy, enabled) {
   if (enabled) {
     enabledStrategies.add(strategy);
-    cy.edges(`[strategy = "${strategy}"]`).style('display', 'element');
   } else {
     enabledStrategies.delete(strategy);
-    cy.edges(`[strategy = "${strategy}"]`).style('display', 'none');
   }
-
-  // Update visibility for ALL nodes since changes can cascade to descendants
-  cy.nodes().forEach(node => {
-    updateNodeVisibility(node.id());
-  });
+  refreshEdgeVisibility();
+  refreshNodeVisibility();
 }
 
 function updateInfoBar(focusId) {
@@ -211,8 +224,9 @@ async function expandNode(nodeId) {
 
   data.neighbors.forEach(neighbor => {
     placeEdge(data.focus, neighbor.id, neighbor.strategy);
-    updateNodeVisibility(neighbor.id);
   });
+  refreshEdgeVisibility();
+  refreshNodeVisibility();
 
   return data.neighbors.map(neighbor => neighbor.id);
 }
@@ -281,7 +295,8 @@ cy.on('tap', 'node', (evt) => {
 
   cy.nodes().removeClass('focused');
   clickedNode.addClass('focused');
-  
+  currentFocus = String(nodeId);
+
   expandBFS(nodeId);
 });
 
