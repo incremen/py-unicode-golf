@@ -347,6 +347,13 @@ async function expandBFS(startNodeId, depth = BFS_DEPTH) {
 
 document.getElementById('back-btn').addEventListener('click', goBack);
 
+document.getElementById('strategy-panel-toggle').addEventListener('click', () => {
+  const panel  = document.getElementById('strategy-panel');
+  const toggle = document.getElementById('strategy-panel-toggle');
+  const collapsed = panel.classList.toggle('collapsed');
+  toggle.innerHTML = collapsed ? '&#43;' : '&#8722;';
+});
+
 cy.on('tap', 'node', (evt) => {
   const clickedNode = evt.target;
   const nodeId = parseInt(clickedNode.id(), 10);
