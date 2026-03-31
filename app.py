@@ -166,5 +166,24 @@ def api_visualize_string():
     return jsonify(evaluate_string_steps(text))
 
 
+GRAPH_STRATEGIES = [
+    ('decrement',    lambda n: n - 1),
+    ('triple',       lambda n: 3 * n),
+    ('quad_plus_3',  lambda n: 4 * n + 3),
+    ('triangular',   lambda n: n * (n - 1) // 2),
+    ('bytearray_4x', lambda n: 4 * n + 14),
+]
+GRAPH_MAX = 200_000
+
+@app.route('/api/neighbors/<int:node_id>')
+def api_neighbors(node_id):
+    neighbors = []
+    for strategy_name, forward_fn in GRAPH_STRATEGIES:
+        target = forward_fn(node_id)
+        if 0 <= target <= GRAPH_MAX and target != node_id:
+            neighbors.append({'id': target, 'strategy': strategy_name})
+    return jsonify({'focus': node_id, 'neighbors': neighbors})
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

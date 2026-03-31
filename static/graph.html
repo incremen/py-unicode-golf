@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Integer Graph Explorer</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #12151e; overflow: hidden; }
+    #cy { width: 100vw; height: 100vh; }
+    #info { position: fixed; top: 12px; left: 12px; color: #aaa; font: 13px/1.6 monospace; }
+  </style>
+</head>
+<body>
+  <div id="cy"></div>
+  <div id="info">click a node to explore</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.26.0/cytoscape.min.js"></script>
+  <script>
+    const STRATEGY_COLORS = {
+      decrement:    '#e74c3c',
+      triple:       '#2ecc71',
+      quad_plus_3:  '#5dade2',
+      triangular:   '#9b59b6',
+      bytearray_4x: '#f39c12',
+    };
+
+    const cy = cytoscape({
+      container: document.getElementById('cy'),
+      style: [
+        {
+          selector: 'node',
+          style: {
+            'background-color': '#2c3e50',
+            'border-color': '#4a5568',
+            'border-width': 2,
+            'color': 'white',
+            'label': 'data(label)',
+            'font-family': 'Courier New',
+            'font-size': '14px',
+            'text-valign': 'center',
+            'text-halign': 'center',
+            'width': 48,
+            'height': 48,
+          }
+        },
+        {
+          selector: 'node.focus',
+          style: {
+            'background-color': '#1a6b3a',
+            'border-color': '#2ecc71',
+            'border-width': 3,
+          }
+        },
+        {
+          selector: 'edge',
+          style: {
+            'width': 2,
+            'line-color': 'data(color)',
+            'target-arrow-color': 'data(color)',
+            'target-arrow-shape': 'triangle',
+            'curve-style': 'bezier',
+            'label': 'data(strategy)',
+            'font-family': 'Courier New',
+            'font-size': '10px',
+            'color': 'data(color)',
+            'text-background-color': '#12151e',
+            'text-background-opacity': 0.85,
+            'text-background-padding': '2px',
+          }
+        }
+      ]
+    });
+
+    let currentFocus = null;
+
+    async function loadNeighborhood(nodeId) {
+      const response = await fetch(`/api/neighbors/${nodeId}`);
+      const data = await response.json();
+
+      cy.elements().remove();
+
+      cy.add({ data: { id: String(data.focus), label: String(data.focus) } });
+      cy.getElementById(String(data.focus)).addClass('focus');
+
+      for (const neighbor of data.neighbors) {
+        const neighborId = String(neighbor.id);
+        if (!cy.getElementById(neighborId).length) {
+          cy.add({ data: { id: neighborId, label: neighborId } });
+        }
+        cy.add({
+          data: {
+            id: `${data.focus}-${neighborId}-${neighbor.strategy}`,
+            source: String(data.focus),
+            target: neighborId,
+            strategy: neighbor.strategy,
+            color: STRATEGY_COLORS[neighbor.strategy] || '#888',
+          }
+        });
+      }
+
+      cy.layout({ name: 'concentric', concentric: node => node.hasClass('focus') ? 2 : 1, levelWidth: () => 1, padding: 80 }).run();
+
+      currentFocus = String(data.focus);
+      document.getElementById('info').textContent = `focus: ${data.focus}  |  ${data.neighbors.length} neighbors`;
+    }
+
+    cy.on('tap', 'node', function(evt) {
+      const clickedId = evt.target.id();
+      if (clickedId !== currentFocus) {
+        loadNeighborhood(parseInt(clickedId, 10));
+      }
+    });
+
+    loadNeighborhood(0);
+  </script>
+</body>
+</html>
