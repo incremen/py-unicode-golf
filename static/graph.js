@@ -32,6 +32,7 @@ const expandedNodes     = new Set();
 const nodeIncomingEdges = new Map(); // nodeId -> [edgeId, ...]
 const clickHistory      = [];        // oldest-first list of clicked nodeIds
 const placedByExpansion = new Map(); // expandedNodeId -> Set of nodeIds it placed
+const evictionStack     = [];        // nodes evicted due to MAX_CLICK_HISTORY, for back nav
 let   currentFocus      = '0';       // most recently clicked node
 
 // ── Initialization ───────────────────────────────────────────────────────────
@@ -242,14 +243,13 @@ async function expandNode(nodeId, parentId = null) {
 function evictOldest() {
   const evicted = clickHistory.shift();
   expandedNodes.delete(evicted);
+  evictionStack.push(evicted); // remember it for back navigation
 
-  // Compute which nodes are still needed by the remaining history
   const needed = new Set(clickHistory);
   clickHistory.forEach(id => {
     (placedByExpansion.get(id) || new Set()).forEach(nodeId => needed.add(nodeId));
   });
 
-  // Remove nodes no longer needed
   cy.nodes().forEach(node => {
     if (!needed.has(node.id())) {
       nodeIncomingEdges.delete(node.id());
@@ -257,6 +257,53 @@ function evictOldest() {
     }
   });
   placedByExpansion.delete(evicted);
+}
+
+async function goBack() {
+  if (clickHistory.length <= 1) return;
+
+  // Remove the most recent node and its placed neighbors
+  const removed = clickHistory.pop();
+  expandedNodes.delete(removed);
+  const placedByRemoved = placedByExpansion.get(removed) || new Set();
+
+  const stillNeeded = new Set(clickHistory);
+  clickHistory.forEach(id => {
+    (placedByExpansion.get(id) || new Set()).forEach(nodeId => stillNeeded.add(nodeId));
+  });
+
+  placedByRemoved.forEach(nodeId => {
+    if (!stillNeeded.has(nodeId)) {
+      nodeIncomingEdges.delete(nodeId);
+      cy.getElementById(nodeId).remove();
+    }
+  });
+  placedByExpansion.delete(removed);
+
+  // Restore the previously evicted node at the front of the history
+  if (evictionStack.length > 0) {
+    const restored = evictionStack.pop();
+    clickHistory.unshift(restored);
+    await expandNode(restored, null); // re-fetch and re-place its neighbors
+  }
+
+  currentFocus = clickHistory[clickHistory.length - 1];
+  cy.nodes().removeClass('focused');
+  cy.getElementById(currentFocus).addClass('focused');
+
+  refreshEdgeVisibility();
+  refreshNodeVisibility();
+  updateBackButton();
+
+  const visibleEles = cy.elements().filter(ele => ele.style('display') !== 'none');
+  if (visibleEles.length > 0) {
+    cy.animate({ fit: { eles: visibleEles, padding: 80 }, duration: 400, easing: 'ease-out-cubic' });
+  }
+  updateInfoBar(currentFocus);
+}
+
+function updateBackButton() {
+  document.getElementById('back-btn').disabled = clickHistory.length <= 1;
 }
 
 /**
@@ -288,10 +335,13 @@ async function expandBFS(startNodeId, depth = BFS_DEPTH) {
     cy.animate({ fit: { eles: visibleEles, padding: 80 }, duration: 400, easing: 'ease-out-cubic' });
   }
 
+  updateBackButton();
   updateInfoBar(startNodeId);
 }
 
 // ── Event Handlers ───────────────────────────────────────────────────────────
+
+document.getElementById('back-btn').addEventListener('click', goBack);
 
 cy.on('tap', 'node', (evt) => {
   const clickedNode = evt.target;

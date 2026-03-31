@@ -71,3 +71,29 @@ body {
 .strategy-label {
   color: #ccc;
 }
+
+#back-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(18, 21, 30, 0.95);
+  border: 1px solid #4a5568;
+  border-radius: 6px;
+  color: #ccc;
+  font: 45px/1 monospace;
+  padding: 36px 72px;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+#back-btn:hover:not(:disabled) {
+  border-color: #5dade2;
+  color: #5dade2;
+  background: rgba(93, 173, 226, 0.08);
+}
+
+#back-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
