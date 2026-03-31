@@ -18,9 +18,10 @@ const STRATEGY_COLORS = {
 };
 
 // Layout Constants
-const RADIAL_DISTANCE = 120;      // Physical distance between "generations"
-const SWEEP_ANGLE     = Math.PI / 1.5; // 120-degree splay for neighbors
-const BFS_DEPTH       = 1;
+const RADIAL_DISTANCE    = 120;           // Physical distance between "generations"
+const SWEEP_ANGLE        = Math.PI / 1.5; // 120-degree splay for neighbors
+const BFS_DEPTH          = 1;
+const MAX_CLICK_HISTORY  = 9;             // How many clicked nodes to keep in the graph
 
 const TOP_5_STRATEGIES = new Set([
   'decrement', 'quad_plus_3', 'bytearray_4x', 'quint_plus_5', 'list_range',
@@ -29,7 +30,8 @@ const TOP_5_STRATEGIES = new Set([
 const enabledStrategies = new Set(TOP_5_STRATEGIES);
 const expandedNodes     = new Set();
 const nodeIncomingEdges = new Map(); // nodeId -> [edgeId, ...]
-const nodeDiscoveryEdge  = new Map(); // nodeId -> edgeId that first revealed this node
+const clickHistory      = [];        // oldest-first list of clicked nodeIds
+const placedByExpansion = new Map(); // expandedNodeId -> Set of nodeIds it placed
 
 // ── Initialization ───────────────────────────────────────────────────────────
 
@@ -45,12 +47,9 @@ const cy = cytoscape({
  */
 function init() {
   buildStrategyChecklist();
-
-  // Seed the graph at the origin
   placeNode(0, 0, 0);
-  const rootNode = cy.getElementById('0');
-  rootNode.addClass('focused');
-  
+  cy.getElementById('0').addClass('focused');
+  clickHistory.push('0');
   expandBFS(0);
 }
 
@@ -137,7 +136,6 @@ function updateNodeVisibility(nodeId) {
 
   const edges = nodeIncomingEdges.get(String(nodeId)) || [];
   const hasVisibleIncoming = edges.some(edgeId => cy.getElementById(edgeId).style('display') !== 'none');
-  console.log(`Updating visibility for node ${nodeId}: hasVisibleIncoming = ${hasVisibleIncoming}`);
   cy.getElementById(String(nodeId)).style('display', hasVisibleIncoming ? 'element' : 'none');
 }
 
@@ -198,19 +196,19 @@ function updateInfoBar(focusId) {
 async function expandNode(nodeId) {
   const id = String(nodeId);
   if (expandedNodes.has(id)) return [];
-  
+
   expandedNodes.add(id);
 
   const response = await fetch(`/api/neighbors/${nodeId}`);
   const data     = await response.json();
 
-  const focusNode = cy.getElementById(id);
-  focusNode.addClass('expanded');
+  cy.getElementById(id).addClass('expanded');
 
-  // Place neighbors in radial cone
+  const beforeIds = new Set(cy.nodes().map(node => node.id()));
   placeNeighborsRadial(data.focus, data.neighbors);
+  const placed = new Set(cy.nodes().filter(node => !beforeIds.has(node.id())).map(node => node.id()));
+  placedByExpansion.set(id, placed);
 
-  // Add edges and update neighbor visibility
   data.neighbors.forEach(neighbor => {
     placeEdge(data.focus, neighbor.id, neighbor.strategy);
     updateNodeVisibility(neighbor.id);
@@ -219,27 +217,57 @@ async function expandNode(nodeId) {
   return data.neighbors.map(neighbor => neighbor.id);
 }
 
+function evictOldest() {
+  const evicted = clickHistory.shift();
+  expandedNodes.delete(evicted);
+
+  // Compute which nodes are still needed by the remaining history
+  const needed = new Set(clickHistory);
+  clickHistory.forEach(id => {
+    (placedByExpansion.get(id) || new Set()).forEach(nodeId => needed.add(nodeId));
+  });
+
+  // Remove nodes no longer needed
+  cy.nodes().forEach(node => {
+    if (!needed.has(node.id())) {
+      nodeIncomingEdges.delete(node.id());
+      node.remove();
+    }
+  });
+  placedByExpansion.delete(evicted);
+
+  // Translate all remaining nodes so the new oldest is at (0, 0)
+  const newCenter = cy.getElementById(clickHistory[0]);
+  if (newCenter.length) {
+    const offset = newCenter.position();
+    cy.nodes().forEach(node => {
+      const pos = node.position();
+      node.position({ x: pos.x - offset.x, y: pos.y - offset.y });
+    });
+  }
+}
+
 /**
  * Expands a node and its descendants up to a certain depth.
  */
 async function expandBFS(startNodeId, depth = BFS_DEPTH) {
-  let currentLevel = [startNodeId];
+  const id = String(startNodeId);
 
-  for (let level = 0; level < depth; level++) {
-    const unexpanded = currentLevel.filter(id => !expandedNodes.has(String(id)));
-    if (unexpanded.length === 0) break;
-
-    const nextLevelResults = await Promise.all(unexpanded.map(id => expandNode(id)));
-    currentLevel = [...new Set(nextLevelResults.flat())];
+  // Track click history; evict oldest if over limit
+  if (!clickHistory.includes(id)) {
+    clickHistory.push(id);
+    if (clickHistory.length > MAX_CLICK_HISTORY) {
+      evictOldest();
+    }
   }
 
-  const visibleElements = cy.elements().filter(element => !element.hidden());
-  if (visibleElements.length > 0) {
-    cy.animate({ 
-      center: { eles: visibleElements }, 
-      duration: 500, 
-      easing: 'ease-in-out-cubic' 
-    });
+  let currentLevel = [startNodeId];
+  for (let level = 0; level < depth; level++) {
+    const unexpanded = currentLevel.filter(nodeId => !expandedNodes.has(String(nodeId)));
+    if (unexpanded.length === 0) break;
+
+    const nextLevelResults = await Promise.all(unexpanded.map(nodeId => expandNode(nodeId)));
+    currentLevel = [...new Set(nextLevelResults.flat())];
   }
 
   updateInfoBar(startNodeId);
