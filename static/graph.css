@@ -16,11 +16,58 @@ body {
 
 #info {
   position: fixed;
-  top: 12px;
+  bottom: 12px;
   left: 12px;
   color: #aaa;
   font: 13px/1.6 monospace;
   background: rgba(18, 21, 30, 0.8);
   padding: 6px 10px;
   border-radius: 4px;
+}
+
+#strategy-panel {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  background: rgba(18, 21, 30, 0.9);
+  border: 1px solid #2a3040;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font: 12px/1.8 monospace;
+  color: #aaa;
+  min-width: 190px;
+}
+
+#strategy-panel-title {
+  color: #666;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.strategy-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.strategy-row input[type="checkbox"] {
+  accent-color: #5dade2;
+  cursor: pointer;
+  width: 13px;
+  height: 13px;
+}
+
+.strategy-color-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.strategy-label {
+  color: #ccc;
 }

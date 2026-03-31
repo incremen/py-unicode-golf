@@ -23,6 +23,12 @@ const STRATEGY_COLORS = {
 const VERTICAL_SPACING   = 140;
 const HORIZONTAL_SPACING = 110;
 
+const TOP_5_STRATEGIES = new Set([
+  'decrement', 'quad_plus_3', 'bytearray_4x', 'quint_plus_5', 'list_range',
+]);
+
+const enabledStrategies = new Set(TOP_5_STRATEGIES);
+
 // ── Initialization ─────────────────────────────────────────────────────────
 
 const cy = cytoscape({
@@ -44,7 +50,7 @@ function placeNode(nodeId, x, y) {
 function placeEdge(sourceId, targetId, strategy) {
   const edgeId = `e-${sourceId}-${targetId}-${strategy}`;
   if (!cy.getElementById(edgeId).length) {
-    cy.add({
+    const edge = cy.add({
       data: {
         id: edgeId,
         source: String(sourceId),
@@ -53,6 +59,46 @@ function placeEdge(sourceId, targetId, strategy) {
         color: STRATEGY_COLORS[strategy] || '#888',
       }
     });
+    if (!enabledStrategies.has(strategy)) {
+      edge.style('display', 'none');
+    }
+  }
+}
+
+function buildStrategyChecklist() {
+  const panel = document.getElementById('strategy-panel');
+  for (const strategy of Object.keys(STRATEGY_COLORS)) {
+    const isChecked = enabledStrategies.has(strategy);
+    const row = document.createElement('label');
+    row.className = 'strategy-row';
+
+    const checkbox = document.createElement('input');
+    checkbox.type    = 'checkbox';
+    checkbox.checked = isChecked;
+    checkbox.addEventListener('change', () => toggleStrategy(strategy, checkbox.checked));
+
+    const dot = document.createElement('span');
+    dot.className        = 'strategy-color-dot';
+    dot.style.background = STRATEGY_COLORS[strategy];
+
+    const label = document.createElement('span');
+    label.className   = 'strategy-label';
+    label.textContent = strategy;
+
+    row.appendChild(checkbox);
+    row.appendChild(dot);
+    row.appendChild(label);
+    panel.appendChild(row);
+  }
+}
+
+function toggleStrategy(strategy, enabled) {
+  if (enabled) {
+    enabledStrategies.add(strategy);
+    cy.edges(`[strategy = "${strategy}"]`).style('display', 'element');
+  } else {
+    enabledStrategies.delete(strategy);
+    cy.edges(`[strategy = "${strategy}"]`).style('display', 'none');
   }
 }
 
@@ -106,6 +152,7 @@ cy.on('tap', 'node', function(evt) {
 });
 
 function init() {
+  buildStrategyChecklist();
   placeNode(0, window.innerWidth / 2, 80);
   cy.nodes().first().addClass('focused');
   expandNode(0);
