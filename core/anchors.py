@@ -71,7 +71,7 @@ for digit in range(10):
     digit_ord   = ord(str(digit))
     new_repr = f'ord(str({db_digit_reprs[digit]}))'
     current_repr = BASE_ANCHORS.get(digit_ord)
-    
+
     if current_repr is None or current_repr.count('(') > new_repr.count('('):
         BASE_ANCHORS[digit_ord] = new_repr
 
@@ -117,6 +117,10 @@ def build_n(n):
     memo[n] = result
     return result
 
+
+#to maybe add later:
+#next(zip( a string)) returns a tuple of first element. maybe i can do smth with that
+#next(reversed(a string )) returns last char
 
 def build_char(char):
     """Build a chr(...) expression for a single character."""
