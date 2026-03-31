@@ -45,25 +45,48 @@ function slotKey(x, y) {
   return `${Math.round(x / HORIZONTAL_SPACING)},${Math.round(y / VERTICAL_SPACING)}`;
 }
 
-function findFreePosition(desiredX, desiredY) {
-  const row     = Math.round(desiredY / VERTICAL_SPACING);
-  const baseCol = Math.round(desiredX / HORIZONTAL_SPACING);
-  for (let offset = 0; offset < 200; offset++) {
-    for (const delta of offset === 0 ? [0] : [offset, -offset]) {
-      const key = `${baseCol + delta},${row}`;
+const MAX_LEFT_DRIFT  = 2;
+const MAX_RIGHT_DRIFT = 2;
+
+function findFreePosition(desiredX, desiredY, parentX) {
+  const baseRow    = Math.round(desiredY / VERTICAL_SPACING);
+  const baseCol    = Math.round(desiredX / HORIZONTAL_SPACING);
+  const parentCol  = Math.round((parentX ?? desiredX) / HORIZONTAL_SPACING);
+  const minCol     = parentCol - MAX_LEFT_DRIFT;
+  const maxCol     = parentCol + MAX_RIGHT_DRIFT;
+
+  for (let rowOffset = 0; rowOffset < 20; rowOffset++) {
+    const row = baseRow + rowOffset;
+    for (let col = baseCol; col <= maxCol; col++) {
+      if (col < minCol) continue;
+      const key = `${col},${row}`;
       if (!occupiedSlots.has(key)) {
         occupiedSlots.add(key);
-        return { x: (baseCol + delta) * HORIZONTAL_SPACING, y: desiredY };
+        return {
+          x: col * HORIZONTAL_SPACING,
+          y: row * VERTICAL_SPACING + (desiredY - baseRow * VERTICAL_SPACING),
+        };
+      }
+    }
+    // also try left of baseCol down to minCol
+    for (let col = baseCol - 1; col >= minCol; col--) {
+      const key = `${col},${row}`;
+      if (!occupiedSlots.has(key)) {
+        occupiedSlots.add(key);
+        return {
+          x: col * HORIZONTAL_SPACING,
+          y: row * VERTICAL_SPACING + (desiredY - baseRow * VERTICAL_SPACING),
+        };
       }
     }
   }
   return { x: desiredX, y: desiredY };
 }
 
-function placeNode(nodeId, x, y) {
+function placeNode(nodeId, x, y, parentX) {
   const id = String(nodeId);
   if (!cy.getElementById(id).length) {
-    const pos = findFreePosition(x, y);
+    const pos = findFreePosition(x, y, parentX);
     cy.add({ data: { id, label: id }, position: pos });
   }
 }
@@ -135,7 +158,7 @@ function placeNeighborsBelow(focusId, neighbors) {
   const targetY    = focusPos.y + VERTICAL_SPACING;
 
   unplaced.forEach((neighbor, index) => {
-    placeNode(neighbor.id, startX + index * HORIZONTAL_SPACING, targetY);
+    placeNode(neighbor.id, startX + index * HORIZONTAL_SPACING, targetY, focusPos.x);
   });
 
   return unplaced.map(neighbor => String(neighbor.id));
