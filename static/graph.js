@@ -45,8 +45,8 @@ function slotKey(x, y) {
   return `${Math.round(x / HORIZONTAL_SPACING)},${Math.round(y / VERTICAL_SPACING)}`;
 }
 
-const MAX_LEFT_DRIFT  = 2;
-const MAX_RIGHT_DRIFT = 2;
+const MAX_LEFT_DRIFT  = 5;
+const MAX_RIGHT_DRIFT = 5;
 
 function findFreePosition(desiredX, desiredY, parentX) {
   const baseRow    = Math.round(desiredY / VERTICAL_SPACING);
@@ -179,40 +179,54 @@ function updateInfoBar(focusId, neighborCount) {
     `node ${focusId}  →  ${neighborCount} neighbors  |  ${expandedNodes.size} expanded total`;
 }
 
+// Expands a single node and returns its neighbor IDs. Returns [] if already expanded.
 async function expandNode(nodeId) {
   const id = String(nodeId);
-  if (expandedNodes.has(id)) return;
+  if (expandedNodes.has(id)) return [];
   expandedNodes.add(id);
 
   const response = await fetch(`/api/neighbors/${nodeId}`);
   const data     = await response.json();
 
   cy.getElementById(id).addClass('expanded');
-
-  const newNodeIds = placeNeighborsBelow(data.focus, data.neighbors);
+  placeNeighborsBelow(data.focus, data.neighbors);
 
   for (const neighbor of data.neighbors) {
     placeEdge(data.focus, neighbor.id, neighbor.strategy);
   }
-
   for (const neighbor of data.neighbors) {
     updateNodeVisibility(neighbor.id);
   }
 
-  const newVisible = newNodeIds
-    .map(nodeId => cy.getElementById(nodeId))
-    .filter(nodeEl => !nodeEl.hidden());
-  if (newVisible.length > 0) {
-    cy.animate({ center: { eles: cy.collection(newVisible) }, duration: 400, easing: 'ease-in-out-quad' });
+  return data.neighbors.map(neighbor => neighbor.id);
+}
+
+// BFS expansion: expands the clicked node and the next (depth - 1) levels in parallel.
+const BFS_DEPTH = 2;
+
+async function expandBFS(startNodeId, depth = BFS_DEPTH) {
+  let currentLevel = [startNodeId];
+
+  for (let level = 0; level < depth; level++) {
+    const unexpanded = currentLevel.filter(id => !expandedNodes.has(String(id)));
+    if (unexpanded.length === 0) break;
+
+    const nextLevelArrays = await Promise.all(unexpanded.map(id => expandNode(id)));
+    currentLevel = [...new Set(nextLevelArrays.flat())];
   }
 
-  updateInfoBar(data.focus, data.neighbors.length);
+  const visibleNodes = cy.nodes().filter(node => !node.hidden());
+  if (visibleNodes.length > 0) {
+    cy.animate({ center: { eles: visibleNodes }, duration: 400, easing: 'ease-in-out-quad' });
+  }
+
+  updateInfoBar(startNodeId, expandedNodes.size);
 }
 
 cy.on('tap', 'node', function(evt) {
   cy.nodes().removeClass('focused');
   evt.target.addClass('focused');
-  expandNode(parseInt(evt.target.id(), 10));
+  expandBFS(parseInt(evt.target.id(), 10));
 });
 
 function init() {
