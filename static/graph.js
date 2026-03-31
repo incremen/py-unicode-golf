@@ -79,7 +79,6 @@ async function expandNode(nodeId) {
     placeEdge(data.focus, neighbor.id, neighbor.strategy);
   }
 
-  cy.animate({ fit: { eles: cy.nodes(), padding: 60 }, duration: 400, easing: 'ease-in-out-quad' });
   updateInfoBar(data.focus, data.neighbors.length);
 }
 
