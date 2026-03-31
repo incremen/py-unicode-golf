@@ -18,7 +18,7 @@ const STRATEGY_COLORS = {
 };
 
 // Layout Constants
-const RADIAL_DISTANCE = 220;      // Physical distance between "generations"
+const RADIAL_DISTANCE = 120;      // Physical distance between "generations"
 const SWEEP_ANGLE     = Math.PI / 1.5; // 120-degree splay for neighbors
 const BFS_DEPTH       = 1;
 
