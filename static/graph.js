@@ -1,23 +1,23 @@
 // ── Configuration ─────────────────────────────────────────────────────────
 
+// Ordered by number of uses in the final DB (most useful first)
 const STRATEGY_COLORS = {
-  decrement:        '#e74c3c',
-  triple:           '#2ecc71',
-  quad_plus_3:      '#5dade2',
-  triangular:       '#9b59b6',
-  bytearray_4x:     '#f39c12',
-  quint_plus_5:     '#1abc9c',
-  list_range:       '#e67e22',
-  ascii_exp_2:      '#fd79a8',
-  dict_enum_bytes:  '#a29bfe',
-  list_enum_bytes:  '#74b9ff',
-  zip_range:        '#55efc4',
-  zip_chain_1:      '#ffeaa7',
-  dict_enum_range:  '#fab1a0',
-  ascii_exp_3:      '#ff7675',
-  zip_chain_2:      '#81ecec',
-  ascii_exp_4:      '#b2bec3',
-  zip_chain_3:      '#dfe6e9',
+  decrement:        '#e74c3c',  // 57,391
+  quad_plus_3:      '#5dade2',  // 29,082
+  bytearray_4x:     '#f39c12',  // 21,885
+  quint_plus_5:     '#1abc9c',  // 12,986
+  list_range:       '#e67e22',  // 11,602
+  triple:           '#2ecc71',  // 11,146
+  ascii_exp_2:      '#fd79a8',  //  8,542
+  dict_enum_bytes:  '#a29bfe',  //  7,303
+  list_enum_bytes:  '#74b9ff',  //  7,055
+  zip_range:        '#55efc4',  //  6,120
+  zip_chain_1:      '#ffeaa7',  //  5,615
+  dict_enum_range:  '#fab1a0',  //  5,245
+  ascii_exp_3:      '#ff7675',  //  4,583
+  zip_chain_2:      '#81ecec',  //  2,960
+  ascii_exp_4:      '#b2bec3',  //  2,514
+  zip_chain_3:      '#dfe6e9',  //  1,805
 };
 
 const VERTICAL_SPACING   = 140;
