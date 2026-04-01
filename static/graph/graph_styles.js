@@ -24,6 +24,19 @@ const CYTOSCAPE_STYLES = [
     style: { 'background-color': '#d8d8d8', 'border-color': '#306998', 'border-width': 3 }
   },
   {
+    selector: 'node#s',
+    style: {
+      'background-color': '#1a1a2e',
+      'border-color': '#306998',
+      'border-width': 3,
+      'color': '#FFD43B',
+      'font-size': '16px',
+      'font-weight': 'bold',
+      'width': 52,
+      'height': 52,
+    }
+  },
+  {
     selector: 'node.chr-node',
     style: {
       'background-color': '#FFD43B',

@@ -29,20 +29,29 @@ cy.on('mouseout', 'edge', (evt) => {
 
 cy.on('tap', 'node', (evt) => {
   const clickedNode = evt.target;
+  const rawId = clickedNode.id();
   cy.nodes().removeClass('focused');
   clickedNode.addClass('focused');
-  currentFocus = clickedNode.id();
-  expandBFS(parseInt(clickedNode.id(), 10));
+  currentFocus = rawId;
+  // 's' and chr-nodes are non-integer; integer nodes use parseInt
+  const nodeId = rawId === 's' || rawId.startsWith('chr-') ? rawId : parseInt(rawId, 10);
+  expandBFS(nodeId);
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
+async function initStartNode() {
+  placeNode('s', 0, 0);
+  cy.getElementById('s').addClass('focused');
+  clickHistory.push('s');
+  currentFocus = 's';
+  await expandBFS('s');
+  cy.center(cy.getElementById('s'));
+}
+
 function init() {
   buildStrategyChecklist();
-  placeNode(0, 0, 0);
-  cy.getElementById('0').addClass('focused');
-  clickHistory.push('0');
-  expandBFS(0).then(() => cy.center(cy.getElementById('0')));
+  initStartNode();
 }
 
 init();

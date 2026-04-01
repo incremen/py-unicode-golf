@@ -83,6 +83,10 @@ function updateBackButton() {
 
 document.getElementById('back-btn').addEventListener('click', () => goBack());
 
+document.getElementById('trace-input').addEventListener('keydown', (evt) => {
+  if (evt.key === 'Enter') tracePath(evt.target.value.trim());
+});
+
 document.getElementById('strategy-panel-toggle').addEventListener('click', () => {
   const panel    = document.getElementById('strategy-panel');
   const toggle   = document.getElementById('strategy-panel-toggle');

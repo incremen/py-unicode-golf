@@ -18,6 +18,7 @@ const STRATEGY_COLORS = {
   ascii_exp_4:      '#546e7a',
   zip_chain_3:      '#7f8c8d',
   chr:              '#FFD43B',
+  anchor:           '#306998',
 };
 
 // Python expression templates for each strategy, given a source integer n.
@@ -39,6 +40,7 @@ const STRATEGY_LABELS = {
   zip_chain_2:      n => `len(str(list(zip(zip(bytes(${n}))))))`,
   zip_chain_3:      n => `len(str(list(zip(zip(zip(bytes(${n})))))))`,
   chr:              n => `chr(${n})`,
+  anchor:           n => String(n),
 };
 
 // ── Layout constants ──────────────────────────────────────────────────────────

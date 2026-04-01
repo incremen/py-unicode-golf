@@ -178,6 +178,68 @@ GRAPH_STRATEGY_NAMES = {
 GRAPH_STRATEGIES = [(name, fns[0]) for name, fns in ALL_STRATEGIES.items() if name in GRAPH_STRATEGY_NAMES]
 GRAPH_MAX = 200_000
 
+def extract_path(inner_expr):
+    """Walk the expression AST from innermost literal outward, recording each
+    integer result. E.g. 'len(str(bytes(3)))' → [3, 15]."""
+    import ast as _ast
+
+    safe_env = {
+        '__builtins__': {},
+        'len': len, 'str': str, 'bytes': bytes, 'bytearray': bytearray,
+        'list': list, 'range': range, 'max': max, 'ascii': ascii,
+        'zip': zip, 'tuple': tuple, 'dict': dict, 'enumerate': enumerate,
+    }
+
+    try:
+        tree = _ast.parse(inner_expr, mode='eval')
+    except SyntaxError:
+        return []
+
+    path = []
+
+    def walk(node):
+        if isinstance(node, _ast.Constant) and isinstance(node.value, int):
+            path.append(node.value)
+            return
+        if isinstance(node, _ast.Call) and node.args:
+            walk(node.args[0])
+            try:
+                result = eval(_ast.unparse(node), safe_env)
+                if isinstance(result, int):
+                    path.append(result)
+            except Exception:
+                pass
+
+    walk(tree.body)
+    return path
+
+
+@app.route('/api/neighbors/s')
+def api_neighbors_s():
+    neighbors = [{'id': str(n), 'strategy': 'anchor'} for n in sorted(BASE_ANCHORS)]
+    return jsonify({'focus': 's', 'neighbors': neighbors})
+
+
+@app.route('/api/path/<path:target>')
+def api_path(target):
+    if len(target) == 1 and not target.isdigit():
+        n = ord(target)
+    else:
+        try:
+            n = int(target)
+        except ValueError:
+            return jsonify({'error': 'Expected a single character or integer'}), 400
+
+    if not DB_AVAILABLE or str(n) not in DB_EXPRS:
+        return jsonify({'error': f'No path found for {repr(target)}'}), 404
+
+    path = extract_path(DB_EXPRS[str(n)])
+    if not path:
+        return jsonify({'error': 'Could not extract path from expression'}), 500
+
+    return jsonify({'target': n, 'path': path})
+
+
 @app.route('/api/neighbors/<int:node_id>')
 def api_neighbors(node_id):
     neighbors = []

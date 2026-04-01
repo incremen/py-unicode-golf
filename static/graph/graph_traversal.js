@@ -1,3 +1,39 @@
+// ── Path tracing ─────────────────────────────────────────────────────────────
+
+function resetGraph() {
+  cy.elements().remove();
+  expandedNodes.clear();
+  nodeIncomingEdges.clear();
+  clickHistory.length = 0;
+  placedByExpansion.clear();
+  evictionStack.length = 0;
+  currentFocus = '0';
+  updateBackButton();
+}
+
+async function tracePath(target) {
+  const response = await fetch(`/api/path/${encodeURIComponent(target)}`);
+  const data     = await response.json();
+
+  if (data.error) {
+    document.getElementById('trace-error').textContent = data.error;
+    return;
+  }
+  document.getElementById('trace-error').textContent = '';
+
+  resetGraph();
+  await initStartNode();
+
+  // Step through the path: base anchor → intermediates → target codepoint
+  for (const nodeId of data.path) {
+    cy.nodes().removeClass('focused');
+    cy.getElementById(String(nodeId)).addClass('focused');
+    currentFocus = String(nodeId);
+    await expandBFS(nodeId);
+    await new Promise(resolve => setTimeout(resolve, 600));
+  }
+}
+
 // ── Node expansion ────────────────────────────────────────────────────────────
 
 async function expandNode(nodeId, parentId = null) {
@@ -11,32 +47,38 @@ async function expandNode(nodeId, parentId = null) {
 
   cy.getElementById(id).addClass('expanded');
 
-  const chrNeighbor  = makeChrNeighbor(nodeId);
-  const allNeighbors = [...data.neighbors, chrNeighbor];
+  // 's' is the virtual start node — no chr leaf, no integer transform
+  const isStartNode  = id === 's';
+  const chrNeighbor  = isStartNode ? null : makeChrNeighbor(nodeId);
+  const allNeighbors = chrNeighbor ? [...data.neighbors, chrNeighbor] : data.neighbors;
 
   const beforeIds = new Set(cy.nodes().map(node => node.id()));
   placeNeighborsRings(data.focus, allNeighbors, parentId);
 
-  const chrEl = cy.getElementById(chrNeighbor.id);
-  if (chrEl.length) chrEl.addClass('chr-node').data('label', chrNeighbor.label);
+  if (chrNeighbor) {
+    const chrEl = cy.getElementById(chrNeighbor.id);
+    if (chrEl.length) chrEl.addClass('chr-node').data('label', chrNeighbor.label);
+  }
 
   const placed = new Set(cy.nodes().filter(node => !beforeIds.has(node.id())).map(node => node.id()));
   placedByExpansion.set(id, placed);
 
   data.neighbors.forEach(neighbor => placeEdge(data.focus, neighbor.id, neighbor.strategy));
 
-  const chrEdgeId = `e-${nodeId}-${chrNeighbor.id}-chr`;
-  if (!cy.getElementById(chrEdgeId).length) {
-    cy.add({ data: {
-      id: chrEdgeId,
-      source: id,
-      target: chrNeighbor.id,
-      strategy: 'chr',
-      label: STRATEGY_LABELS.chr(nodeId),
-      color: STRATEGY_COLORS.chr,
-    }});
-    if (!nodeIncomingEdges.has(chrNeighbor.id)) nodeIncomingEdges.set(chrNeighbor.id, []);
-    nodeIncomingEdges.get(chrNeighbor.id).push(chrEdgeId);
+  if (chrNeighbor) {
+    const chrEdgeId = `e-${nodeId}-${chrNeighbor.id}-chr`;
+    if (!cy.getElementById(chrEdgeId).length) {
+      cy.add({ data: {
+        id: chrEdgeId,
+        source: id,
+        target: chrNeighbor.id,
+        strategy: 'chr',
+        label: STRATEGY_LABELS.chr(nodeId),
+        color: STRATEGY_COLORS.chr,
+      }});
+      if (!nodeIncomingEdges.has(chrNeighbor.id)) nodeIncomingEdges.set(chrNeighbor.id, []);
+      nodeIncomingEdges.get(chrNeighbor.id).push(chrEdgeId);
+    }
   }
 
   refreshEdgeVisibility();
