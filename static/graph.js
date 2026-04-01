@@ -15,7 +15,7 @@ const STRATEGY_COLORS = {
   zip_chain_2:      '#00838f',
   ascii_exp_4:      '#546e7a',
   zip_chain_3:      '#7f8c8d',
-  chr:              '#888888',
+  chr:              '#FFD43B',
 };
 
 const STRATEGY_LABELS = {

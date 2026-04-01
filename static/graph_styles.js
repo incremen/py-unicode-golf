@@ -26,12 +26,12 @@ const CYTOSCAPE_STYLES = [
   {
     selector: 'node.chr-node',
     style: {
-      'background-color': '#f5f5f5',
-      'border-color': '#aaa',
-      'border-width': 1,
-      'border-style': 'dashed',
-      'color': '#444',
-      'font-size': '13px',
+      'background-color': '#FFD43B',
+      'border-color': '#e6b800',
+      'border-width': 3,
+      'border-style': 'solid',
+      'color': '#1a1200',
+      'font-size': '22px',
       'font-family': 'Courier New',
       'font-weight': 'bold',
       'text-valign': 'center',
@@ -39,8 +39,13 @@ const CYTOSCAPE_STYLES = [
       'text-wrap': 'none',
       'shape': 'round-rectangle',
       'width': 'label',
-      'height': 36,
-      'padding': '8px',
+      'height': 52,
+      'padding': '14px',
+      'shadow-blur': 18,
+      'shadow-color': '#FFD43B',
+      'shadow-opacity': 0.7,
+      'shadow-offset-x': 0,
+      'shadow-offset-y': 0,
     }
   },
   {
@@ -52,6 +57,16 @@ const CYTOSCAPE_STYLES = [
       'target-arrow-shape': 'triangle',
       'curve-style': 'bezier',
       'label': '',
+    }
+  },
+  {
+    selector: 'edge[strategy = "chr"]',
+    style: {
+      'width': 3,
+      'line-style': 'dashed',
+      'line-dash-pattern': [8, 4],
+      'target-arrow-shape': 'triangle',
+      'arrow-scale': 1.6,
     }
   },
   {
