@@ -168,14 +168,17 @@ def api_visualize_string():
 
 from core.strategies import STRATEGIES as ALL_STRATEGIES
 
-# Only expose strategies with >1000 uses in the final DB
-GRAPH_STRATEGY_NAMES = {
-    'decrement', 'quad_plus_3', 'bytearray_4x', 'quint_plus_5',
-    'list_range', 'triple', 'ascii_exp_2', 'dict_enum_bytes',
-    'list_enum_bytes', 'zip_range', 'zip_chain_1', 'dict_enum_range',
-    'ascii_exp_3', 'zip_chain_2', 'ascii_exp_4', 'zip_chain_3',
-}
-GRAPH_STRATEGIES = [(name, fns[0]) for name, fns in ALL_STRATEGIES.items() if name in GRAPH_STRATEGY_NAMES]
+def _strategies_used_in_db():
+    if not DB_AVAILABLE:
+        return list(ALL_STRATEGIES.items())
+    used = []
+    for name, fns in ALL_STRATEGIES.items():
+        prefix = fns[1]('X').split('X')[0]
+        if any(prefix in expr for expr in DB_EXPRS.values()):
+            used.append((name, fns[0]))
+    return used
+
+GRAPH_STRATEGIES = _strategies_used_in_db()
 GRAPH_MAX = 200_000
 
 def extract_path(inner_expr):
