@@ -92,46 +92,45 @@ function placeNeighborsRings(focusId, neighbors, parentId) {
 
   if (unplaced.length === 0) return;
 
-  const INNER_RADIUS = 110;
-  const RING_SPACING = 85;
-  const MAX_PER_RING = 7;
+  const INNER_RADIUS  = 110;
+  const RING_SPACING  = 90;
+  const NODE_SPACING  = 58; // minimum arc-distance between node centres
 
   const parentEl = parentId ? cy.getElementById(String(parentId)) : null;
   let blockAngle  = null;
+  let sweep       = 2 * Math.PI;
+
   if (parentEl && parentEl.length) {
     const parentPos = parentEl.position();
     blockAngle = Math.atan2(parentPos.y - focusPos.y, parentPos.x - focusPos.x);
+    sweep = Math.PI * 1.33; // ~240°
   }
 
-  unplaced.forEach((neighbor, index) => {
-    const ringIndex    = Math.floor(index / MAX_PER_RING);
-    const indexInRing  = index % MAX_PER_RING;
-    const nodesInRing  = Math.min(MAX_PER_RING, unplaced.length - ringIndex * MAX_PER_RING);
-    const radius       = INNER_RADIUS + ringIndex * RING_SPACING;
+  // Assign each node to a ring, letting the arc length of each ring determine capacity.
+  let remaining = [...unplaced];
+  let ringIndex = 0;
 
-    let angle;
-    if (blockAngle !== null) {
-      if (nodesInRing === 1) {
-        angle = blockAngle + Math.PI;
-      } else {
-        const sweep      = Math.PI * 1.33;
-        const startAngle = blockAngle + Math.PI - sweep / 2;
-        const step       = sweep / (nodesInRing - 1);
-        const offset     = ringIndex % 2 === 1 ? step / 2 : 0;
-        angle = startAngle + indexInRing * step + offset;
-      }
-    } else {
-      if (nodesInRing === 1) {
-        angle = 0;
-      } else {
-        const step   = (Math.PI * 2) / nodesInRing;
-        const offset = ringIndex % 2 === 1 ? step / 2 : 0;
-        angle = indexInRing * step + offset;
-      }
-    }
+  while (remaining.length > 0) {
+    const radius      = INNER_RADIUS + ringIndex * RING_SPACING;
+    const arcLength   = radius * sweep;
+    const capacity    = Math.max(1, Math.floor(arcLength / NODE_SPACING));
+    const nodesInRing = Math.min(capacity, remaining.length);
+    const ringNodes   = remaining.splice(0, nodesInRing);
 
-    placeNode(neighbor.id, focusPos.x + radius * Math.cos(angle), focusPos.y + radius * Math.sin(angle));
-  });
+    const centerAngle = blockAngle !== null ? blockAngle + Math.PI : 0;
+    const startAngle  = centerAngle - sweep / 2;
+    const step        = nodesInRing === 1 ? 0 : sweep / (nodesInRing - 1);
+    const offset      = ringIndex % 2 === 1 && nodesInRing > 1 ? step / 2 : 0;
+
+    ringNodes.forEach((neighbor, indexInRing) => {
+      const angle = nodesInRing === 1
+        ? centerAngle
+        : startAngle + indexInRing * step + offset;
+      placeNode(neighbor.id, focusPos.x + radius * Math.cos(angle), focusPos.y + radius * Math.sin(angle));
+    });
+
+    ringIndex++;
+  }
 }
 
 function placeEdge(sourceId, targetId, strategy) {
