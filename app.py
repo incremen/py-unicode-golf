@@ -179,15 +179,26 @@ GRAPH_STRATEGIES = [(name, fns[0]) for name, fns in ALL_STRATEGIES.items() if na
 GRAPH_MAX = 200_000
 
 def extract_path(inner_expr):
-    """Walk the expression AST from innermost literal outward, recording each
-    integer result. E.g. 'len(str(bytes(3)))' → [3, 15]."""
+    """Walk the call-chain spine from innermost to outermost, evaluating each
+    level and keeping only integer results.
+
+    Handles both literal-seeded expressions ('len(str(bytes(3)))' → [3, 15])
+    and BASE_ANCHOR-seeded ones ('len(str(bytes(len(bin(int(not()))))))' → [1, 3, 15]).
+    """
     import ast as _ast
 
     safe_env = {
         '__builtins__': {},
         'len': len, 'str': str, 'bytes': bytes, 'bytearray': bytearray,
-        'list': list, 'range': range, 'max': max, 'ascii': ascii,
-        'zip': zip, 'tuple': tuple, 'dict': dict, 'enumerate': enumerate,
+        'list': list, 'range': range, 'max': max, 'min': min,
+        'ascii': ascii, 'zip': zip, 'tuple': tuple, 'dict': dict,
+        'enumerate': enumerate, 'sum': sum, 'ord': ord, 'chr': chr,
+        'int': int, 'bool': bool, 'float': float, 'complex': complex,
+        'type': type, 'set': set, 'frozenset': frozenset,
+        'iter': iter, 'reversed': reversed, 'sorted': sorted,
+        'property': property, 'classmethod': classmethod,
+        'memoryview': memoryview, 'bin': bin, 'hex': hex, 'oct': oct,
+        'abs': abs, 'repr': repr,
     }
 
     try:
@@ -195,22 +206,25 @@ def extract_path(inner_expr):
     except SyntaxError:
         return []
 
-    path = []
-
-    def walk(node):
-        if isinstance(node, _ast.Constant) and isinstance(node.value, int):
-            path.append(node.value)
-            return
+    # Collect the call spine from innermost argument to outermost call.
+    spine = []
+    def collect(node):
         if isinstance(node, _ast.Call) and node.args:
-            walk(node.args[0])
-            try:
-                result = eval(_ast.unparse(node), safe_env)
-                if isinstance(result, int):
-                    path.append(result)
-            except Exception:
-                pass
+            collect(node.args[0])
+        spine.append(node)
 
-    walk(tree.body)
+    collect(tree.body)
+
+    path = []
+    for node in spine:
+        try:
+            result = eval(_ast.unparse(node), safe_env)
+            # Only keep proper int values — exclude bool (True/False)
+            if type(result) is int:
+                path.append(result)
+        except Exception:
+            pass
+
     return path
 
 
