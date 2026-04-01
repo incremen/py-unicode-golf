@@ -18,6 +18,26 @@ const STRATEGY_COLORS = {
   chr:              '#888888',
 };
 
+const STRATEGY_LABELS = {
+  decrement:        n => `max(range(${n}))`,
+  triple:           n => `len(str(list(bytes(${n}))))`,
+  quad_plus_3:      n => `len(str(bytes(${n})))`,
+  quint_plus_5:     n => `len(ascii(str(bytes(${n}))))`,
+  bytearray_4x:     n => `len(str(bytearray(${n})))`,
+  list_range:       n => `len(str(list(range(${n}))))`,
+  zip_range:        n => `len(str(list(zip(range(${n})))))`,
+  dict_enum_range:  n => `len(str(dict(enumerate(range(${n})))))`,
+  list_enum_bytes:  n => `len(str(list(enumerate(bytes(${n})))))`,
+  dict_enum_bytes:  n => `len(str(dict(enumerate(bytes(${n})))))`,
+  ascii_exp_2:      n => `len(ascii(ascii(str(bytes(${n})))))`,
+  ascii_exp_3:      n => `len(ascii(ascii(ascii(str(bytes(${n}))))))`,
+  ascii_exp_4:      n => `len(ascii(ascii(ascii(ascii(str(bytes(${n})))))))`,
+  zip_chain_1:      n => `len(str(list(zip(bytes(${n})))))`,
+  zip_chain_2:      n => `len(str(list(zip(zip(bytes(${n}))))))`,
+  zip_chain_3:      n => `len(str(list(zip(zip(zip(bytes(${n})))))))`,
+  chr:              n => `chr(${n})`,
+};
+
 // Layout Constants
 const BFS_DEPTH         = 1;
 const MAX_CLICK_HISTORY = 4;
@@ -117,12 +137,15 @@ function placeNeighborsRings(focusId, neighbors, parentId) {
 function placeEdge(sourceId, targetId, strategy) {
   const edgeId = `e-${sourceId}-${targetId}-${strategy}`;
   if (!cy.getElementById(edgeId).length) {
+    const labelFn = STRATEGY_LABELS[strategy];
+    const label   = labelFn ? labelFn(sourceId) : strategy;
     cy.add({
       data: {
         id: edgeId,
         source: String(sourceId),
         target: String(targetId),
         strategy: strategy,
+        label,
         color: STRATEGY_COLORS[strategy] || '#888',
       }
     });
@@ -255,7 +278,7 @@ async function expandNode(nodeId, parentId = null) {
   // Add chr edge
   const chrEdgeId = `e-${nodeId}-${chrNeighbor.id}-chr`;
   if (!cy.getElementById(chrEdgeId).length) {
-    cy.add({ data: { id: chrEdgeId, source: id, target: chrNeighbor.id, strategy: 'chr', color: STRATEGY_COLORS.chr } });
+    cy.add({ data: { id: chrEdgeId, source: id, target: chrNeighbor.id, strategy: 'chr', label: STRATEGY_LABELS.chr(nodeId), color: STRATEGY_COLORS.chr } });
     if (!nodeIncomingEdges.has(chrNeighbor.id)) nodeIncomingEdges.set(chrNeighbor.id, []);
     nodeIncomingEdges.get(chrNeighbor.id).push(chrEdgeId);
   }
@@ -378,6 +401,28 @@ document.getElementById('strategy-panel-toggle').addEventListener('click', () =>
   const toggle = document.getElementById('strategy-panel-toggle');
   const collapsed = panel.classList.toggle('collapsed');
   toggle.innerHTML = collapsed ? '&#43;' : '&#8722;';
+});
+
+const edgeTooltip = document.getElementById('edge-tooltip');
+
+cy.on('mouseover', 'edge', (evt) => {
+  const edge = evt.target;
+  edge.addClass('hovered');
+  const mid = edge.midpoint();
+  const pan = cy.pan();
+  const zoom = cy.zoom();
+  const x = mid.x * zoom + pan.x;
+  const y = mid.y * zoom + pan.y;
+  edgeTooltip.textContent = edge.data('label');
+  edgeTooltip.style.left = `${x}px`;
+  edgeTooltip.style.top  = `${y}px`;
+  edgeTooltip.style.color = edge.data('color');
+  edgeTooltip.style.display = 'block';
+});
+
+cy.on('mouseout', 'edge', (evt) => {
+  evt.target.removeClass('hovered');
+  edgeTooltip.style.display = 'none';
 });
 
 cy.on('tap', 'node', (evt) => {

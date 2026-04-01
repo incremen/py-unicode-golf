@@ -91,6 +91,22 @@ body {
   color: #ccc;
 }
 
+#edge-tooltip {
+  position: fixed;
+  display: none;
+  font: bold 15px/1 'Courier New', monospace;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #fff;
+  border: 2px solid currentColor;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+  z-index: 9999;
+  white-space: nowrap;
+  transform: translate(-50%, -160%);
+  letter-spacing: 0.02em;
+}
+
 #back-btn {
   position: fixed;
   bottom: 20px;

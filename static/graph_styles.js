@@ -51,12 +51,11 @@ const CYTOSCAPE_STYLES = [
       'target-arrow-color': 'data(color)',
       'target-arrow-shape': 'triangle',
       'curve-style': 'bezier',
-      'label': 'data(strategy)',
-      'font-family': 'Courier New',
-      'font-size': '9px',
-      'color': 'data(color)',
-      'text-rotation': 'autorotate',
-      'text-margin-y': -8,
+      'label': '',
     }
+  },
+  {
+    selector: 'edge.hovered',
+    style: { 'width': 3 }
   }
 ];
