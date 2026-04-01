@@ -426,6 +426,10 @@ ascii(ascii(that))    = ...                      len = 23</pre>
      The <code>triple</code> strategy is an edge from <code>n</code> to <code>3n</code>.
   </p>
   <p>
+    If you're curious about how this graph looks, <a href="/static/graph/graph.html" target="_blank">I used Cytoscape to visualize it</a> — I think it ends up looking pretty cool.
+    You can click a node to see its outgoing neighbors, and trace the path from <code>s</code> (the starting node) to any character in the graph.
+  </p>
+  <p>
     So instead of guessing and checking backwards, we just use <strong>Dijkstra's Algorithm</strong>. 
     You can think of putting a starting node <code>s</code> with with an edge to all the base anchors according to the base anchors' length of representation. <br>
     And we want to find the distance from <code>s</code> to every other node in <code>{0, 1, ..., 200000}</code>.<br>
