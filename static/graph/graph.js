@@ -29,13 +29,16 @@ cy.on('mouseout', 'edge', (evt) => {
 
 cy.on('tap', 'node', (evt) => {
   const clickedNode = evt.target;
-  const rawId = clickedNode.id();
-  cy.nodes().removeClass('focused');
+  const rawId       = clickedNode.id();
+  const prevFocus   = currentFocus;
+
+  cy.nodes().removeClass('focused').removeClass('trace-active');
   clickedNode.addClass('focused');
   currentFocus = rawId;
-  // 's' and chr-nodes are non-integer; integer nodes use parseInt
+
   const nodeId = rawId === 's' || rawId.startsWith('chr-') ? rawId : parseInt(rawId, 10);
-  expandBFS(nodeId);
+
+  animateTraceDot(prevFocus, rawId).then(() => expandBFS(nodeId));
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────

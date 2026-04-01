@@ -11,6 +11,34 @@ function resetGraph() {
   updateBackButton();
 }
 
+function animateTraceDot(fromId, toId) {
+  return new Promise(resolve => {
+    const fromEl = cy.getElementById(String(fromId));
+    const toEl   = cy.getElementById(String(toId));
+    if (!fromEl.length || !toEl.length) { resolve(); return; }
+
+    const container = document.getElementById('cy').getBoundingClientRect();
+    const fromPos   = fromEl.renderedPosition();
+    const toPos     = toEl.renderedPosition();
+
+    const dot = document.createElement('div');
+    dot.className     = 'trace-dot';
+    dot.style.left    = `${container.left + fromPos.x}px`;
+    dot.style.top     = `${container.top  + fromPos.y}px`;
+    document.body.appendChild(dot);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        dot.style.transition = `left ${TRACE_ANIM_MS}ms ease-in-out, top ${TRACE_ANIM_MS}ms ease-in-out`;
+        dot.style.left = `${container.left + toPos.x}px`;
+        dot.style.top  = `${container.top  + toPos.y}px`;
+      });
+    });
+
+    setTimeout(() => { dot.remove(); resolve(); }, TRACE_ANIM_MS + 50);
+  });
+}
+
 async function tracePath(target) {
   const response = await fetch(`/api/path/${encodeURIComponent(target)}`);
   const data     = await response.json();
@@ -24,14 +52,30 @@ async function tracePath(target) {
   resetGraph();
   await initStartNode();
 
-  // Step through the path: base anchor → intermediates → target codepoint
+  let prevId = 's';
   for (const nodeId of data.path) {
-    cy.nodes().removeClass('focused');
-    cy.getElementById(String(nodeId)).addClass('focused');
-    currentFocus = String(nodeId);
+    const id = String(nodeId);
+
+    // Dwell on the current node before moving
+    await new Promise(resolve => setTimeout(resolve, TRACE_STEP_MS - TRACE_ANIM_MS - 50));
+
+    // Animate dot traveling to the next node
+    await animateTraceDot(prevId, id);
+
+    // Expand and highlight the new node
+    cy.nodes().removeClass('focused').removeClass('trace-active');
+    const nodeEl = cy.getElementById(id);
+    if (nodeEl.length) nodeEl.addClass('trace-active');
+
+    currentFocus = id;
     await expandBFS(nodeId);
-    await new Promise(resolve => setTimeout(resolve, 600));
+
+    prevId = id;
   }
+
+  // Leave the final node highlighted
+  cy.nodes().removeClass('focused');
+  cy.getElementById(prevId).addClass('trace-active');
 }
 
 // ── Node expansion ────────────────────────────────────────────────────────────

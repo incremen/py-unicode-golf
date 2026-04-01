@@ -87,6 +87,8 @@ const STRATEGY_LABELS = {
 
 const BFS_DEPTH         = 1;
 const MAX_CLICK_HISTORY = 4;
+const TRACE_STEP_MS     = 1500; // total dwell time per trace step
+const TRACE_ANIM_MS     = 500;  // duration of the traveling dot animation
 
 // ── Mutable graph state ───────────────────────────────────────────────────────
 

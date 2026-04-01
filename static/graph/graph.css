@@ -35,6 +35,18 @@
   border-color: #FFD43B;
 }
 
+.trace-dot {
+  position: fixed;
+  width: 14px;
+  height: 14px;
+  background: #FFD43B;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 10000;
+  box-shadow: 0 0 12px 4px rgba(255, 212, 59, 0.7);
+}
+
 #trace-error {
   color: #e74c3c;
   font-size: 11px;
