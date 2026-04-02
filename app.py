@@ -181,62 +181,6 @@ def _strategies_used_in_db():
 GRAPH_STRATEGIES = _strategies_used_in_db()
 GRAPH_MAX = 200_000
 
-def extract_path(inner_expr):
-    """Walk the call-chain spine from innermost to outermost, evaluating each
-    level and keeping only integer results.
-
-    Handles both literal-seeded expressions ('len(str(bytes(3)))' → [3, 15])
-    and BASE_ANCHOR-seeded ones ('len(str(bytes(len(bin(int(not()))))))' → [1, 3, 15]).
-    """
-    import ast as _ast
-
-    safe_env = {
-        '__builtins__': {},
-        'len': len, 'str': str, 'bytes': bytes, 'bytearray': bytearray,
-        'list': list, 'range': range, 'max': max, 'min': min,
-        'ascii': ascii, 'zip': zip, 'tuple': tuple, 'dict': dict,
-        'enumerate': enumerate, 'sum': sum, 'ord': ord, 'chr': chr,
-        'int': int, 'bool': bool, 'float': float, 'complex': complex,
-        'type': type, 'set': set, 'frozenset': frozenset,
-        'iter': iter, 'reversed': reversed, 'sorted': sorted,
-        'property': property, 'classmethod': classmethod,
-        'memoryview': memoryview, 'bin': bin, 'hex': hex, 'oct': oct,
-        'abs': abs, 'repr': repr,
-    }
-
-    try:
-        tree = _ast.parse(inner_expr, mode='eval')
-    except SyntaxError:
-        return []
-
-    # Collect the call spine from innermost argument to outermost call.
-    spine = []
-    def collect(node):
-        if isinstance(node, _ast.Call) and node.args:
-            collect(node.args[0])
-        spine.append(node)
-
-    collect(tree.body)
-
-    path = []
-    for node in spine:
-        try:
-            result = eval(_ast.unparse(node), safe_env)
-            # Only keep proper int values — exclude bool (True/False)
-            if type(result) is int:
-                path.append(result)
-        except Exception:
-            pass
-
-    return path
-
-
-@app.route('/api/neighbors/s')
-def api_neighbors_s():
-    neighbors = [{'id': str(n), 'strategy': 'anchor'} for n in sorted(BASE_ANCHORS)]
-    return jsonify({'focus': 's', 'neighbors': neighbors})
-
-
 @app.route('/api/path/<path:target>')
 def api_path(target):
     if len(target) == 1 and not target.isdigit():
@@ -250,7 +194,16 @@ def api_path(target):
     if not DB_AVAILABLE or str(n) not in DB_EXPRS:
         return jsonify({'error': f'No path found for {repr(target)}'}), 404
 
-    path = extract_path(DB_EXPRS[str(n)])
+    steps = evaluate_steps(DB_EXPRS[str(n)])
+    path = []
+    for step in steps:
+        try:
+            val = int(step.get('result', ''))
+            if val not in path:
+                path.append(val)
+        except (ValueError, TypeError):
+            pass
+
     if not path:
         return jsonify({'error': 'Could not extract path from expression'}), 500
 
