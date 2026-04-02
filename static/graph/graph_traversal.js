@@ -29,8 +29,7 @@ function animateTraceDot(fromId, toId, strategy = null) {
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        // Note plays exactly when the dot starts moving
-        if (strategy) playStrategyNote(strategy);
+        try { if (strategy) playStrategyNote(strategy); } catch (e) {}
         dot.style.transition = `left ${TRACE_ANIM_MS}ms ease-in-out, top ${TRACE_ANIM_MS}ms ease-in-out`;
         dot.style.left = `${container.left + toPos.x}px`;
         dot.style.top  = `${container.top  + toPos.y}px`;

@@ -86,47 +86,50 @@ const STRATEGY_LABELS = {
 // ── Strategy notes (Hz, pentatonic spread across ~2 octaves) ─────────────────
 // Families share one note; unrelated strategies each get a distinct pitch.
 
+// Chords as Tone.js note name arrays — play them directly with poly.triggerAttack()
 const STRATEGY_NOTES = {
-  decrement:        261.63,  // C4  — step-down feel
-  triple:           392.00,  // G4  — the core 3× multiplier
-  bytearray_4x:     329.63,  // E4
-  quad_plus_3:      440.00,  // A4
-  quint_plus_5:     493.88,  // B4
-  triangular:       587.33,  // D5  — big jump up
-  list_range:       523.25,  // C5
-  tuple_range:      554.37,  // C#5
-  zip_range:        659.25,  // E5
-  dict_enum_range:  698.46,  // F5
-  list_enum_bytes:  739.99,  // F#5
-  dict_enum_bytes:  783.99,  // G5
-  enum_list_8x:     830.61,  // Ab5
-  bin_len:          293.66,  // D4
-  hex_len:          349.23,  // F4
-  oct_len:          415.30,  // Ab4
-  ascii_range:      466.16,  // Bb4
+  decrement:        ['A3', 'C4', 'E4'],        // Am
+  triple:           ['G3', 'B3', 'D4'],        // G major
+  bytearray_4x:     ['E3', 'G#3', 'B3'],       // E major
+  quad_plus_3:      ['C4', 'E4', 'G4'],        // C major
+  quint_plus_5:     ['D4', 'F#4', 'A4'],       // D major
+  triangular:       ['F4', 'A4', 'C5'],        // F major
+  list_range:       ['C4', 'F4', 'A4'],        // Fsus (Fmaj over C)
+  tuple_range:      ['G4', 'C5', 'E5'],        // Csus
+  zip_range:        ['E4', 'A4', 'B4'],        // Asus2
+  dict_enum_range:  ['B3', 'D4', 'F#4'],       // Bm
+  dict_enum_bytes:  ['D3', 'F3', 'A3'],        // Dm
+  list_enum_bytes:  ['F3', 'Ab3', 'C4'],       // Fm
+  enum_list_8x:     ['G3', 'Bb3', 'D4'],       // Gm
+  bin_len:          ['C3', 'G3', 'C4'],        // C power
+  hex_len:          ['A2', 'E3', 'A3'],        // A power
+  oct_len:          ['D3', 'A3', 'D4'],        // D power
+  ascii_range:      ['G4', 'A4', 'D5'],        // Gsus2
 
-  // Families — one shared note each
-  ascii_exp_1:      880.00,  // A5 — high sparkle (all ascii_exp same)
-  ascii_exp_2:      880.00,
-  ascii_exp_3:      880.00,
-  ascii_exp_4:      880.00,
-  ascii_exp_5:      880.00,
-  ascii_exp_6:      880.00,
-  ascii_exp_7:      880.00,
-  ascii_exp_8:      880.00,
-  ascii_exp_9:      880.00,
-  ascii_exp_10:     880.00,
-  ascii_exp_11:     880.00,
+  ascii_exp_1:      ['A4', 'C#5', 'E5'],       // A major — all ascii_exp share
+  ascii_exp_2:      ['A4', 'C#5', 'E5'],
+  ascii_exp_3:      ['A4', 'C#5', 'E5'],
+  ascii_exp_4:      ['A4', 'C#5', 'E5'],
+  ascii_exp_5:      ['A4', 'C#5', 'E5'],
+  ascii_exp_6:      ['A4', 'C#5', 'E5'],
+  ascii_exp_7:      ['A4', 'C#5', 'E5'],
+  ascii_exp_8:      ['A4', 'C#5', 'E5'],
+  ascii_exp_9:      ['A4', 'C#5', 'E5'],
+  ascii_exp_10:     ['A4', 'C#5', 'E5'],
+  ascii_exp_11:     ['A4', 'C#5', 'E5'],
 
-  zip_chain_1:      622.25,  // Eb5 — shimmery (all zip_chain same)
-  zip_chain_2:      622.25,
-  zip_chain_3:      622.25,
-  zip_chain_4:      622.25,
-  zip_chain_5:      622.25,
+  zip_chain_1:      ['Eb4', 'G4', 'Bb4'],      // Eb major — all zip_chain share
+  zip_chain_2:      ['Eb4', 'G4', 'Bb4'],
+  zip_chain_3:      ['Eb4', 'G4', 'Bb4'],
+  zip_chain_4:      ['Eb4', 'G4', 'Bb4'],
+  zip_chain_5:      ['Eb4', 'G4', 'Bb4'],
 
-  chr:             1046.50,  // C6  — triumphant arrival
-  anchor:           130.81,  // C3  — deep bass thud from s
-  trace:            523.25,  // C5
+  slice_offset:     ['C4', 'F4', 'G4'],        // Fsus4
+  complex_offset:   ['D4', 'G4', 'A4'],        // Gsus2
+
+  chr:              ['C5', 'E5', 'G5', 'C6'],  // C major + octave — triumphant
+  anchor:           ['C2', 'G2', 'C3'],        // C power bass
+  trace:            ['C4', 'E4', 'G4'],        // C major
 };
 
 // ── Layout constants ──────────────────────────────────────────────────────────
