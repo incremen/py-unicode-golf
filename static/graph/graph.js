@@ -73,12 +73,11 @@ cy.on('tap', 'node', (evt) => {
   clickedNode.addClass('focused');
   currentFocus = rawId;
 
-  // Play the note for the edge connecting prevFocus → this node
   const connectingEdge = cy.edges(`[source="${prevFocus}"][target="${rawId}"]`).first();
-  if (connectingEdge.length) playStrategyNote(connectingEdge.data('strategy'));
+  const edgeStrategy   = connectingEdge.length ? connectingEdge.data('strategy') : null;
 
   const nodeId = rawId === 's' ? rawId : parseInt(rawId, 10);
-  animateTraceDot(prevFocus, rawId).then(() => expandBFS(nodeId));
+  animateTraceDot(prevFocus, rawId, edgeStrategy).then(() => expandBFS(nodeId));
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────

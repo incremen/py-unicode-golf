@@ -11,7 +11,7 @@ function resetGraph() {
   updateBackButton();
 }
 
-function animateTraceDot(fromId, toId) {
+function animateTraceDot(fromId, toId, strategy = null) {
   return new Promise(resolve => {
     const fromEl = cy.getElementById(String(fromId));
     const toEl   = cy.getElementById(String(toId));
@@ -29,6 +29,8 @@ function animateTraceDot(fromId, toId) {
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
+        // Note plays exactly when the dot starts moving
+        if (strategy) playStrategyNote(strategy);
         dot.style.transition = `left ${TRACE_ANIM_MS}ms ease-in-out, top ${TRACE_ANIM_MS}ms ease-in-out`;
         dot.style.left = `${container.left + toPos.x}px`;
         dot.style.top  = `${container.top  + toPos.y}px`;
@@ -63,10 +65,9 @@ async function tracePath(target) {
     // Dwell on the current node before moving
     await new Promise(resolve => setTimeout(resolve, TRACE_STEP_MS - TRACE_ANIM_MS - 50));
 
-    // Play the edge note and animate the dot
     const traceEdge = cy.edges(`[source="${prevId}"][target="${id}"]`).first();
-    playStrategyNote(traceEdge.length ? traceEdge.data('strategy') : 'trace');
-    await animateTraceDot(prevId, id);
+    const traceStrategy = traceEdge.length ? traceEdge.data('strategy') : 'trace';
+    await animateTraceDot(prevId, id, traceStrategy);
 
     // Expand and highlight the new node
     cy.nodes().removeClass('focused').removeClass('trace-active');
