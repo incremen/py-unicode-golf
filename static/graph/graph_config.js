@@ -18,7 +18,6 @@ const STRATEGY_COLORS = {
   zip_chain_3:      '#7f8c8d',
   chr:              '#FFD43B',
   anchor:           '#306998',
-  trace:            '#aaa',
   triangular:       '#8e44ad',
   enum_list_8x:     '#16a085',
   slice_offset:     '#7f8c8d',
@@ -59,7 +58,6 @@ const STRATEGY_LABELS = {
   zip_chain_3:      n => `len(str(list(zip(zip(zip(bytes(${n})))))))`,
   chr:              n => `chr(${n})`,
   anchor:           n => String(n),
-  trace:            n => String(n),
   triangular:       n => `sum(range(${n}))`,
   enum_list_8x:     n => `len(str(list(enumerate(bytes(${n})))))`,
   slice_offset:     n => `len(str(slice(${n})))`,
@@ -126,7 +124,6 @@ const STRATEGY_NOTES = {
 
   chr:              ['C5', 'E5', 'G5', 'C6'],  // C major + octave — triumphant
   anchor:           ['C2', 'G2', 'C3'],        // C power bass
-  trace:            ['C4', 'E4', 'G4'],        // C major
 };
 
 // ── Layout constants ──────────────────────────────────────────────────────────
