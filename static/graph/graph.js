@@ -68,15 +68,22 @@ cy.on('tap', 'node', (evt) => {
     return;
   }
 
-  const prevFocus = currentFocus;
+  const prevFocus  = currentFocus;
+  const alreadyVisited = clickHistory.includes(rawId);
+
   cy.nodes().removeClass('focused').removeClass('trace-active');
   clickedNode.addClass('focused');
   currentFocus = rawId;
 
+  const nodeId = rawId === 's' ? rawId : parseInt(rawId, 10);
+
+  if (alreadyVisited) {
+    expandBFS(nodeId);
+    return;
+  }
+
   const connectingEdge = cy.edges(`[source="${prevFocus}"][target="${rawId}"]`).first();
   const edgeStrategy   = connectingEdge.length ? connectingEdge.data('strategy') : null;
-
-  const nodeId = rawId === 's' ? rawId : parseInt(rawId, 10);
   animateTraceDot(prevFocus, rawId, edgeStrategy).then(() => expandBFS(nodeId));
 });
 
