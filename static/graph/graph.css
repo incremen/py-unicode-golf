@@ -172,6 +172,7 @@ body {
   color: #FFD43B;
   display: block;
   margin-bottom: 6px;
+  text-align: center;
 }
 
 #char-popup .char-name {
