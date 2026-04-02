@@ -41,7 +41,11 @@ function animateTraceDot(fromId, toId) {
 
 async function tracePath(target) {
   const response = await fetch(`/api/path/${encodeURIComponent(target)}`);
-  const data     = await response.json();
+  if (!response.ok && response.headers.get('content-type')?.includes('text/html')) {
+    document.getElementById('trace-error').textContent = `Server error (${response.status})`;
+    return;
+  }
+  const data = await response.json();
 
   if (data.error) {
     document.getElementById('trace-error').textContent = data.error;

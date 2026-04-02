@@ -181,6 +181,12 @@ def _strategies_used_in_db():
 GRAPH_STRATEGIES = _strategies_used_in_db()
 GRAPH_MAX = 200_000
 
+@app.route('/api/neighbors/s')
+def api_neighbors_s():
+    neighbors = [{'id': str(n), 'strategy': 'anchor'} for n in sorted(BASE_ANCHORS)]
+    return jsonify({'focus': 's', 'neighbors': neighbors})
+
+
 @app.route('/api/path/<path:target>')
 def api_path(target):
     if len(target) == 1 and not target.isdigit():
