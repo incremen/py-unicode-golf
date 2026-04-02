@@ -29,34 +29,40 @@ cy.on('mouseout', 'edge', (evt) => {
 
 const charPopup = document.getElementById('char-popup');
 
+cy.on('mouseover', 'node', (evt) => {
+  const node  = evt.target;
+  const rawId = node.id();
+  if (!rawId.startsWith('chr-')) return;
+
+  const codepoint = parseInt(rawId.slice(4), 10);
+  const pos  = node.renderedPosition();
+  const rect = document.getElementById('cy').getBoundingClientRect();
+  charPopup.style.left    = `${rect.left + pos.x}px`;
+  charPopup.style.top     = `${rect.top  + pos.y}px`;
+  charPopup.style.display = 'block';
+  charPopup.innerHTML     = '<span class="char-name">loading…</span>';
+
+  fetch(`/api/char/${encodeURIComponent(String.fromCodePoint(codepoint))}`)
+    .then(r => r.json())
+    .then(data => {
+      charPopup.innerHTML = `
+        <span class="char-glyph">${data.char}</span>
+        <span class="char-name">${data.name ?? 'no name'}</span>
+        U+${data.code_point.toString(16).toUpperCase().padStart(4, '0')}
+        <br>depth ${data.formula?.depth ?? '?'} &nbsp; len ${data.formula?.len ?? '?'}
+      `;
+    });
+});
+
+cy.on('mouseout', 'node', (evt) => {
+  if (evt.target.id().startsWith('chr-')) charPopup.style.display = 'none';
+});
+
 cy.on('tap', 'node', (evt) => {
   const clickedNode = evt.target;
   const rawId       = clickedNode.id();
 
-  // Chr nodes: show info popup, no graph navigation
-  if (rawId.startsWith('chr-')) {
-    const codepoint = parseInt(rawId.slice(4), 10);
-    const pos  = clickedNode.renderedPosition();
-    const rect = document.getElementById('cy').getBoundingClientRect();
-    charPopup.style.left    = `${rect.left + pos.x}px`;
-    charPopup.style.top     = `${rect.top  + pos.y}px`;
-    charPopup.style.display = 'block';
-    charPopup.innerHTML     = '<span class="char-name">loading…</span>';
-
-    fetch(`/api/char/${encodeURIComponent(String.fromCodePoint(codepoint))}`)
-      .then(r => r.json())
-      .then(data => {
-        charPopup.innerHTML = `
-          <span class="char-glyph">${data.char}</span>
-          <span class="char-name">${data.name ?? 'no name'}</span>
-          U+${data.code_point.toString(16).toUpperCase().padStart(4, '0')}
-          <br>depth ${data.formula?.depth ?? '?'} &nbsp; len ${data.formula?.len ?? '?'}
-        `;
-      });
-    return;
-  }
-
-  charPopup.style.display = 'none';
+  if (rawId.startsWith('chr-')) return;
 
   const prevFocus = currentFocus;
   cy.nodes().removeClass('focused').removeClass('trace-active');
@@ -65,11 +71,6 @@ cy.on('tap', 'node', (evt) => {
 
   const nodeId = rawId === 's' ? rawId : parseInt(rawId, 10);
   animateTraceDot(prevFocus, rawId).then(() => expandBFS(nodeId));
-});
-
-// Clicking the canvas hides the popup
-cy.on('tap', (evt) => {
-  if (evt.target === cy) charPopup.style.display = 'none';
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────
