@@ -415,36 +415,40 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 
   <div class="divider"></div>
 
-  <p><strong>Finding the shortest paths</strong></p>
-  <p>
-    Initially, to optimize this whole thing, I would run a script to loop over every number, and check all possibilities for other numbers to reach it. 
-    For example, to see if we can find a shorter representation from the <code>triple</code> strategy for <code>n=150</code>, we would check how long it would be to do <code>triple(best_representation_for_50)</code>. If it was an improvement, we'd keep it. It worked, but it was clunky and required running multiple passes until things stopped getting shorter.
-  </p>
-  <p>
-    But as I was practicing algorithms exams, I realized — this is just a directed graph!
-  </p>
-  <p>
-    We can treat each number 0...200,000 as a node. And each strategy is just a set of edges connecting them!
-    For example, the strategy <code>decrement</code> gives us a directed edge from each node <code>n</code> to <code>n-1</code>.
-     The <code>triple</code> strategy is an edge from <code>n</code> to <code>3n</code>.
-  </p>
-  <p>
-    If you're curious about how this graph looks, <a href="/static/graph/graph.html" target="_blank">I used Cytoscape to visualize it</a> — I think it ends up looking pretty cool.
-    You can click a node to see its outgoing neighbors, and trace the path from <code>s</code> (the starting node) to any other node in the graph.
-  </p>
-  <p>
-    So instead of guessing and checking backwards, we just use <strong>Dijkstra's Algorithm</strong>. 
-    You can think of putting a starting node <code>s</code> with with an edge to all the base anchors according to the base anchors' length of representation. <br>
-    And we want to find the distance from <code>s</code> to every other node in <code>{0, 1, ..., 200000}</code>.<br>
-    We can actually weight the edges differently - by length or depth, depending on what we want. <br>
-    (Depth - the number of function calls in the representation, Length - the character count of the representation string).
-    So each directed edge <code>n -> n-1</code> from decrement (<code>max(range(n))</code>) has a depth of 2 and a length of 12.
-    Additionally, we can use a mix of both to break up ties between two representations with the same depth but different lengths or vice versa.<br>
-    <br>
+<p><strong>Finding the shortest paths</strong></p>
 
-    Dijksta guarantees that we find the absolute shortest paths from our list of strategies. <code>:)</code>
+<p>
+  Initially, to optimize this whole thing, I would run a script to loop over every number and check all possibilities for other numbers to reach it. For example, to see if we can find a shorter representation from the <code>triple</code> strategy for <code>n=150</code>, we would check how long it would be to do <code>triple(best_representation_for_50)</code>. If it was an improvement, we'd keep it. It worked, but it was clunky and required running multiple passes until things stopped getting shorter.
+</p>
 
-  </p>
+<p>
+  But as I was practicing algorithms exams, I realized — we can represent this as a <strong>directed graph</strong>!
+</p>
+
+<p>
+  We can treat each number 0...200,000 as a node, and each strategy is just a set of edges connecting them. For example, the strategy <code>decrement</code> gives us a directed edge from each node <code>n</code> to <code>n-1</code>, and the <code>triple</code> strategy is an edge from <code>n</code> to <code>3n</code>. In this model, every representation is simply a path through this graph.
+</p>
+
+<p>
+  So instead of guessing and checking backwards, we just use <strong>Dijkstra's Algorithm</strong>. To do this, we create a starting node <code>s</code> with an edge to all the base anchors according to the base anchors' length of representation. Our goal is then reduced to finding the shortest path from <code>s</code> to every other node in the set {0, 1, ..., 200000}.
+</p>
+
+<p>
+  We can actually weight the edges differently — by length or depth — depending on what we want:
+</p>
+
+<ul>
+  <li><strong>Depth:</strong> The number of function calls in the representation.</li>
+  <li><strong>Length:</strong> The character count of the representation string.</li>
+</ul>
+
+<p>
+  For instance, each directed edge <code>n -> n-1</code> from decrement (<code>max(range(n))</code>) has a depth of 2 and a length of 12. Additionally, we can use a mix of both to break up ties between two representations with the same depth but different lengths, or vice versa. Dijkstra guarantees that we find the absolute shortest paths from our list of strategies. <code>:)</code>
+</p>
+
+<p>
+  If you're curious about how this graph looks, <a href="/static/graph/graph.html" target="_blank">I used Cytoscape.js to visualize it</a> — I think it ends up looking pretty cool. You can click a node to see its outgoing neighbors and trace the path from <code>s</code> to any other node in the graph.
+</p>
 
   <div class="divider"></div>
 
