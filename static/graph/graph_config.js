@@ -83,6 +83,52 @@ const STRATEGY_LABELS = {
   ascii_exp_11:     n => `len(ascii(ascii(ascii(ascii(ascii(ascii(ascii(ascii(ascii(ascii(ascii(str(bytes(${n}))))))))))))))`,
 };
 
+// ── Strategy notes (Hz, pentatonic spread across ~2 octaves) ─────────────────
+// Families share one note; unrelated strategies each get a distinct pitch.
+
+const STRATEGY_NOTES = {
+  decrement:        261.63,  // C4  — step-down feel
+  triple:           392.00,  // G4  — the core 3× multiplier
+  bytearray_4x:     329.63,  // E4
+  quad_plus_3:      440.00,  // A4
+  quint_plus_5:     493.88,  // B4
+  triangular:       587.33,  // D5  — big jump up
+  list_range:       523.25,  // C5
+  tuple_range:      554.37,  // C#5
+  zip_range:        659.25,  // E5
+  dict_enum_range:  698.46,  // F5
+  list_enum_bytes:  739.99,  // F#5
+  dict_enum_bytes:  783.99,  // G5
+  enum_list_8x:     830.61,  // Ab5
+  bin_len:          293.66,  // D4
+  hex_len:          349.23,  // F4
+  oct_len:          415.30,  // Ab4
+  ascii_range:      466.16,  // Bb4
+
+  // Families — one shared note each
+  ascii_exp_1:      880.00,  // A5 — high sparkle (all ascii_exp same)
+  ascii_exp_2:      880.00,
+  ascii_exp_3:      880.00,
+  ascii_exp_4:      880.00,
+  ascii_exp_5:      880.00,
+  ascii_exp_6:      880.00,
+  ascii_exp_7:      880.00,
+  ascii_exp_8:      880.00,
+  ascii_exp_9:      880.00,
+  ascii_exp_10:     880.00,
+  ascii_exp_11:     880.00,
+
+  zip_chain_1:      622.25,  // Eb5 — shimmery (all zip_chain same)
+  zip_chain_2:      622.25,
+  zip_chain_3:      622.25,
+  zip_chain_4:      622.25,
+  zip_chain_5:      622.25,
+
+  chr:             1046.50,  // C6  — triumphant arrival
+  anchor:           130.81,  // C3  — deep bass thud from s
+  trace:            523.25,  // C5
+};
+
 // ── Layout constants ──────────────────────────────────────────────────────────
 
 const BFS_DEPTH         = 1;

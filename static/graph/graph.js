@@ -62,12 +62,20 @@ cy.on('tap', 'node', (evt) => {
   const clickedNode = evt.target;
   const rawId       = clickedNode.id();
 
-  if (rawId.startsWith('chr-')) return;
+  if (rawId.startsWith('chr-')) {
+    navigator.clipboard.writeText(String.fromCodePoint(parseInt(rawId.slice(4), 10)));
+    playStrategyNote('chr');
+    return;
+  }
 
   const prevFocus = currentFocus;
   cy.nodes().removeClass('focused').removeClass('trace-active');
   clickedNode.addClass('focused');
   currentFocus = rawId;
+
+  // Play the note for the edge connecting prevFocus → this node
+  const connectingEdge = cy.edges(`[source="${prevFocus}"][target="${rawId}"]`).first();
+  if (connectingEdge.length) playStrategyNote(connectingEdge.data('strategy'));
 
   const nodeId = rawId === 's' ? rawId : parseInt(rawId, 10);
   animateTraceDot(prevFocus, rawId).then(() => expandBFS(nodeId));

@@ -63,7 +63,9 @@ async function tracePath(target) {
     // Dwell on the current node before moving
     await new Promise(resolve => setTimeout(resolve, TRACE_STEP_MS - TRACE_ANIM_MS - 50));
 
-    // Animate dot traveling to the next node
+    // Play the edge note and animate the dot
+    const traceEdge = cy.edges(`[source="${prevId}"][target="${id}"]`).first();
+    playStrategyNote(traceEdge.length ? traceEdge.data('strategy') : 'trace');
     await animateTraceDot(prevId, id);
 
     // Expand and highlight the new node
