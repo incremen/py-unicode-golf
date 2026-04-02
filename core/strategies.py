@@ -17,8 +17,6 @@ STRATEGIES = {
     'quad_plus_3':    (lambda n: 4 * n + 3,
                        lambda p: f'len(str(bytes({p})))'),
 
-    'quint_plus_5':   (lambda n: 5 * n + 5,
-                       lambda p: f'len(ascii(str(bytes({p}))))'),
 
     'triangular':     (lambda n: n * (n - 1) // 2,
                        lambda p: f'sum(range({p}))'),

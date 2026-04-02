@@ -4,7 +4,6 @@ const STRATEGY_COLORS = {
   decrement:        '#c0392b',
   quad_plus_3:      '#2471a3',
   bytearray_4x:     '#d35400',
-  quint_plus_5:     '#17a589',
   list_range:       '#e67e22',
   triple:           '#27ae60',
   ascii_exp_2:      '#e91e8c',
@@ -46,7 +45,6 @@ const STRATEGY_LABELS = {
   decrement:        n => `max(range(${n}))`,
   triple:           n => `len(str(list(bytes(${n}))))`,
   quad_plus_3:      n => `len(str(bytes(${n})))`,
-  quint_plus_5:     n => `len(ascii(str(bytes(${n}))))`,
   bytearray_4x:     n => `len(str(bytearray(${n})))`,
   list_range:       n => `len(str(list(range(${n}))))`,
   zip_range:        n => `len(str(list(zip(range(${n})))))`,
@@ -92,7 +90,6 @@ const STRATEGY_NOTES = {
   triple:           ['G3', 'B3', 'D4'],        // G major
   bytearray_4x:     ['E3', 'G#3', 'B3'],       // E major
   quad_plus_3:      ['C4', 'E4', 'G4'],        // C major
-  quint_plus_5:     ['D4', 'F#4', 'A4'],       // D major
   triangular:       ['F4', 'A4', 'C5'],        // F major
   list_range:       ['C4', 'F4', 'A4'],        // Fsus (Fmaj over C)
   tuple_range:      ['G4', 'C5', 'E5'],        // Csus
