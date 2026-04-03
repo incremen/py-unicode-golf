@@ -73,7 +73,6 @@ cy.on('tap', 'node', (evt) => {
 
   cy.nodes().removeClass('focused').removeClass('trace-active');
   clickedNode.addClass('focused');
-  currentFocus = rawId;
 
   const nodeId = rawId === 's' ? rawId : parseInt(rawId, 10);
 
@@ -81,6 +80,8 @@ cy.on('tap', 'node', (evt) => {
     expandBFS(nodeId);
     return;
   }
+
+  currentFocus = rawId;
 
   const connectingEdge = cy.edges(`[source="${prevFocus}"][target="${rawId}"]`).first();
   const edgeStrategy   = connectingEdge.length ? connectingEdge.data('strategy') : null;
