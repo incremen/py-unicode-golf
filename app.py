@@ -170,7 +170,7 @@ from core.strategies import STRATEGIES as ALL_STRATEGIES
 
 def _strategies_used_in_db():
     if not DB_AVAILABLE:
-        return list(ALL_STRATEGIES.items())
+        return [(name, fns[0]) for name, fns in ALL_STRATEGIES.items()]
     used = []
     for name, fns in ALL_STRATEGIES.items():
         prefix = fns[1]('X').split('X')[0]
