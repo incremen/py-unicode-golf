@@ -4,8 +4,7 @@ CLI:
     python scripts/export_stats.py
 """
 
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+import os
 
 import json
 from core.db import get_conn, init_db

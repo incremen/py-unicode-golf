@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 venv/
+*.egg-info/
 prep.md
 img.html
 payloads/

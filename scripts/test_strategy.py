@@ -6,9 +6,8 @@ CLI:
     python scripts/test_strategy.py
 """
 
-import sys, os
+import sys
 import time
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from core.strategies import STRATEGIES
 from core.db import merge_best

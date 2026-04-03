@@ -8,8 +8,7 @@ CLI:
     python scripts/optimize_iterative.py --max-offset 10   — deep search
 """
 
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+import sys
 
 import math
 from core.db import get_conn, snapshot, stats, init_db, MAX_N

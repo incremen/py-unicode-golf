@@ -47,7 +47,7 @@ for i in range(1, 20):
 # ── Lookup tables for non-linear strategies ───────────────────────────────────
 # Precomputed once at import time using O(1)-per-step incremental formulas.
 
-_MAX = 200_000
+from core.config import MAX_N as _MAX
 _DIGIT_SUM       = [0] * (_MAX + 1)
 _LIST_RANGE_LEN  = [0] * (_MAX + 1)
 _TUPLE_RANGE_LEN = [0] * (_MAX + 1)
@@ -94,10 +94,10 @@ STRATEGIES.update({
     'dict_enum_range':(lambda n: _DICT_ENUM_RANGE[n] if 0 <= n <= _MAX else -1,
                        lambda p: f'len(str(dict(enumerate(range({p})))))'),
 
-    'list_enum_bytes':(lambda n: _DIGIT_SUM[n] + 6 * n + 2 if n > 0 else 2,
+    'list_enum_bytes':(lambda n: _DIGIT_SUM[n] + 6 * n + 2 if 0 < n <= _MAX else (2 if n == 0 else -1),
                        lambda p: f'len(str(list(enumerate(bytes({p})))))'),
 
-    'dict_enum_bytes':(lambda n: _DIGIT_SUM[n] + 5 * n + 2 if n > 0 else 2,
+    'dict_enum_bytes':(lambda n: _DIGIT_SUM[n] + 5 * n + 2 if 0 < n <= _MAX else (2 if n == 0 else -1),
                        lambda p: f'len(str(dict(enumerate(bytes({p})))))'),
 
     'digit_ord':      (lambda n: ord(str(n)) if 0 <= n <= 9 else -1,

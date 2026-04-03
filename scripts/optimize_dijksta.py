@@ -9,11 +9,8 @@ CLI:
 """
 
 import sys
-import os
 import heapq
 from datetime import datetime
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from core.anchors import BASE_ANCHORS
 from core.db import init_db, snapshot, stats, bulk_write, MAX_N

@@ -10,8 +10,9 @@ import json
 import os
 from datetime import datetime
 
+from core.config import MAX_N
+
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'expressions.db')
-MAX_N = 200_000
 
 
 def get_conn():
@@ -325,7 +326,6 @@ def populate(max_n=MAX_N):
 
 if __name__ == '__main__':
     import sys, os as _os
-    sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
     if '--populate' in sys.argv:
         populate()
     stats()
