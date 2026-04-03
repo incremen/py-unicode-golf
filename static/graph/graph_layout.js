@@ -65,7 +65,7 @@ function placeEdge(sourceId, targetId, strategy) {
         source: String(sourceId),
         target: String(targetId),
         strategy,
-        label: labelFn ? labelFn(sourceId) : strategy,
+        label: labelFn ? labelFn(sourceId, targetId) : strategy,
         color: STRATEGY_COLORS[strategy] || '#888',
       }
     });

@@ -57,7 +57,7 @@ const STRATEGY_LABELS = {
   zip_chain_2:      n => `len(str(list(zip(zip(bytes(${n}))))))`,
   zip_chain_3:      n => `len(str(list(zip(zip(zip(bytes(${n})))))))`,
   chr:              n => `chr(${n})`,
-  anchor:           () => 'base anchor',
+  anchor:           (_sourceId, targetId) => anchorExpressions.get(String(targetId)) ?? 'base anchor',
   triangular:       n => `sum(range(${n}))`,
   enum_list_8x:     n => `len(str(list(enumerate(bytes(${n})))))`,
   slice_offset:     n => `len(str(slice(${n})))`,
@@ -132,6 +132,13 @@ const BFS_DEPTH         = 1;
 const MAX_CLICK_HISTORY = 4;
 const TRACE_STEP_MS     = 1500; // total dwell time per trace step
 const TRACE_ANIM_MS     = 500;  // duration of the traveling dot animation
+
+// Base anchor expressions fetched from the server (nodeId -> expression string)
+const anchorExpressions = new Map();
+fetch('/api/anchors')
+  .then(r => r.json())
+  .then(data => { Object.entries(data).forEach(([k, v]) => anchorExpressions.set(k, v)); })
+  .catch(() => {});
 
 // ── Mutable graph state ───────────────────────────────────────────────────────
 
