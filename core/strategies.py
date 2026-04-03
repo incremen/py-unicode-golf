@@ -99,6 +99,9 @@ STRATEGIES.update({
 
     'dict_enum_bytes':(lambda n: _DIGIT_SUM[n] + 5 * n + 2 if n > 0 else 2,
                        lambda p: f'len(str(dict(enumerate(bytes({p})))))'),
+
+    'digit_ord':      (lambda n: ord(str(n)) if 0 <= n <= 9 else -1,
+                       lambda p: f'ord(str({p}))'),
 })
 
 

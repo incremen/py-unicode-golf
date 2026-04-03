@@ -37,6 +37,7 @@ const STRATEGY_COLORS = {
   ascii_exp_9:      '#a29bfe',
   ascii_exp_10:     '#fd79a8',
   ascii_exp_11:     '#b2bec3',
+  digit_ord:        '#f9ca24',
 };
 
 // Python expression templates for each strategy, given a source integer n.
@@ -66,6 +67,7 @@ const STRATEGY_LABELS = {
   hex_len:          n => `len(hex(${n}))`,
   oct_len:          n => `len(oct(${n}))`,
   ascii_range:      n => `len(ascii(range(${n})))`,
+  digit_ord:        n => `ord(str(${n}))`,
   tuple_range:      n => `len(str(tuple(range(${n}))))`,
   zip_chain_4:      n => `len(str(list(zip(zip(zip(zip(bytes(${n}))))))))`,
   zip_chain_5:      n => `len(str(list(zip(zip(zip(zip(zip(bytes(${n}))))))))))`,
@@ -119,6 +121,7 @@ const STRATEGY_NOTES = {
   zip_chain_4:      ['Eb4', 'G4', 'Bb4'],
   zip_chain_5:      ['Eb4', 'G4', 'Bb4'],
 
+  digit_ord:        ['E4', 'G#4', 'B4'],        // E major
   slice_offset:     ['C4', 'F4', 'G4'],        // Fsus4
   complex_offset:   ['D4', 'G4', 'A4'],        // Gsus2
 

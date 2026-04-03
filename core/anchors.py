@@ -60,20 +60,6 @@ BASE_ANCHORS = {
 # fmt: on
 
 
-# ord(str(n)) for digits 0-9 → ASCII 48-57
-# 0-6 come from BASE_ANCHORS; 7-9 use known DB expressions
-db_digit_reprs = {**{n: BASE_ANCHORS[n] for n in range(7)},
-                7: 'len(str(bytes(int(not()))))',
-                8: 'len(bin(ord(min(str(bytes())))))',
-                9: 'len(bin(ord(min(str(not())))))'}
-
-for digit in range(10):
-    digit_ord   = ord(str(digit))
-    new_repr = f'ord(str({db_digit_reprs[digit]}))'
-    current_repr = BASE_ANCHORS.get(digit_ord)
-
-    if current_repr is None or current_repr.count('(') > new_repr.count('('):
-        BASE_ANCHORS[digit_ord] = new_repr
 
 # ── Operations ───────────────────────────────────────────────────────────
 
