@@ -171,12 +171,11 @@ from core.strategies import STRATEGIES as ALL_STRATEGIES
 def _strategies_used_in_db():
     if not DB_AVAILABLE:
         return [(name, fns[0]) for name, fns in ALL_STRATEGIES.items()]
-    used = []
-    for name, fns in ALL_STRATEGIES.items():
-        prefix = fns[1]('X').split('X')[0]
-        if any(prefix in expr for expr in DB_EXPRS.values()):
-            used.append((name, fns[0]))
-    return used
+    combined = '\n'.join(DB_EXPRS.values())
+    return [
+        (name, fns[0]) for name, fns in ALL_STRATEGIES.items()
+        if fns[1]('X').split('X')[0] in combined
+    ]
 
 GRAPH_STRATEGIES = _strategies_used_in_db()
 GRAPH_MAX = 200_000
