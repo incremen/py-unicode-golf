@@ -4,7 +4,8 @@ Run this anytime to regenerate the numbers for the optimization history.
 """
 
 
-from core.anchors import build_n, BASE_ANCHORS
+from core.anchors import BASE_ANCHORS
+from core.build_base_3 import build_n
 from core.db import get_conn
 
 SAMPLE = list(range(0, 200_001, 10))

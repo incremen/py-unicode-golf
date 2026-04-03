@@ -8,7 +8,7 @@ import os
 
 import json
 from core.db import get_conn, init_db
-from core.anchors import build_n
+from core.build_base_3 import build_n
 
 STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'data')
 

@@ -1,4 +1,4 @@
-from core.anchors import build_n
+from core.build_base_3 import build_n
 
 
 def _zip_ast(data: bytes) -> str:

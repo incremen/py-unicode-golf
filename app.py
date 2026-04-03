@@ -6,7 +6,8 @@ import json
 import unicodedata
 from urllib.parse import unquote
 from flask import Flask, jsonify, send_from_directory, request
-from core.anchors import build_char, build_string, build_n, BASE_ANCHORS
+from core.anchors import BASE_ANCHORS
+from core.build_base_3 import build_char, build_string, build_n
 from core.compile import compile_payload_stealth
 from core.visualize import evaluate_steps, evaluate_string_steps
 
@@ -202,7 +203,7 @@ def api_path(target):
     if use_db and DB_AVAILABLE and str(n) in DB_EXPRS:
         expr = DB_EXPRS[str(n)]
     else:
-        from core.anchors import build_n
+        from core.build_base_3 import build_n
         expr = build_n(n)
 
     steps = evaluate_steps(expr)

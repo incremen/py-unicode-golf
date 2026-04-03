@@ -55,7 +55,7 @@ def evaluate_string_steps(text):
       - wrapper: the outer expression template (for reference)
       - tracks: list of {byte, label, expr, steps} for each repr byte
     """
-    from core.anchors import build_n
+    from core.build_base_3 import build_n
 
     repr_bytes = repr(text).encode('utf-8')
     tracks = []

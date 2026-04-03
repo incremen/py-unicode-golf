@@ -287,7 +287,8 @@ def snapshot_minimal_formula(max_n=MAX_N):
 
 def populate(max_n=MAX_N):
     """Seed the database with base-3 expressions for all integers 0..max_n."""
-    from core.anchors import BASE_ANCHORS, build_n
+    from core.anchors import BASE_ANCHORS
+from core.build_base_3 import build_n
     from core.strategies import apply_strategy
 
     init_db()
