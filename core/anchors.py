@@ -1,64 +1,70 @@
 # ── Base anchors ─────────────────────────────────────────────────────────
 # Numbers we can construct directly from zero-arg builtins.
 
-# fmt: off
+# Anchors that don't fall out of the len/ord pattern below.
 BASE_ANCHORS = {
-    # ── Booleans → ints ──
-    0:   'int(not(not()))',                          # int(False)
-    1:   'int(not())',                               # int(True)
-
-    # ── len() on string reprs ──
-    2:   'len(str(ord(min(str(not())))))',            # len("84")
-    3:   'len(bin(int(not())))',                      # len("0b1")
-    4:   'len(str(not()))',                           # len("True")
-    5:   'len(bin(len(str(not()))))',                 # len("0b100")
-    6:   'sum(range(len(str(not()))))',               # sum(range(4))
-    11:  'len(str(frozenset()))',                     # len("frozenset()")
-
-    # ── len() on type name strings ──
-    13:  'len(str(type(int())))',                     # "<class 'int'>"
-    14:  'len(str(type(not())))',                     # "<class 'bool'>"
-    15:  'len(str(type(float())))',                   # "<class 'float'>"
-    17:  'len(str(type(complex())))',                 # "<class 'complex'>"
-    18:  'len(str(type(property())))',                # "<class 'property'>"
-    19:  'len(str(type(frozenset())))',               # "<class 'frozenset'>"
-    20:  'len(str(type(memoryview(bytes()))))',       # "<class 'memoryview'>"
-    21:  'len(str(type(classmethod(int()))))',        # "<class 'classmethod'>"
-
-    # ── len() on iterator/reversed type name strings ──
-    22:  'len(str(type(iter(set()))))',               # "<class 'set_iterator'>"
-    23:  'len(str(type(iter(list()))))',              # "<class 'list_iterator'>"
-    24:  'len(str(type(iter(bytes()))))',             # "<class 'bytes_iterator'>"
-    26:  'len(str(type(iter(dict()))))',              # "<class 'dict_keyiterator'>"
-    28:  'len(str(type(iter(str()))))',               # "<class 'str_ascii_iterator'>"
-    30:  'len(str(type(reversed(list()))))',          # "<class 'list_reverseiterator'>"
-    33:  'len(str(type(reversed(dict()))))',          # "<class 'dict_reversekeyiterator'>"
-
-    # ── ord(min/max(repr)) - pick chars from string reprs ──
-    32:  'ord(min(str(type(not()))))',                # ' ' in "<class 'bool'>"
-    39:  'ord(min(str(bytes())))',                    # "'" in "b''"
-    40:  'ord(min(str(tuple())))',                    # '(' in "()"
-    41:  'ord(max(str(tuple())))',                    # ')' in "()"
-    46:  'ord(min(str(float())))',                    # '.' in "0.0"
-    48:  'ord(max(str(float())))',                    # '0' in "0.0"
-    70:  'ord(min(str(not(not()))))',                 # 'F' in "False"
-    84:  'ord(min(str(not())))',                      # 'T' in "True"
-    91:  'ord(min(str(list())))',                     # '[' in "[]"
-    93:  'ord(max(str(list())))',                     # ']' in "[]"
-    98:  'ord(max(str(bytes())))',                    # 'b' in "b''"
-    106: 'ord(max(str(complex())))',                  # 'j' in "0j"
-    111: 'ord(max(oct(int(not()))))',                 # 'o' in "0o1"
-    115: 'ord(max(str(not(not()))))',                 # 's' in "False"
-    116: 'ord(max(str(set())))',                      # 't' in "set()"
-    117: 'ord(max(str(not())))',                      # 'u' in "True"
-    120: 'ord(max(hex(int(not()))))',                 # 'x' in "0x1"
-    121: 'ord(max(str(type(type(not())))))',          # 'y' in "<class 'type'>"
-    122: 'ord(max(str(frozenset())))',                # 'z' in "frozenset()"
-    123: 'ord(min(str(dict())))',                     # '{' in "{}"
-    125: 'ord(max(str(dict())))',                     # '}' in "{}"
+    0: 'int(not(not()))',
+    1: 'int(not())',
+    6: 'sum(range(len(str(not()))))',  # sum(range(4))
 }
-# fmt: on
 
+# ── String expressions ────────────────────────────────────────────────────
+# Each entry: (expression_string, value_of_that_expression).
+# For each one we try len(...), ord(min(...)), ord(max(...)) and keep the
+# best (fewest parens) expression for each resulting integer.
+
+_STRING_EXPRS = [
+    # direct value reprs
+    ('str(not())',                              str(not())),            # 'True'
+    ('str(not(not()))',                         str(not(not()))),       # 'False'
+    ('str(list())',                             str(list())),           # '[]'
+    ('str(tuple())',                            str(tuple())),          # '()'
+    ('str(dict())',                             str(dict())),           # '{}'
+    ('str(set())',                              str(set())),            # 'set()'
+    ('str(bytes())',                            str(bytes())),          # "b''"
+    ('str(float())',                            str(float())),          # '0.0'
+    ('str(complex())',                          str(complex())),        # '0j'
+    ('str(frozenset())',                        str(frozenset())),      # 'frozenset()'
+
+    # numeric string reprs (bin/hex/oct already return strings)
+    ('bin(int(not()))',                         bin(int(not()))),       # '0b1'
+    ('hex(int(not()))',                         hex(int(not()))),       # '0x1'
+    ('oct(int(not()))',                         oct(int(not()))),       # '0o1'
+
+    # type name reprs
+    ('str(type(int()))',                        str(type(int()))),      # "<class 'int'>"
+    ('str(type(not()))',                        str(type(not()))),      # "<class 'bool'>"
+    ('str(type(float()))',                      str(type(float()))),    # "<class 'float'>"
+    ('str(type(complex()))',                    str(type(complex()))),  # "<class 'complex'>"
+    ('str(type(property()))',                   str(type(property()))), # "<class 'property'>"
+    ('str(type(frozenset()))',                  str(type(frozenset()))),# "<class 'frozenset'>"
+    ('str(type(memoryview(bytes())))',          str(type(memoryview(bytes())))),   # "<class 'memoryview'>"
+    ('str(type(classmethod(int())))',           str(type(classmethod(int())))),    # "<class 'classmethod'>"
+    ('str(type(type(not())))',                  str(type(type(not())))),           # "<class 'type'>"
+
+    # iterator/reversed type reprs
+    ('str(type(iter(set())))',                  str(type(iter(set())))),           # "<class 'set_iterator'>"
+    ('str(type(iter(list())))',                 str(type(iter(list())))),          # "<class 'list_iterator'>"
+    ('str(type(iter(bytes())))',                str(type(iter(bytes())))),         # "<class 'bytes_iterator'>"
+    ('str(type(iter(dict())))',                 str(type(iter(dict())))),          # "<class 'dict_keyiterator'>"
+    ('str(type(iter(str())))',                  str(type(iter(str())))),           # "<class 'str_ascii_iterator'>"
+    ('str(type(reversed(list())))',             str(type(reversed(list())))),      # "<class 'list_reverseiterator'>"
+    ('str(type(reversed(dict())))',             str(type(reversed(dict())))),      # "<class 'dict_reversekeyiterator'>"
+]
+
+
+def _add_if_better(n, expr):
+    existing = BASE_ANCHORS.get(n)
+    if existing is None or existing.count('(') > expr.count('('):
+        BASE_ANCHORS[n] = expr
+
+for expr, val in _STRING_EXPRS:
+    _add_if_better(len(val),                    f'len({expr})')
+    if val:
+        _add_if_better(ord(min(val)),           f'ord(min({expr}))')
+        _add_if_better(ord(max(val)),           f'ord(max({expr}))')
+        _add_if_better(ord(next(iter(val))),    f'ord(next(iter({expr})))')
+        _add_if_better(ord(next(reversed(val))),f'ord(next(reversed({expr})))')
 
 
 # ── Operations ───────────────────────────────────────────────────────────
@@ -89,24 +95,17 @@ def build_n(n):
     if n in memo:
         return memo[n]
 
-    # Use base anchor if it's an exact hit
     if n in BASE_ANCHORS:
         memo[n] = BASE_ANCHORS[n]
         return memo[n]
 
-    # Base-3 decomposition: n = 3 * (n // 3) + (n % 3)
-    # Build n//3 recursively, then apply 3x, then decrement by (n%3) if needed.
-    q = -(-n // 3)  
-    r = 3 * q - n  
+    q = -(-n // 3)
+    r = 3 * q - n
 
     result = decrement(triple(build_n(q)), r)
     memo[n] = result
     return result
 
-
-#to maybe add later:
-#next(zip( a string)) returns a tuple of first element. maybe i can do smth with that
-#next(reversed(a string )) returns last char
 
 def build_char(char):
     """Build a chr(...) expression for a single character."""
@@ -128,4 +127,3 @@ def build_string(text):
     repr_bytes = repr(text).encode('utf-8')
     rev_exprs = [f'reversed(range({build_n(b + 1)}))' for b in repr_bytes]
     return f'eval(bytes(next(zip({",".join(rev_exprs)}))))'
-
