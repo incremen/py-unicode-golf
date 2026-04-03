@@ -8,6 +8,7 @@ const STRING_STEP_DELAY = 1200;
 let vizPaused = false;
 let vizRunning = false;
 let vizCancelled = false;
+let vizUnlock = null;
 
 const vizBtn = () => document.getElementById('visualizeBtn').closest('.viz-wrap');
 const vizBtnEl = () => document.getElementById('visualizeBtn');
@@ -17,6 +18,8 @@ function stopVisualization() {
   vizCancelled = true;
   vizPaused = false;
   vizRunning = false;
+  vizUnlock?.();
+  vizUnlock = null;
   vizBtnEl().textContent = 'visualize';
   stepCounter.textContent = '';
   stepCounter.classList.remove('active', 'bump');
@@ -299,7 +302,7 @@ async function visualize() {
 
   if (vizRunning) {
     vizPaused = !vizPaused;
-    vizBtnEl().textContent = vizPaused ? 'resume' : 'pause';
+    vizBtnEl().textContent   = vizPaused ? 'resume' : 'pause';
     if (vizPaused) logoPause(); else logoResume();
     return;
   }
@@ -309,6 +312,7 @@ async function visualize() {
   vizCancelled = false;
   vizBtnEl().textContent = 'pause';
   vizBtn().classList.add('hide-arrow');
+  navigator.locks?.request('viz-active', () => new Promise(r => vizUnlock = r));
 
   try {
     if (strMode) {
@@ -324,6 +328,8 @@ async function visualize() {
     console.error(e);
   }
 
+  vizUnlock?.();
+  vizUnlock = null;
   logoDelayedReset();
   stopVisualization();
 }
