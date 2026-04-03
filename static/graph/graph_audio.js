@@ -18,7 +18,7 @@ function playStrategyNote(strategy) {
     ensureAudio();
     const now = Tone.now();
     chord.forEach((note, i) => {
-      if (plucks[i]) plucks[i].triggerAttack(note, now);
+      if (plucks[i]) plucks[i].triggerAttack(note, now + i * 0.07);
     });
   } catch (e) {
     // never let audio errors block the animation
