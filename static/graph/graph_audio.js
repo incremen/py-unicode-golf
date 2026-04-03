@@ -16,7 +16,7 @@ function playStrategyNote(strategy) {
   if (muted) return;
   const chord = STRATEGY_NOTES[strategy];
   if (!chord) return;
-  const gain = parseFloat(document.getElementById('volume-slider').value);
+  const gain = parseFloat(document.getElementById('volume-slider').value) * 1.5;
   ensureAudio().then(() => {
     const now = audioCtx.currentTime;
     chord.forEach((note, i) => {
