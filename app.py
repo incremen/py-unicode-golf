@@ -189,6 +189,7 @@ def api_neighbors_s():
 
 @app.route('/api/path/<path:target>')
 def api_path(target):
+    target = unquote(target)
     if len(target) == 1 and not target.isdigit():
         n = ord(target)
     else:
