@@ -1,26 +1,23 @@
-let plucks = null;
+let guitar        = null;
+let audioCtx      = null;
+let loadingPromise = null;
 
 function ensureAudio() {
-  if (plucks) return;
-  Tone.start();
-  // One PluckSynth per voice (PluckSynth is monophonic, can't use PolySynth)
-  plucks = Array.from({ length: 4 }, () =>
-    new Tone.PluckSynth({ attackNoise: 1.5, dampening: 4000, resonance: 0.96 })
-      .toDestination()
-  );
-  plucks.forEach(p => { p.volume.value = -8; });
+  if (guitar) return Promise.resolve();
+  if (loadingPromise) return loadingPromise;
+  audioCtx      = new AudioContext();
+  loadingPromise = Soundfont.instrument(audioCtx, 'acoustic_guitar_nylon')
+    .then(inst => { guitar = inst; });
+  return loadingPromise;
 }
 
 function playStrategyNote(strategy) {
-  try {
-    const chord = STRATEGY_NOTES[strategy];
-    if (!chord) return;
-    ensureAudio();
-    const now = Tone.now();
+  const chord = STRATEGY_NOTES[strategy];
+  if (!chord) return;
+  ensureAudio().then(() => {
+    const now = audioCtx.currentTime;
     chord.forEach((note, i) => {
-      if (plucks[i]) plucks[i].triggerAttack(note, now + i * 0.07);
+      guitar.play(note, now + i * 0.07, { gain: 1.5 });
     });
-  } catch (e) {
-    // never let audio errors block the animation
-  }
+  }).catch(() => {});
 }
