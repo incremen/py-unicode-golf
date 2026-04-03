@@ -80,14 +80,17 @@ async function tracePath(target) {
     prevId = id;
   }
 
-  // Animate to the chr leaf node if it exists
-  const chrId  = `chr-${data.target}`;
-  const chrEl  = cy.getElementById(chrId);
-  if (chrEl.length) {
-    await new Promise(resolve => setTimeout(resolve, TRACE_STEP_MS - TRACE_ANIM_MS - 50));
-    await animateTraceDot(prevId, chrId, 'chr');
-    chrEl.addClass('trace-active');
-    playStrategyNote('chr');
+  // Animate to the chr leaf node only when the user entered a character, not a raw integer
+  const targetIsInt = /^\d+$/.test(String(target));
+  if (!targetIsInt) {
+    const chrId  = `chr-${data.target}`;
+    const chrEl  = cy.getElementById(chrId);
+    if (chrEl.length) {
+      await new Promise(resolve => setTimeout(resolve, TRACE_STEP_MS - TRACE_ANIM_MS - 50));
+      await animateTraceDot(prevId, chrId, 'chr');
+      chrEl.addClass('trace-active');
+      playStrategyNote('chr');
+    }
   }
 
   // Leave the final node highlighted
