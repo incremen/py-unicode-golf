@@ -31,9 +31,33 @@ async function waitAndCheck(ms) {
   return !vizCancelled;
 }
 
+const exprParts = (() => {
+  const before = document.createElement('span');
+  const middle = document.createElement('span');
+  const after  = document.createElement('span');
+  return { before, middle, after };
+})();
+let exprBeforeCache = null;
+let exprAfterCache  = null;
+
+function initExprParts() {
+  resultExpr.innerHTML = '';
+  resultExpr.append(exprParts.before, exprParts.middle, exprParts.after);
+  exprBeforeCache = null;
+  exprAfterCache  = null;
+}
+
 function renderStep(before, middle, after, className) {
-  resultExpr.innerHTML =
-    `${syntaxHighlight(before)}<span class="${className}">${syntaxHighlight(middle)}</span>${syntaxHighlight(after)}`;
+  if (before !== exprBeforeCache) {
+    exprParts.before.innerHTML = syntaxHighlight(before);
+    exprBeforeCache = before;
+  }
+  exprParts.middle.className = className;
+  exprParts.middle.innerHTML = syntaxHighlight(middle);
+  if (after !== exprAfterCache) {
+    exprParts.after.innerHTML = syntaxHighlight(after);
+    exprAfterCache = after;
+  }
 }
 
 function estimateDuration(total) {
@@ -47,45 +71,33 @@ function estimateDuration(total) {
 
 // ── Single-char visualization (original) ────────────────────────────
 
-function precomputeSteps(steps) {
-  return steps.map(step => {
-    if (step.final) return { final: true, html: syntaxHighlight(step.expr) };
-    const before = step.expr.substring(0, step.highlight.start);
-    const middle = step.expr.substring(step.highlight.start, step.highlight.end);
-    const after  = step.expr.substring(step.highlight.end);
-    const hlBefore = syntaxHighlight(before);
-    const hlAfter  = syntaxHighlight(after);
-    return {
-      final: false,
-      highlightHtml: `${hlBefore}<span class="highlight">${syntaxHighlight(middle)}</span>${hlAfter}`,
-      replaceHtml:   `${hlBefore}<span class="fade-in">${syntaxHighlight(step.result)}</span>${hlAfter}`,
-    };
-  });
-}
-
 async function animateSteps(steps) {
   resultExpr.style.cursor = 'default';
+  initExprParts();
   const total = steps.filter(s => !s.final).length;
   logoStart(total, estimateDuration(total));
-  const rendered = precomputeSteps(steps);
   let current = 0, speed = 1;
 
-  for (const r of rendered) {
+  for (const step of steps) {
     if (vizCancelled) break;
 
-    if (r.final) {
+    if (step.final) {
       stepCounter.classList.remove('active', 'bump');
       stepCounter.textContent = '';
-      resultExpr.innerHTML = r.html;
+      resultExpr.innerHTML = syntaxHighlight(step.expr);
       await sleep(FINAL_DELAY);
       break;
     }
 
     current++;
-    resultExpr.innerHTML = r.highlightHtml;
+    const before = step.expr.substring(0, step.highlight.start);
+    const middle = step.expr.substring(step.highlight.start, step.highlight.end);
+    const after  = step.expr.substring(step.highlight.end);
+
+    renderStep(before, middle, after, 'highlight');
     if (!await waitAndCheck(HIGHLIGHT_DELAY * speed)) break;
 
-    resultExpr.innerHTML = r.replaceHtml;
+    renderStep(before, step.result, after, 'fade-in');
     stepCounter.textContent = `${current}/${total}`;
     stepCounter.classList.add('active', 'bump');
     setTimeout(() => stepCounter.classList.remove('bump'), 150);
@@ -97,29 +109,19 @@ async function animateSteps(steps) {
 
 // ── String visualization (parallel per-character) ───────────────────
 
-function precomputeTrack(track) {
-  const stepsHtml = track.steps.map(step => {
-    if (!step.highlight) {
-      const html = syntaxHighlight(step.expr);
-      return { highlightHtml: html, replaceHtml: html };
-    }
+function getTrackExpr(track, pos, mode) {
+  const step = track.steps[pos];
+  if (!step || step.final) return track.finalHtml;
+  if (step.highlight) {
     const before = step.expr.substring(0, step.highlight.start);
     const mid    = step.expr.substring(step.highlight.start, step.highlight.end);
     const after  = step.expr.substring(step.highlight.end);
-    const hlBefore = syntaxHighlight(before);
-    const hlAfter  = syntaxHighlight(after);
-    return {
-      highlightHtml: `${hlBefore}<span class="highlight">${syntaxHighlight(mid)}</span>${hlAfter}`,
-      replaceHtml:   `${hlBefore}<span class="fade-in">${syntaxHighlight(step.result)}</span>${hlAfter}`,
-    };
-  });
-  return { ...track, stepsHtml, finalHtml: syntaxHighlight(track.steps[track.steps.length - 1].expr) };
-}
-
-function getTrackHtml(track, pos, mode) {
-  const step = track.steps[pos];
-  if (!step || step.final) return track.finalHtml;
-  return mode === 'highlight' ? track.stepsHtml[pos].highlightHtml : track.stepsHtml[pos].replaceHtml;
+    if (mode === 'highlight') {
+      return `${syntaxHighlight(before)}<span class="highlight">${syntaxHighlight(mid)}</span>${syntaxHighlight(after)}`;
+    }
+    return `${syntaxHighlight(before)}<span class="fade-in">${syntaxHighlight(step.result)}</span>${syntaxHighlight(after)}`;
+  }
+  return syntaxHighlight(step.expr);
 }
 
 const WRAPPER_OPEN = syntaxHighlight('eval(bytes(next(zip(');
@@ -143,7 +145,7 @@ function renderStringState(tracks, positions, mode) {
   let html = WRAPPER_OPEN + '\n';
   for (let i = 0; i < tracks.length; i++) {
     const comma = i < tracks.length - 1 ? SYN_COMMA : '';
-    html += '  ' + getTrackHtml(tracks[i], positions[i], mode) + comma + '\n';
+    html += '  ' + getTrackExpr(tracks[i], positions[i], mode) + comma + '\n';
   }
   html += WRAPPER_CLOSE;
   resultExpr.innerHTML = html;
@@ -151,7 +153,10 @@ function renderStringState(tracks, positions, mode) {
 
 async function animateStringTracks(data) {
   resultExpr.style.cursor = 'default';
-  const tracks = data.tracks.map(precomputeTrack);
+  const tracks = data.tracks.map(t => ({
+    ...t,
+    finalHtml: syntaxHighlight(t.steps[t.steps.length - 1].expr),
+  }));
   const maxSteps = Math.max(...tracks.map(t => t.steps.filter(s => !s.final).length));
   const positions = tracks.map(() => 0);
   let level = 0;
