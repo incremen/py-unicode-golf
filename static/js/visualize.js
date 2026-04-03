@@ -31,33 +31,48 @@ async function waitAndCheck(ms) {
   return !vizCancelled;
 }
 
+async function sleepUntil(targetTime) {
+  return new Promise(resolve => {
+    function check() {
+      if (vizCancelled) { resolve(false); return; }
+      if (vizPaused) {
+        targetTime += 100;
+        setTimeout(check, 100);
+        return;
+      }
+      const remaining = targetTime - performance.now();
+      if (remaining <= 0) { resolve(true); } else { setTimeout(check, Math.min(remaining, 50)); }
+    }
+    check();
+  });
+}
+
+function buildStepSegments(steps) {
+  return steps.map(step => {
+    if (step.final) return { final: true, html: syntaxHighlight(step.expr) };
+    const before = step.expr.substring(0, step.highlight.start);
+    const middle = step.expr.substring(step.highlight.start, step.highlight.end);
+    const after  = step.expr.substring(step.highlight.end);
+    return {
+      final:        false,
+      beforeHtml:   syntaxHighlight(before),
+      highlightHtml: `<span class="highlight">${syntaxHighlight(middle)}</span>`,
+      replaceHtml:   `<span class="fade-in">${syntaxHighlight(step.result)}</span>`,
+      afterHtml:    syntaxHighlight(after),
+    };
+  });
+}
+
 const exprParts = (() => {
   const before = document.createElement('span');
   const middle = document.createElement('span');
   const after  = document.createElement('span');
   return { before, middle, after };
 })();
-let exprBeforeCache = null;
-let exprAfterCache  = null;
 
 function initExprParts() {
   resultExpr.innerHTML = '';
   resultExpr.append(exprParts.before, exprParts.middle, exprParts.after);
-  exprBeforeCache = null;
-  exprAfterCache  = null;
-}
-
-function renderStep(before, middle, after, className) {
-  if (before !== exprBeforeCache) {
-    exprParts.before.innerHTML = syntaxHighlight(before);
-    exprBeforeCache = before;
-  }
-  exprParts.middle.className = className;
-  exprParts.middle.innerHTML = syntaxHighlight(middle);
-  if (after !== exprAfterCache) {
-    exprParts.after.innerHTML = syntaxHighlight(after);
-    exprAfterCache = after;
-  }
 }
 
 function estimateDuration(total) {
@@ -74,34 +89,45 @@ function estimateDuration(total) {
 async function animateSteps(steps) {
   resultExpr.style.cursor = 'default';
   initExprParts();
-  const total = steps.filter(s => !s.final).length;
+  const segments = buildStepSegments(steps);
+  const total = segments.filter(s => !s.final).length;
   logoStart(total, estimateDuration(total));
   let current = 0, speed = 1;
+  let nextFrameTime = performance.now();
+  let beforeCache = null, afterCache = null;
 
-  for (const step of steps) {
+  for (const seg of segments) {
     if (vizCancelled) break;
 
-    if (step.final) {
+    if (seg.final) {
       stepCounter.classList.remove('active', 'bump');
       stepCounter.textContent = '';
-      resultExpr.innerHTML = syntaxHighlight(step.expr);
+      resultExpr.innerHTML = seg.html;
       await sleep(FINAL_DELAY);
       break;
     }
 
     current++;
-    const before = step.expr.substring(0, step.highlight.start);
-    const middle = step.expr.substring(step.highlight.start, step.highlight.end);
-    const after  = step.expr.substring(step.highlight.end);
 
-    renderStep(before, middle, after, 'highlight');
-    if (!await waitAndCheck(HIGHLIGHT_DELAY * speed)) break;
+    if (seg.beforeHtml !== beforeCache) {
+      exprParts.before.innerHTML = seg.beforeHtml;
+      beforeCache = seg.beforeHtml;
+    }
+    if (seg.afterHtml !== afterCache) {
+      exprParts.after.innerHTML = seg.afterHtml;
+      afterCache = seg.afterHtml;
+    }
 
-    renderStep(before, step.result, after, 'fade-in');
+    exprParts.middle.innerHTML = seg.highlightHtml;
+    nextFrameTime += HIGHLIGHT_DELAY * speed;
+    if (!await sleepUntil(nextFrameTime)) break;
+
+    exprParts.middle.innerHTML = seg.replaceHtml;
     stepCounter.textContent = `${current}/${total}`;
     stepCounter.classList.add('active', 'bump');
     setTimeout(() => stepCounter.classList.remove('bump'), 150);
-    if (!await waitAndCheck(REPLACE_DELAY * speed)) break;
+    nextFrameTime += REPLACE_DELAY * speed;
+    if (!await sleepUntil(nextFrameTime)) break;
 
     speed = Math.max(SPEEDUP_UNTIL / HIGHLIGHT_DELAY, speed * SPEEDUP);
   }
