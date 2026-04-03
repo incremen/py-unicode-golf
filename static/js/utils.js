@@ -27,3 +27,12 @@ function syntaxHighlight(text) {
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+function flashCopy(text, msgEl, exprEl) {
+  navigator.clipboard.writeText(text);
+  msgEl.textContent = 'copied';
+  setTimeout(() => msgEl.textContent = '', 1500);
+  exprEl.classList.remove('copied-flash');
+  void exprEl.offsetWidth;
+  exprEl.classList.add('copied-flash');
+}

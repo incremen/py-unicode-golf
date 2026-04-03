@@ -56,12 +56,7 @@ charInput.addEventListener('input', async () => {
 useDb.addEventListener('change', () => { if (lastData) showResult(lastData); });
 
 function copyExpr() {
-  navigator.clipboard.writeText(lastExpr);
-  copiedMsg.textContent = 'copied';
-  setTimeout(() => copiedMsg.textContent = '', 1500);
-  resultExpr.classList.remove('copied-flash');
-  void resultExpr.offsetWidth;
-  resultExpr.classList.add('copied-flash');
+  flashCopy(lastExpr, copiedMsg, resultExpr);
 }
 
 function randomChar() {
