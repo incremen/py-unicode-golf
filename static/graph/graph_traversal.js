@@ -41,7 +41,8 @@ function animateTraceDot(fromId, toId, strategy = null) {
 }
 
 async function tracePath(target) {
-  const response = await fetch(`/api/path/${encodeURIComponent(target)}`);
+  const useDb = document.getElementById('traceUseDb').checked;
+  const response = await fetch(`/api/path/${encodeURIComponent(target)}?db=${useDb}`);
   if (!response.ok && response.headers.get('content-type')?.includes('text/html')) {
     document.getElementById('trace-error').textContent = `Server error (${response.status})`;
     return;

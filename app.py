@@ -197,10 +197,15 @@ def api_path(target):
         except ValueError:
             return jsonify({'error': 'Expected a single character or integer'}), 400
 
-    if not DB_AVAILABLE or str(n) not in DB_EXPRS:
-        return jsonify({'error': f'No path found for {repr(target)}'}), 404
+    use_db = request.args.get('db', 'true').lower() != 'false'
 
-    steps = evaluate_steps(DB_EXPRS[str(n)])
+    if use_db and DB_AVAILABLE and str(n) in DB_EXPRS:
+        expr = DB_EXPRS[str(n)]
+    else:
+        from core.anchors import build_n
+        expr = build_n(n)
+
+    steps = evaluate_steps(expr)
     path = []
     for step in steps:
         try:
