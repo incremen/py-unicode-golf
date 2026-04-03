@@ -18,6 +18,7 @@ from core.strategies import apply_strategy, STRATEGIES
 
 METRIC      = 'depth'   # 'depth' or 'length'
 PAREN_LIMIT = 200
+STORE_N     = 200_000   # only persist results for n <= STORE_N; Dijkstra still explores up to MAX_N
 
 
 
@@ -112,7 +113,7 @@ if __name__ == '__main__':
         METRIC = metric
         print(f'Running Dijkstra (metric={metric})...')
         t0 = datetime.now()
-        graph = run_dijkstra()
+        graph = {n: e for n, e in run_dijkstra().items() if n <= STORE_N}
         print(f'  done in {(datetime.now()-t0).total_seconds():.1f}s — merging...')
         improved, regressed = merge_best(graph, metric)
         improved.sort(key=lambda x: (x[1] or 0) - x[2], reverse=True)
