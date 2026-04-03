@@ -37,7 +37,7 @@ const STRATEGY_COLORS = {
   ascii_exp_9:      '#a29bfe',
   ascii_exp_10:     '#fd79a8',
   ascii_exp_11:     '#b2bec3',
-  digit_ord:        '#f9ca24',
+  digit_ord:        '#24f932',
 };
 
 // Python expression templates for each strategy, given a source integer n.
