@@ -31,13 +31,13 @@ STRATEGIES = {
                        lambda p: f'len(str(complex({p})))'),
 }
 
-for i in range(1, 6):
+for i in range(1, 20):
     STRATEGIES[f'zip_chain_{i}'] = (
         lambda n, m=3*(i+1): m * n,
         lambda p, k=i: f"len(str(list({'zip(' * k}bytes({p}){')' * k})))"
     )
 
-for i in range(1, 12):
+for i in range(1, 20):
     STRATEGIES[f'ascii_exp_{i}'] = (
         lambda n, m=(1<<i)+3, c=(1<<(i+1))+1: m * n + c,
         lambda p, k=i: f"len({'ascii(' * k}str(bytes({p})){')' * k})"

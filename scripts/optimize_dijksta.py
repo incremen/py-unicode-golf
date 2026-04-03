@@ -119,7 +119,7 @@ if __name__ == '__main__':
         print(f'  done in {(datetime.now()-t0).total_seconds():.1f}s — merging...')
         improved, regressed = merge_best(graph, metric)
         improved.sort(key=lambda x: (x[1] or 0) - x[2], reverse=True)
-        print(f'  depth improvements: {len(improved):,}  regressions: {len(regressed):,}')
+        print(f'  improvements: {len(improved):,}  regressions: {len(regressed):,}')
         if improved[:5]:
             for n, old, new in improved[:5]:
                 print(f'    n={n:>7}  {metric} {old} → {new}')
