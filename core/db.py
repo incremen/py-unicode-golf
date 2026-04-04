@@ -43,6 +43,14 @@ def init_db():
         for col, typedef in [('expr_len', 'TEXT'), ('depth_len', 'INTEGER'), ('len_len', 'INTEGER')]:
             if col not in existing:
                 conn.execute(f'ALTER TABLE numbers ADD COLUMN {col} {typedef}')
+        existing_log = {r[1] for r in conn.execute('PRAGMA table_info(optimization_log)').fetchall()}
+        for col in ['avg_best_len', 'avg_depth_lenopt', 'max_depth_lenopt', 'max_len_lenopt']:
+            if col not in existing_log:
+                try:
+                    conn.execute(f'ALTER TABLE optimization_log ADD COLUMN {col} REAL')
+                except Exception:
+                    pass
+
         conn.execute('''
             CREATE TABLE IF NOT EXISTS optimization_log (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -168,20 +176,28 @@ def snapshot(label, improvements=0):
         ).fetchone()
         total, avg_depth, max_depth, avg_len, max_len = row
 
+        r2 = conn.execute(
+            'SELECT AVG(depth_len), MAX(depth_len), AVG(len_len), MAX(len_len) '
+            'FROM numbers WHERE depth_len IS NOT NULL'
+        ).fetchone()
+        avg_depth_lenopt, max_depth_lenopt, avg_best_len, max_len_lenopt = r2
+
         strategy_rows = conn.execute(
             'SELECT strategy, COUNT(*) FROM numbers GROUP BY strategy'
         ).fetchall()
         strategy_counts = {r[0]: r[1] for r in strategy_rows}
 
+        def r(v): return round(v, 4) if v is not None else None
         conn.execute('''
             INSERT INTO optimization_log
-            (timestamp, label, improvements, total_entries, avg_depth, max_depth, avg_len, max_len, strategy_counts)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (timestamp, label, improvements, total_entries, avg_depth, max_depth, avg_len, max_len,
+             strategy_counts, avg_depth_lenopt, max_depth_lenopt, avg_best_len, max_len_lenopt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             datetime.now().isoformat(), label, improvements,
-            total, round(avg_depth, 4), max_depth,
-            round(avg_len, 4), max_len,
+            total, r(avg_depth), max_depth, r(avg_len), max_len,
             json.dumps(strategy_counts),
+            r(avg_depth_lenopt), max_depth_lenopt, r(avg_best_len), max_len_lenopt,
         ))
         conn.commit()
 

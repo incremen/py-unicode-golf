@@ -100,19 +100,28 @@ def run_dijkstra():
 
 
 
+def fmt(v, w=7):
+    return f'{v:>{w}}' if v is not None else f"{'—':>{w}}"
+
 def print_history(conn, highlight_label):
     rows = conn.execute(
-        'SELECT label, avg_depth, avg_len FROM optimization_log ORDER BY id DESC LIMIT 8'
+        'SELECT label, avg_depth, max_depth, avg_len, max_len, '
+        'avg_depth_lenopt, max_depth_lenopt, avg_best_len, max_len_lenopt '
+        'FROM optimization_log ORDER BY id DESC LIMIT 8'
     ).fetchall()
     rows = list(reversed(rows))
     L = max((len(r[0]) for r in rows), default=5)
     L = max(L, len('label'))
+    W = 7
+    G = 4 * (W + 2) - 1  # width of each group's 4 columns
     print(f'\nHistory:')
-    print(f"  {'label'.ljust(L)}  {'avg_depth':>9}  {'avg_len':>9}")
-    print(f"  {'-'*L}  {'-'*9}  {'-'*9}")
-    for label, avg_depth, avg_len in rows:
+    print(f"  {'':>{L}}  {'── depth-opt ':─<{G}}  {'── len-opt ':─<{G}}")
+    print(f"  {'label'.ljust(L)}  {'avg_d':>{W}}  {'max_d':>{W}}  {'avg_l':>{W}}  {'max_l':>{W}}  {'avg_d':>{W}}  {'max_d':>{W}}  {'avg_l':>{W}}  {'max_l':>{W}}")
+    print(f"  {'-'*L}  {('  '.join(['-'*W]*4))}  {('  '.join(['-'*W]*4))}")
+    for row in rows:
+        label, ad, mxd, al, mxl, adl, mxdl, abl, mxll = row
         marker = '← ' if label == highlight_label else '  '
-        print(f"{marker}{label.ljust(L)}  {avg_depth:>9}  {avg_len:>9}")
+        print(f"{marker}{label.ljust(L)}  {fmt(ad)}  {fmt(mxd)}  {fmt(al)}  {fmt(mxl)}  {fmt(adl)}  {fmt(mxdl)}  {fmt(abl)}  {fmt(mxll)}")
 
 
 if __name__ == '__main__':
