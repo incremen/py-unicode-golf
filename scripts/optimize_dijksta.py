@@ -13,12 +13,12 @@ import heapq
 from datetime import datetime
 
 from core.anchors import BASE_ANCHORS
-from core.db import init_db, snapshot, stats, bulk_write, MAX_N
+from core.config import STORE_N
+from core.db import init_db, snapshot, MAX_N
 from core.strategies import apply_strategy, STRATEGIES
 
 METRIC      = 'depth'   # 'depth' or 'length'
 PAREN_LIMIT = 200
-from core.config import STORE_N
 
 
 
@@ -100,28 +100,35 @@ def run_dijkstra():
 
 
 
-def fmt(v, w=7):
-    return f'{v:>{w}}' if v is not None else f"{'—':>{w}}"
-
 def print_history(conn, highlight_label):
     rows = conn.execute(
         'SELECT label, avg_depth, max_depth, avg_len, max_len, '
         'avg_depth_lenopt, max_depth_lenopt, avg_best_len, max_len_lenopt '
         'FROM optimization_log ORDER BY id DESC LIMIT 8'
     ).fetchall()
+    if not rows:
+        return
     rows = list(reversed(rows))
-    L = max((len(r[0]) for r in rows), default=5)
-    L = max(L, len('label'))
+
     W = 7
-    G = 4 * (W + 2) - 1  # width of each group's 4 columns
-    print(f'\nHistory:')
-    print(f"  {'':>{L}}  {'── depth-opt ':─<{G}}  {'── len-opt ':─<{G}}")
-    print(f"  {'label'.ljust(L)}  {'avg_d':>{W}}  {'max_d':>{W}}  {'avg_l':>{W}}  {'max_l':>{W}}  {'avg_d':>{W}}  {'max_d':>{W}}  {'avg_l':>{W}}  {'max_l':>{W}}")
-    print(f"  {'-'*L}  {('  '.join(['-'*W]*4))}  {('  '.join(['-'*W]*4))}")
-    for row in rows:
-        label, ad, mxd, al, mxl, adl, mxdl, abl, mxll = row
+    SEP = '  '
+    COLS = ['avg_d', 'max_d', 'avg_l', 'max_l']
+    SECTIONS = ['── depth-opt ', '── len-opt ']
+
+    fmt  = lambda v: f'{v:>{W}}' if v is not None else f"{'—':>{W}}"
+    cols = SEP.join(f'{c:>{W}}' for c in COLS)
+    rule = SEP.join('-' * W for _ in COLS)
+
+    L = max(max(len(r[0]) for r in rows), len('label'))
+    group_w = len(rule)
+
+    print('\nHistory:')
+    print('  ' + ' ' * L + SEP + SEP.join(f'{s:─<{group_w}}' for s in SECTIONS))
+    print(f"  {'label'.ljust(L)}{SEP}{cols}{SEP}{cols}")
+    print(f"  {'-' * L}{SEP}{rule}{SEP}{rule}")
+    for label, *vals in rows:
         marker = '← ' if label == highlight_label else '  '
-        print(f"{marker}{label.ljust(L)}  {fmt(ad)}  {fmt(mxd)}  {fmt(al)}  {fmt(mxl)}  {fmt(adl)}  {fmt(mxdl)}  {fmt(abl)}  {fmt(mxll)}")
+        print(f"{marker}{label.ljust(L)}{SEP}{SEP.join(fmt(v) for v in vals)}")
 
 
 if __name__ == '__main__':
