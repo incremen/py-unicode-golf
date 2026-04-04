@@ -18,7 +18,7 @@ from core.strategies import apply_strategy, STRATEGIES
 
 METRIC      = 'depth'   # 'depth' or 'length'
 PAREN_LIMIT = 200
-STORE_N     = 200_000   # only persist results for n <= STORE_N; Dijkstra still explores up to MAX_N
+from core.config import STORE_N
 
 
 
