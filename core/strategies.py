@@ -94,10 +94,10 @@ STRATEGIES.update({
     'dict_enum_range':(lambda n: _DICT_ENUM_RANGE[n] if 0 <= n <= _MAX else -1,
                        lambda p: f'len(str(dict(enumerate(range({p})))))'),
 
-    'list_enum_bytes':(lambda n: _DIGIT_SUM[n] + 6 * n + 2 if 0 < n <= _MAX else (2 if n == 0 else -1),
+    'list_enum_bytes':(lambda n: _DIGIT_SUM[n] + 7 * n if 0 < n <= _MAX else (2 if n == 0 else -1),
                        lambda p: f'len(str(list(enumerate(bytes({p})))))'),
 
-    'dict_enum_bytes':(lambda n: _DIGIT_SUM[n] + 5 * n + 2 if 0 < n <= _MAX else (2 if n == 0 else -1),
+    'dict_enum_bytes':(lambda n: _DIGIT_SUM[n] + 5 * n if 0 < n <= _MAX else (2 if n == 0 else -1),
                        lambda p: f'len(str(dict(enumerate(bytes({p})))))'),
 
     'digit_ord':      (lambda n: ord(str(n)) if 0 <= n <= 9 else -1,
