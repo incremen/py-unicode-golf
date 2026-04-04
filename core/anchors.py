@@ -48,8 +48,14 @@ _STRING_EXPRS = [
     ('str(type(iter(bytes())))',                str(type(iter(bytes())))),         # "<class 'bytes_iterator'>"
     ('str(type(iter(dict())))',                 str(type(iter(dict())))),          # "<class 'dict_keyiterator'>"
     ('str(type(iter(str())))',                  str(type(iter(str())))),           # "<class 'str_ascii_iterator'>"
+    ('str(type(iter(range(int()))))',           str(type(iter(range(int()))))),    # "<class 'range_iterator'>"
     ('str(type(reversed(list())))',             str(type(reversed(list())))),      # "<class 'list_reverseiterator'>"
     ('str(type(reversed(dict())))',             str(type(reversed(dict())))),      # "<class 'dict_reversekeyiterator'>"
+    ('str(type(reversed(tuple())))',            str(type(reversed(tuple())))),     # "<class 'reversed'>"
+
+    # exception type reprs (shorter len expressions for 20, 23)
+    ('str(type(ValueError()))',                 str(type(ValueError()))),          # "<class 'ValueError'>"
+    ('str(type(StopIteration()))',              str(type(StopIteration()))),       # "<class 'StopIteration'>"
 ]
 
 
@@ -59,11 +65,13 @@ def _add_if_better(n, expr):
         BASE_ANCHORS[n] = expr
 
 for expr, val in _STRING_EXPRS:
-    _add_if_better(len(val),                    f'len({expr})')
+    _add_if_better(len(val),                              f'len({expr})')
     if val:
-        _add_if_better(ord(min(val)),           f'ord(min({expr}))')
-        _add_if_better(ord(max(val)),           f'ord(max({expr}))')
-        _add_if_better(ord(next(iter(val))),    f'ord(next(iter({expr})))')
-        _add_if_better(ord(next(reversed(val))),f'ord(next(reversed({expr})))')
+        _add_if_better(ord(min(val)),                     f'ord(min({expr}))')
+        _add_if_better(ord(max(val)),                     f'ord(max({expr}))')
+        _add_if_better(ord(next(iter(val))),              f'ord(next(iter({expr})))')
+        _add_if_better(ord(next(reversed(val))),          f'ord(next(reversed({expr})))')
+        _add_if_better(ord(next(reversed(hex(len(val))))),f'ord(next(reversed(hex(len({expr})))))')
+        _add_if_better(ord(next(reversed(oct(len(val))))),f'ord(next(reversed(oct(len({expr})))))')
 
 
