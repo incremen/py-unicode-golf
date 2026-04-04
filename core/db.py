@@ -59,11 +59,12 @@ def init_db():
         ''')
 
 
-def merge_best(graph, metric, write=True):
+def merge_best(graph, metric, write=True, force=False):
     """Update DB entries only where graph found a strictly better representation.
 
     metric: 'depth' compares graph[n]['depth'] vs numbers.depth
             'length' compares graph[n]['len']   vs numbers.len_len
+    force:  if True, overwrite every entry unconditionally
     Returns (improved, regressed) lists of (n, old_val, new_val).
     """
     conn = get_conn()
@@ -83,7 +84,7 @@ def merge_best(graph, metric, write=True):
             continue
 
         old_primary, old_secondary = current[n]
-        if old_primary is None or new_primary < old_primary or (new_primary == old_primary and new_secondary < (old_secondary or float('inf'))):
+        if force or old_primary is None or new_primary < old_primary or (new_primary == old_primary and new_secondary < (old_secondary or float('inf'))):
             improved.append((n, old_primary, new_primary))
             if metric == 'depth':
                 updates.append((node['expr'], node['depth'], node['len'], node['strategy'], node['parent'], n))

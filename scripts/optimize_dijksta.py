@@ -100,10 +100,30 @@ def run_dijkstra():
 
 
 
+def print_history(conn, highlight_label):
+    rows = conn.execute(
+        'SELECT label, avg_depth, avg_len FROM optimization_log ORDER BY id DESC LIMIT 8'
+    ).fetchall()
+    rows = list(reversed(rows))
+    L = max((len(r[0]) for r in rows), default=5)
+    L = max(L, len('label'))
+    print(f'\nHistory:')
+    print(f"  {'label'.ljust(L)}  {'avg_depth':>9}  {'avg_len':>9}")
+    print(f"  {'-'*L}  {'-'*9}  {'-'*9}")
+    for label, avg_depth, avg_len in rows:
+        marker = '← ' if label == highlight_label else '  '
+        print(f"{marker}{label.ljust(L)}  {avg_depth:>9}  {avg_len:>9}")
+
+
 if __name__ == '__main__':
     if '--metric' in sys.argv:
         METRIC = sys.argv[sys.argv.index('--metric') + 1]
     assert METRIC in ('depth', 'length'), f'Unknown metric: {METRIC}'
+    force = '--force' in sys.argv
+
+    run_label = input('Label for this run (Enter to skip): ').strip()
+    if not run_label:
+        run_label = 'dijkstra (depth+length)'
 
     from core.db import get_conn, merge_best, generate_json
     init_db()
@@ -115,9 +135,12 @@ if __name__ == '__main__':
         t0 = datetime.now()
         graph = {n: e for n, e in run_dijkstra().items() if n <= STORE_N}
         print(f'  done in {(datetime.now()-t0).total_seconds():.1f}s — merging...')
-        improved, regressed = merge_best(graph, metric)
+        improved, regressed = merge_best(graph, metric, force=force)
         improved.sort(key=lambda x: (x[1] or 0) - x[2], reverse=True)
-        print(f'  improvements: {len(improved):,}  regressions: {len(regressed):,}')
+        if force:
+            print(f'  written: {len(improved):,}')
+        else:
+            print(f'  improvements: {len(improved):,}  regressions: {len(regressed):,}')
         if improved[:5]:
             for n, old, new in improved[:5]:
                 print(f'    n={n:>7}  {metric} {old} → {new}')
@@ -128,13 +151,7 @@ if __name__ == '__main__':
         print('No improvements found — skipping DB write and snapshot.')
     else:
         generate_json()
-        snapshot('dijkstra (depth+length)', improvements=total)
+        snapshot(run_label, improvements=total)
 
     with get_conn() as conn:
-        how_many_snapshots = 6
-        rows = conn.execute(
-            f'SELECT label, avg_depth, max_depth, avg_len FROM optimization_log ORDER BY id DESC LIMIT {how_many_snapshots}'
-        ).fetchall()
-    print(f'\nLast {how_many_snapshots} snapshots:')
-    for label, avg_depth, max_depth, avg_len in reversed(rows):
-        print(f'  {label}: avg_depth={avg_depth}  max_depth={max_depth}  avg_len={avg_len}')
+        print_history(conn, run_label)
