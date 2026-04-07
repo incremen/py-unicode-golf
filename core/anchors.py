@@ -5,7 +5,6 @@
 BASE_ANCHORS = {
     0: 'int(not(not()))',
     1: 'int(not())',
-    6: 'sum(range(len(str(not()))))',  # sum(range(4))
 }
 
 # ── String expressions ────────────────────────────────────────────────────
