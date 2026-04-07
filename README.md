@@ -19,7 +19,7 @@ Details in:
 **Website:** https://py-unicode-golf.vercel.app
 
 If you understand how the optimization works and are curious about how the underlying graph looks, check out:
-https://py-unicode-golf.vercel.app/static/graph/graph.html - uses Cyptoscape.js for showing graphs in a way that i think is pretty cool.
+https://py-unicode-golf.vercel.app/static/graph/graph.html - uses Cytoscape.js for showing graphs in a way that i think is pretty cool.
 
 
 Uses Flask for server stuff and SQLite for db.
