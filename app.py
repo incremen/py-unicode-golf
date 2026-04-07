@@ -222,6 +222,13 @@ def api_path(target):
     return jsonify({'target': n, 'path': path})
 
 
+# Anchors derived from 0 or 1 via multi-step expressions (e.g. ord(min(str(type(int())))) = 32).
+# The graph needs explicit edges for these since they aren't single-strategy hops.
+ANCHOR_EDGES = {
+    0: [13, 21, 32, 60, 62, 100],
+    1: [49, 111, 120],
+}
+
 @app.route('/api/neighbors/<int:node_id>')
 def api_neighbors(node_id):
     neighbors = []
@@ -232,6 +239,8 @@ def api_neighbors(node_id):
             continue
         if isinstance(target, int) and 0 <= target <= GRAPH_MAX and target != node_id:
             neighbors.append({'id': target, 'strategy': strategy_name})
+    for target in ANCHOR_EDGES.get(node_id, []):
+        neighbors.append({'id': target, 'strategy': 'anchor'})
     return jsonify({'focus': node_id, 'neighbors': neighbors})
 
 
