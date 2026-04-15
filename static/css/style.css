@@ -282,6 +282,31 @@ input:focus { outline: none; border-color: #306998; box-shadow: 0 0 0 3px rgba(4
 }
 .copied { color: #306998; font-size: 0.75rem; margin-top: 0.4rem; }
 
+.graph-cta {
+  display: block;
+  text-align: center;
+  padding: 1.2rem 2rem;
+  margin: 1.5rem auto;
+  max-width: 600px;
+  background: linear-gradient(135deg, #306998 0%, #7ec8e3 100%);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font: bold 1.15rem/1.4 monospace;
+  text-decoration: none;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.graph-cta:hover {
+  box-shadow: 0 0 24px rgba(126, 200, 227, 0.4);
+  transform: translateY(-2px);
+}
+.graph-cta-sub {
+  display: block;
+  font-weight: normal;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 0.3rem;
+}
 
 code {
   background: #1a1e28;

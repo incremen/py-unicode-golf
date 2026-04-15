@@ -429,7 +429,7 @@ ascii(ascii(that))    = ...                      len = 23</pre>
   We can treat each number 0...200,000 as a node, and each strategy is just a set of edges connecting them. For example, the strategy <code>decrement</code> gives us a directed edge from each node <code>n</code> to <code>n-1</code>, and the <code>triple</code> strategy is an edge from <code>n</code> to <code>3n</code>. In this model, every representation is simply a path through this graph.
 </p>
 
-<p>
+<p> 
   So instead of guessing and checking backwards, we use <strong>Dijkstra's Algorithm</strong>. To do this, we create a starting node <code>s</code> with an edge to all the base anchors according to the base anchors' length of representation. Our goal is then reduced to finding the shortest path from <code>s</code> to every other node in the set {0, 1, ..., 200000}.
 </p>
 
@@ -445,9 +445,17 @@ ascii(ascii(that))    = ...                      len = 23</pre>
 <p>
   For instance, each directed edge <code>n -> n-1</code> from decrement (<code>max(range(n))</code>) has a depth of 2 and a length of 12. Additionally, we can use a mix of both to break up ties between two representations with the same depth but different lengths, or vice versa. Dijkstra guarantees that we find the absolute shortest paths from our list of strategies. <code>:)</code>
 </p>
-
 <p>
-  If you're curious about how this graph looks, <a href="/static/graph/graph.html" target="_blank">I used Cytoscape.js to visualize it</a> — I think it ends up looking pretty cool. You can click a node to see its outgoing neighbors and trace the path from <code>s</code> to any other node in the graph.
+  If you're curious about how this graph ends up looking:
+</p>
+<a class="graph-cta" href="/static/graph/graph.html" target="_blank">
+  Click here to explore the graph interactively
+  <span class="graph-cta-sub">click nodes, hover over edges, trace paths</span>
+</a>
+<p class="note" style="margin-top: 0.5rem">
+  I built that with Cytoscape.js: You can click a neighbor node to move to it, and walk around the graph. <br>
+  Also, you can trace the shortest path from <code>s</code> to any other node (int or character).
+  And it plays a chord for each edge you move from which I think is fun :)
 </p>
 
   <div class="divider"></div>
