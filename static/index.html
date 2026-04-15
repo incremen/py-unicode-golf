@@ -85,30 +85,42 @@
   <p>
     Basically, this is a code golf challenge to represent each unicode character in a weird way, in python. <br>
     <br>
-    More specifically, this site builds unicode characers from python's built-in functions, like: <code>len()</code>, <code>str()</code>, <code>not()</code>, <code>chr()</code>, etc.
+    More specifically, this site builds unicode characters from python's built-in functions, like: <code>len()</code>, <code>str()</code>, <code>not()</code>, <code>chr()</code>, etc.
     Also, it follows these rules:
   </p>
   <ul>
-    <li>Each character must be represented by a composition of functions - just one line.</li>
-    <li>The final function must take in no parameters, like <code>not()</code>.</li>
-    <li>Each function can only take in one parameter; <code>pow(a,b)</code> isn't allowed.</li>
+    <li>Each character must be a <strong>composition of functions</strong> &mdash; just one line.</li>
+    <li>The innermost function must take <strong>no parameters</strong>, like <code>not()</code>.</li>
+    <li>Each function can only take <strong>one argument</strong>; <code>pow(a,b)</code> isn't allowed.</li>
   </ul>
   <p>Just nested function calls.</p>
-    <p>
-    For example, <code>chr(max(range(ord(min(str(bytes()))))))</code> evaluates to <code>'&'</code>. <br>
-</p>
-<p>
-    Try pasting the expression into a python console (by running this after <code>python3</code> in the terminal), or printing this value in a python file. <br>
-    After you enter a character, the visualize button works you through the evaluation step by step. <br>
-    The "use optimized database" toggle determines whether or not we use an optimized expression stored in a database, or the basic algorithm expression (see the <a href="#" onclick="showMain(document.querySelector('.main-tab:nth-child(5)'), 'panel-db'); return false">algorithms tab</a> for details).
-    <br>
-  </p>
-  <p>
-    I made this work for strings as well, by allowing multiple arguments (works in <a href="#" onclick="showMain(document.querySelector('.main-tab:nth-child(6)'), 'panel-strings'); return false">strings tab</a>). <br>
-    And by allowing multiple arguments as well as methods, you can actually run arbitrary python code! (works in <a href="#" onclick="showMain(document.querySelector('.main-tab:nth-child(7)'), 'panel-code'); return false">exec() tab</a>).
-    <br>
-    After you understand how optimizations work, you can see how the directed graph actually looks in: <a href="/graph/graph.html" target="_blank">graph visualization</a>.
 
+    <p>
+    For example, <code>chr(max(range(ord(min(str(bytes()))))))</code> evaluates to <code>'&'</code>.
+    Try pasting it into a Python console.
+  </p>
+
+  <div class="divider"></div>
+
+  <p>
+    To try this out, enter a character into the <strong>"type here"</strong> input. <br>
+    After that, the <strong>visualize</strong> button walks you through the evaluation step by step. <br>
+    The <strong>"use optimized database"</strong> toggle switches between a an optimized expression from the database and the basic algorithm (see the <a href="#" onclick="showMain(document.querySelector('.main-tab:nth-child(5)'), 'panel-db'); return false">algorithms tab</a> for details).
+  </p>
+
+  <div class="divider"></div>
+
+  <p><strong>Beyond single characters</strong></p>
+  <p>
+    <strong>Strings:</strong> by allowing multiple arguments, this works for entire strings too (try the <a href="#" onclick="showMain(document.querySelector('.main-tab:nth-child(6)'), 'panel-strings'); return false">strings tab</a>). <br>
+    <strong>Arbitrary code:</strong> by also allowing methods, you can compile entire Python scripts (try the <a href="#" onclick="showMain(document.querySelector('.main-tab:nth-child(7)'), 'panel-code'); return false">exec() tab</a>).
+  </p>
+
+  <div class="divider"></div>
+
+  <p>
+    After you understand how the optimizations work, check out the interactive graph:
+    <a href="/static/graph/graph.html" target="_blank">graph visualization</a>.
   </p>
 
 </div>
