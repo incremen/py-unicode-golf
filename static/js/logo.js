@@ -87,12 +87,12 @@ function clearAnim() {
 function writeKeyframes(id, logoFrom, logoTo, bgFrom, bgTo) {
   vizStyle.textContent = `
     @keyframes viz${id} {
-      from { transform: ${logoFrom.transform}; opacity: ${logoFrom.opacity}; filter: ${logoFrom.filter}; }
-      to   { transform: ${logoTo.transform}; opacity: ${logoTo.opacity}; filter: ${logoTo.filter}; }
+      from { transform: ${logoFrom.transform}; opacity: ${logoFrom.opacity}; }
+      to   { transform: ${logoTo.transform}; opacity: ${logoTo.opacity}; }
     }
     @keyframes bgviz${id} {
-      from { transform: ${bgFrom.transform}; filter: ${bgFrom.filter}; }
-      to   { transform: ${bgTo.transform}; filter: ${bgTo.filter}; }
+      from { transform: ${bgFrom.transform}; }
+      to   { transform: ${bgTo.transform}; }
     }`;
 }
 

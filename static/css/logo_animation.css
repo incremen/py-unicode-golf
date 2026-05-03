@@ -10,8 +10,8 @@ body::before {
   opacity: var(--logo-opacity, 0.2);
   pointer-events: none;
   z-index: 0;
-  filter: hue-rotate(var(--logo-hue, 0deg));
-  transition: opacity var(--logo-transition, 0.15s) var(--logo-easing, ease-out), transform var(--logo-transition, 0.15s) var(--logo-easing, ease-out), filter var(--logo-transition, 0.15s) var(--logo-easing, ease-out);
+  transition: opacity var(--logo-transition, 0.15s) var(--logo-easing, ease-out), transform var(--logo-transition, 0.15s) var(--logo-easing, ease-out);
+  will-change: transform, opacity;
   animation: var(--logo-anim, none);
   animation-play-state: var(--logo-play-state, running);
 }
